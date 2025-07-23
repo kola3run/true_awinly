@@ -1,0 +1,467 @@
+/* Стили основаны на классах из твоего исходного кода, адаптированы для минимальной структуры */
+body {
+    font-family: Arial, sans-serif;
+    margin: 0;
+    padding: 0;
+    background: #f5f5f5;
+  }
+  
+  .listings {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 20px;
+  }
+  
+  .header {
+    background: #fff;
+    border-bottom: 1px solid #ddd;
+    padding: 10px 20px;
+  }
+  
+  .header-container {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    max-width: 1200px;
+    margin: 0 auto;
+  }
+  
+  .header-left {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+  }
+  
+  .listings-logo {
+    height: 40px;
+  }
+  
+  .header-title h1 {
+    font-size: 24px;
+    margin: 0;
+  }
+  
+  .nav-text {
+    cursor: pointer;
+    color: #007bff;
+    text-decoration: none;
+  }
+  
+  .nav-text:hover {
+    text-decoration: underline;
+  }
+  
+  .header-actions {
+    display: flex;
+    gap: 10px;
+  }
+  
+  .dropdown {
+    position: relative;
+  }
+  
+  .dropdown-btn {
+    padding: 8px 12px;
+    border: 1px solid #ddd;
+    background: #fff;
+    cursor: pointer;
+  }
+  
+  .dropdown-content {
+    display: none;
+    position: absolute;
+    background: #fff;
+    border: 1px solid #ddd;
+    min-width: 100px;
+  }
+  
+  .dropdown-content.open {
+    display: block;
+  }
+  
+  .dropdown-item {
+    padding: 8px 12px;
+    cursor: pointer;
+  }
+  
+  .dropdown-item:hover {
+    background: #f0f0f0;
+  }
+  
+  .offer {
+    text-align: center;
+    padding: 20px 0;
+  }
+  
+  .offer-container {
+    max-width: 1200px;
+    margin: 0 auto;
+  }
+  
+  .offer h1 {
+    font-size: 32px;
+    margin-bottom: 20px;
+  }
+  
+  .filter-section {
+    margin-bottom: 20px;
+  }
+  
+  .search-bar-container {
+    display: flex;
+    justify-content: center;
+  }
+  
+  .filter-wrapper {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+  }
+  
+  .filter-container {
+    display: flex;
+    gap: 10px;
+  }
+  
+  .city-selector, .deal-type-selector, .property-type-selector {
+    position: relative;
+  }
+  
+  .city-part, .deal-type-part, .property-type-part {
+    padding: 10px;
+    border: 1px solid #ddd;
+    background: #fff;
+    cursor: pointer;
+  }
+  
+  .deal-type-dropdown, .property-type-dropdown {
+    display: none;
+    position: absolute;
+    background: #fff;
+    border: 1px solid #ddd;
+    min-width: 100px;
+  }
+  
+  .deal-type-dropdown.open, .property-type-dropdown.open {
+    display: block;
+  }
+  
+  .deal-type-option, .property-type-option {
+    padding: 8px 12px;
+    cursor: pointer;
+  }
+  
+  .deal-type-option:hover, .property-type-option:hover {
+    background: #f0f0f0;
+  }
+  
+  .search-btn {
+    padding: 10px 20px;
+    background: #007bff;
+    color: #fff;
+    border: none;
+    cursor: pointer;
+  }
+  
+  .search-btn:hover {
+    background: #0056b3;
+  }
+  
+  .modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.5);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+  }
+  
+  .modal {
+    background: #fff;
+    padding: 20px;
+    max-width: 600px;
+    width: 90%;
+  }
+  
+  .modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  
+  .modal-close {
+    background: none;
+    border: none;
+    font-size: 20px;
+    cursor: pointer;
+  }
+  
+  .modal-search-container {
+    position: relative;
+    margin: 10px 0;
+  }
+  
+  .modal-search {
+    width: 100%;
+    padding: 8px;
+    border: 1px solid #ddd;
+  }
+  
+  .modal-search-icon {
+    position: absolute;
+    right: 10px;
+    top: 50%;
+    transform: translateY(-50%);
+  }
+  
+  .cities-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+    gap: 10px;
+  }
+  
+  .modal-item {
+    padding: 8px;
+    border: 1px solid #ddd;
+    cursor: pointer;
+  }
+  
+  .modal-item.selected {
+    background: #007bff;
+    color: #fff;
+  }
+  
+  .modal-footer {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 10px;
+  }
+  
+  .modal-btn {
+    padding: 8px 16px;
+    border: none;
+    cursor: pointer;
+  }
+  
+  .modal-btn.clear {
+    background: #ddd;
+  }
+  
+  .modal-btn:not(.clear) {
+    background: #007bff;
+    color: #fff;
+  }
+  
+  .listings-container {
+    margin: 20px 0;
+  }
+  
+  .listings-list {
+    display: grid;
+    gap: 20px;
+  }
+  
+  .listing-card {
+    border: 1px solid #ddd;
+    background: #fff;
+    padding: 10px;
+  }
+  
+  .listing-image-wrapper {
+    position: relative;
+  }
+  
+  .listing-image-container {
+    width: 100%;
+  }
+  
+  .carousel {
+    position: relative;
+  }
+  
+  .carousel-image {
+    width: 100%;
+    height: auto;
+  }
+  
+  .carousel-arrow {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    background: rgba(0, 0, 0, 0.5);
+    color: #fff;
+    border: none;
+    padding: 10px;
+    cursor: pointer;
+  }
+  
+  .carousel-arrow.left {
+    left: 10px;
+  }
+  
+  .carousel-arrow.right {
+    right: 10px;
+  }
+  
+  .carousel-dots {
+    position: absolute;
+    bottom: 10px;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    gap: 5px;
+  }
+  
+  .carousel-dot {
+    width: 8px;
+    height: 8px;
+    background: #ddd;
+    border-radius: 50%;
+    cursor: pointer;
+  }
+  
+  .carousel-dot.active {
+    background: #007bff;
+  }
+  
+  .listing-details {
+    padding: 10px;
+  }
+  
+  .listing-details-content {
+    display: flex;
+    justify-content: space-between;
+  }
+  
+  .listing-details-left {
+    flex: 1;
+  }
+  
+  .listing-details-right {
+    flex: 1;
+  }
+  
+  .price {
+    color: #007bff;
+    font-size: 18px;
+  }
+  
+  .location, .deal-type, .spec-property-type {
+    margin: 5px 0;
+  }
+  
+  .listing-specs {
+    display: flex;
+    gap: 10px;
+  }
+  
+  .spec-value {
+    font-weight: bold;
+  }
+  
+  .spec-label {
+    font-size: 12px;
+    color: #666;
+  }
+  
+  .description {
+    margin: 10px 0;
+  }
+  
+  .realtor-info {
+    font-size: 14px;
+    color: #666;
+  }
+  
+  .no-results {
+    text-align: center;
+    color: red;
+    font-size: 18px;
+  }
+  
+  .scroll-to-top-btn {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    padding: 10px 15px;
+    background: #007bff;
+    color: #fff;
+    border: none;
+    border-radius: 50%;
+    cursor: pointer;
+    display: none;
+  }
+  
+  .scroll-to-top-btn.visible {
+    display: block;
+  }
+  
+  .about-container {
+    max-width: 600px;
+    margin: 0 auto;
+    text-align: center;
+  }
+  
+  .about-container h2 {
+    margin-top: 20px;
+  }
+  
+  .admin-panel {
+    max-width: 600px;
+    margin: 0 auto;
+  }
+  
+  .admin-form {
+    display: grid;
+    gap: 10px;
+  }
+  
+  .admin-form input,
+  .admin-form select,
+  .admin-form textarea,
+  .admin-form button {
+    padding: 10px;
+    border: 1px solid #ddd;
+  }
+  
+  .admin-form button {
+    background: #007bff;
+    color: #fff;
+    cursor: pointer;
+  }
+  
+  .admin-form button:hover {
+    background: #0056b3;
+  }
+  
+  .admin-list {
+    list-style: none;
+    padding: 0;
+  }
+  
+  .admin-list li {
+    padding: 10px;
+    border-bottom: 1px solid #ddd;
+    display: flex;
+    justify-content: space-between;
+  }
+  
+  .admin-list button {
+    padding: 5px 10px;
+    margin-left: 10px;
+    cursor: pointer;
+  }
+  
+  .admin-list button:nth-child(1) {
+    background: #007bff;
+    color: #fff;
+  }
+  
+  .admin-list button:nth-child(2) {
+    background: #dc3545;
+    color: #fff;
+  }
