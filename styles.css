@@ -7,7 +7,6 @@ body {
   padding: 0;
   background-color: #FFFFFF;
   color: #000000;
-  -webkit-text-size-adjust: 100%; /* Предотвращает масштабирование шрифтов на iOS */
 }
 
 body[lang="zh"] {
@@ -17,9 +16,9 @@ body[lang="zh"] {
 .listings {
   max-width: 1440px;
   margin: 0 auto;
-  padding: 20px 15px; /* Уменьшил отступы для мобильных */
+  padding: 40px 80px;
   box-sizing: border-box;
-  min-height: calc(100vh - 80px); /* Уменьшил минимальную высоту */
+  min-height: calc(100vh - 120px);
 }
 
 /* Header styles */
@@ -32,22 +31,20 @@ body[lang="zh"] {
 .listings-header-container {
   max-width: 1440px;
   margin: 0 auto;
-  padding: 10px 0; /* Уменьшил отступы */
+  padding: 15px 0;
   display: flex;
   justify-content: space-between;
   align-items: center;
-  flex-wrap: wrap; /* Разрешаем перенос для мобильных */
 }
 
 .listings-header-left {
   display: flex;
   align-items: center;
-  gap: 8px; /* Уменьшил зазор */
-  margin-bottom: 8px; /* Добавил отступ для мобильных */
+  gap: 15px;
 }
 
 .listings-header-title h3 {
-  font-size: 20px; /* Уменьшил шрифт */
+  font-size: 24px;
   font-weight: 700;
   color: #000000;
   margin: 0;
@@ -58,13 +55,13 @@ body[lang="zh"] .listings-header-title h3 {
 }
 
 .listings-header-about {
-  font-size: 12px; /* Уменьшил шрифт */
+  font-size: 14px;
   font-weight: 600;
   color: #000000;
   text-decoration: none;
-  padding: 5px 10px; /* Уменьшил отступы */
+  padding: 8px 16px;
   border: 1px solid #E5E5E5;
-  border-radius: 6px; /* Уменьшил радиус */
+  border-radius: 8px;
   transition: background-color 0.3s ease;
 }
 
@@ -79,7 +76,7 @@ body[lang="zh"] .listings-header-about {
 .listings-header-actions {
   display: flex;
   align-items: center;
-  gap: 8px; /* Уменьшил зазор */
+  gap: 15px;
 }
 
 .listings-dropdown {
@@ -87,19 +84,19 @@ body[lang="zh"] .listings-header-about {
 }
 
 .listings-dropdown-btn {
-  padding: 5px 10px; /* Уменьшил отступы */
+  padding: 8px 16px;
   background-color: #fff;
   border: 1px solid #E5E5E5;
-  border-radius: 6px; /* Уменьшил радиус */
-  font-size: 12px; /* Уменьшил шрифт */
+  border-radius: 8px;
+  font-size: 14px;
   font-weight: 600;
   color: #000000;
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 3px; /* Уменьшил зазор */
-  min-width: 100px; /* Уменьшил минимальную ширину */
+  gap: 5px;
+  min-width: 150px;
   white-space: nowrap;
   transition: all 0.3s ease;
 }
@@ -119,8 +116,8 @@ body[lang="zh"] .listings-dropdown-btn {
   left: 0;
   background-color: #fff;
   border: 1px solid #E5E5E5;
-  border-radius: 6px; /* Уменьшил радиус */
-  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.1); /* Уменьшил тень */
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
   z-index: 1000;
   width: 100%;
   box-sizing: border-box;
@@ -131,14 +128,14 @@ body[lang="zh"] .listings-dropdown-btn {
 }
 
 .listings-dropdown-item {
-  padding: 6px 10px; /* Уменьшил отступы */
-  font-size: 12px; /* Уменьшил шрифт */
+  padding: 10px 15px;
+  font-size: 14px;
   color: #000000;
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 3px; /* Уменьшил зазор */
+  gap: 5px;
   white-space: nowrap;
 }
 
@@ -159,12 +156,12 @@ body[lang="zh"] .listings-dropdown-item {
   flex-direction: column;
   justify-content: center;
   align-items: stretch;
-  margin: 10px 0; /* Уменьшил отступ */
+  margin: 20px 0;
 }
 
 .offer .search-bar {
   background-color: transparent;
-  padding: 8px 0; /* Уменьшил отступ */
+  padding: 15px 0 5px 0;
   margin: 0;
   width: 100%;
   box-sizing: border-box;
@@ -193,10 +190,10 @@ body[lang="zh"] .listings-dropdown-item {
   gap: 0;
   background-color: #FFFFFF;
   border: 1px solid #D0D0D0;
-  border-radius: 6px; /* Уменьшил радиус */
-  padding: 2px; /* Увеличил для сенсорного управления */
+  border-radius: 8px;
+  padding: 1px;
   flex-grow: 1;
-  flex-wrap: wrap; /* Разрешаем перенос для мобильных */
+  flex-wrap: nowrap;
   justify-content: space-between;
   box-sizing: border-box;
   position: relative;
@@ -210,7 +207,7 @@ body[lang="zh"] .listings-dropdown-item {
   transform: translateY(-50%);
   right: 0;
   width: 1px;
-  height: 20px;
+  height: 24px;
   background-color: #D0D0D0;
   z-index: 1;
 }
@@ -218,8 +215,8 @@ body[lang="zh"] .listings-dropdown-item {
 .offer .offer-title.centered {
   flex: 0 0 auto;
   text-align: center;
-  padding: 6px 0; /* Уменьшил отступ */
-  font-size: 20px; /* Уменьшил шрифт */
+  padding: 10px 0;
+  font-size: 32px;
   font-weight: 700;
   color: #000000;
   margin: 0;
@@ -235,18 +232,17 @@ body[lang="zh"] .offer .offer-title.centered {
   display: flex;
   align-items: center;
   padding: 0;
-  font-size: 12px; /* Уменьшил шрифт */
+  font-size: 14px;
   font-weight: 400;
   color: #222;
   cursor: pointer;
-  flex: 1 1 100%; /* Полная ширина на мобильных */
-  min-width: 80px; /* Уменьшил минимальную ширину */
-  height: 36px; /* Уменьшил высоту */
+  flex: 1 1 auto;
+  min-width: 120px;
+  height: 40px;
   box-sizing: border-box;
   line-height: 1;
   border: none;
-  border-radius: 6px 0 0 6px; /* Уменьшил радиус */
-  margin-bottom: 2px; /* Добавил отступ для мобильных */
+  border-radius: 8px 0 0 8px;
 }
 
 body[lang="zh"] .offer .location-selector {
@@ -255,23 +251,23 @@ body[lang="zh"] .offer .location-selector {
 
 .offer .location-part {
   flex: 1;
-  padding: 0 5px; /* Уменьшил отступы */
+  padding: 0;
   justify-content: center;
   position: relative;
   display: flex;
   align-items: center;
   min-width: 0;
-  gap: 2px; /* Уменьшил зазор */
+  gap: 4px;
   height: 100%;
   transition: background-color 0.3s ease;
 }
 
 .offer .location-part.country {
-  padding-left: 5px;
+  padding-left: 8px;
 }
 
 .offer .location-part.city {
-  padding-right: 5px;
+  padding-right: 8px;
 }
 
 .offer .location-part:hover {
@@ -281,12 +277,12 @@ body[lang="zh"] .offer .location-selector {
 .offer .location-text {
   color: #222;
   white-space: nowrap;
-  font-size: 12px; /* Уменьшил шрифт */
+  font-size: 14px;
   font-weight: 400;
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 2px; /* Уменьшил зазор */
+  gap: 4px;
   flex-shrink: 0;
   width: 100%;
   height: 100%;
@@ -304,17 +300,16 @@ body[lang="zh"] .offer .location-text {
   display: flex;
   align-items: center;
   padding: 0;
-  font-size: 12px; /* Уменьшил шрифт */
+  font-size: 14px;
   font-weight: 400;
   color: #222;
   cursor: pointer;
-  flex: 1 1 100%; /* Полная ширина на мобильных */
-  min-width: 60px; /* Уменьшил минимальную ширину */
-  height: 36px; /* Уменьшил высоту */
+  flex: 1 1 auto;
+  min-width: 120px;
+  height: 40px;
   box-sizing: border-box;
   line-height: 1;
   border: none;
-  margin-bottom: 2px; /* Добавил отступ для мобильных */
 }
 
 body[lang="zh"] .offer .deal-type-selector,
@@ -325,13 +320,13 @@ body[lang="zh"] .offer .property-type-selector {
 .offer .deal-type-part,
 .offer .property-type-part {
   flex: 1;
-  padding: 0 5px; /* Уменьшил отступы */
+  padding: 0 8px;
   justify-content: center;
   position: relative;
   display: flex;
   align-items: center;
   min-width: 0;
-  gap: 2px; /* Уменьшил зазор */
+  gap: 4px;
   height: 100%;
   transition: background-color 0.3s ease;
 }
@@ -345,12 +340,12 @@ body[lang="zh"] .offer .property-type-selector {
 .offer .property-type-text {
   color: #222;
   white-space: nowrap;
-  font-size: 12px; /* Уменьшил шрифт */
+  font-size: 14px;
   font-weight: 400;
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 2px; /* Уменьшил зазор */
+  gap: 4px;
   flex-shrink: 0;
   width: 100%;
   height: 100%;
@@ -367,13 +362,13 @@ body[lang="zh"] .offer .property-type-text {
 .offer .property-type-dropdown {
   display: none;
   position: absolute;
-  top: calc(100% + 2px); /* Уменьшил отступ */
+  top: calc(100% + 4px);
   left: -1px;
   right: -1px;
   background-color: #fff;
   border: 1px solid #D0D0D0;
-  border-radius: 6px; /* Уменьшил радиус */
-  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.1); /* Уменьшил тень */
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
   z-index: 1000;
   box-sizing: border-box;
 }
@@ -385,8 +380,8 @@ body[lang="zh"] .offer .property-type-text {
 
 .offer .deal-type-option,
 .offer .property-type-option {
-  padding: 5px 10px; /* Уменьшил отступы */
-  font-size: 12px; /* Уменьшил шрифт */
+  padding: 8px 16px;
+  font-size: 14px;
   font-weight: 400;
   color: #222;
   cursor: pointer;
@@ -408,23 +403,23 @@ body[lang="zh"] .offer .property-type-option {
 }
 
 .offer .search-btn {
-  padding: 0 8px; /* Уменьшил отступы */
+  padding: 0 12px;
   background-color: #6B2D5C;
   color: #FFFFFF;
   border: 1px solid #D0D0D0;
-  border-radius: 0 6px 6px 0; /* Уменьшил радиус */
-  font-size: 12px; /* Уменьшил шрифт */
+  border-radius: 0 8px 8px 0;
+  font-size: 14px;
   font-weight: 600;
   cursor: pointer;
   transition: background-color 0.3s ease;
-  height: 36px; /* Уменьшил высоту */
+  height: 40px;
   box-sizing: border-box;
-  min-width: 80px; /* Уменьшил минимальную ширину */
+  min-width: 120px;
   display: flex;
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1); /* Уменьшил тень */
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
 body[lang="zh"] .offer .search-btn {
@@ -458,18 +453,18 @@ body[lang="zh"] .offer .search-btn {
 
 .offer .modal-cities {
   width: 90vw;
-  max-width: 900px; /* Уменьшил максимальную ширину */
-  max-height: 65vh; /* Уменьшил максимальную высоту */
+  max-width: 1200px;
+  max-height: 80vh;
   background: linear-gradient(135deg, #ffffff 0%, #f9f9f9 100%);
-  border-radius: 10px; /* Уменьшил радиус */
+  border-radius: 16px;
   display: flex;
   flex-direction: column;
-  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.12); /* Уменьшил тень */
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
   animation: slideIn 0.3s ease-out;
 }
 
 @keyframes slideIn {
-  from { transform: translateY(15px); opacity: 0; }
+  from { transform: translateY(20px); opacity: 0; }
   to { transform: translateY(0); opacity: 1; }
 }
 
@@ -477,16 +472,16 @@ body[lang="zh"] .offer .search-btn {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 12px 15px; /* Уменьшил отступы */
+  padding: 20px 30px;
   border-bottom: 1px solid #E5E5E5;
   background-color: #fff;
-  border-top-left-radius: 10px;
-  border-top-right-radius: 10px;
+  border-top-left-radius: 16px;
+  border-top-right-radius: 16px;
 }
 
 .offer .modal-header h3 {
   margin: 0;
-  font-size: 16px; /* Уменьшил шрифт */
+  font-size: 20px;
   font-weight: 700;
   color: #222;
   text-transform: uppercase;
@@ -499,7 +494,7 @@ body[lang="zh"] .offer .modal-header h3 {
 .offer .modal-close {
   background: none;
   border: none;
-  font-size: 18px; /* Уменьшил шрифт */
+  font-size: 24px;
   cursor: pointer;
   color: #666;
   transition: color 0.3s ease;
@@ -511,18 +506,18 @@ body[lang="zh"] .offer .modal-header h3 {
 
 .offer .modal-search-container {
   position: relative;
-  margin: 12px 15px; /* Уменьшил отступы */
+  margin: 20px 30px;
 }
 
 .offer .modal-search {
-  padding: 0 8px 0 30px; /* Уменьшил отступы */
+  padding: 0 12px 0 40px;
   border: 1px solid #D0D0D0;
-  border-radius: 6px; /* Уменьшил радиус */
-  font-size: 12px; /* Уменьшил шрифт */
+  border-radius: 8px;
+  font-size: 14px;
   font-weight: 400;
   color: #222;
   width: 100%;
-  height: 32px; /* Уменьшил высоту */
+  height: 40px;
   box-sizing: border-box;
   background-color: #fff;
   transition: border-color 0.3s ease;
@@ -549,31 +544,31 @@ body[lang="zh"] .offer .modal-search::placeholder {
 
 .offer .modal-search-icon {
   position: absolute;
-  left: 8px; /* Уменьшил отступ */
+  left: 12px;
   top: 50%;
   transform: translateY(-50%);
   color: #999;
-  font-size: 12px; /* Уменьшил шрифт */
+  font-size: 14px;
 }
 
 .offer .modal-content {
   flex: 1;
-  padding: 12px 15px; /* Уменьшил отступы */
+  padding: 20px 30px;
   background: linear-gradient(to bottom, rgba(255, 255, 251, 0) 90%, rgba(200, 200, 200, 0.2) 100%);
   overflow-y: auto;
-  max-height: 250px; /* Уменьшил максимальную высоту */
+  max-height: 400px;
 }
 
 .offer .cities-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(90px, 1fr)); /* Уменьшил минимальную ширину */
-  gap: 6px; /* Уменьшил зазор */
-  padding: 6px 0; /* Уменьшил отступ */
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 10px;
+  padding: 10px 0;
 }
 
 .offer .modal-item.city-item {
-  padding: 5px 8px; /* Уменьшил отступы */
-  font-size: 12px; /* Уменьшил шрифт */
+  padding: 8px 12px;
+  font-size: 14px;
   font-weight: 400;
   color: #222;
   cursor: pointer;
@@ -581,10 +576,10 @@ body[lang="zh"] .offer .modal-search::placeholder {
   align-items: center;
   justify-content: center;
   border: 1px solid #D0D0D0;
-  border-radius: 4px; /* Уменьшил радиус */
+  border-radius: 8px;
   background-color: #fff;
   transition: background 0.3s ease;
-  height: 32px; /* Уменьшил высоту */
+  height: 40px;
   text-align: center;
   white-space: nowrap;
   overflow: hidden;
@@ -608,23 +603,23 @@ body[lang="zh"] .offer .modal-item.city-item {
 .offer .modal-footer {
   display: flex;
   justify-content: flex-end;
-  gap: 6px; /* Уменьшил зазор */
-  padding: 10px 15px; /* Уменьшил отступы */
+  gap: 10px;
+  padding: 15px 30px;
   border-top: 1px solid #E5E5E5;
   background-color: #fff;
-  border-bottom-left-radius: 10px;
-  border-bottom-right-radius: 10px;
+  border-bottom-left-radius: 16px;
+  border-bottom-right-radius: 16px;
 }
 
 .offer .modal-btn {
-  padding: 0 8px; /* Уменьшил отступы */
-  border-radius: 4px; /* Уменьшил радиус */
-  font-size: 12px; /* Уменьшил шрифт */
+  padding: 0 12px;
+  border-radius: 8px;
+  font-size: 14px;
   font-weight: 600;
   cursor: pointer;
   transition: background-color 0.3s ease;
   text-transform: capitalize;
-  height: 32px; /* Уменьшил высоту */
+  height: 40px;
   border: 1px solid #D0D0D0;
   color: #222;
 }
@@ -653,15 +648,15 @@ body[lang="zh"] .offer .modal-btn {
 .listings-container {
   max-width: 1440px;
   margin: 0 auto;
-  margin-top: 20px; /* Уменьшил отступ */
+  margin-top: 40px;
 }
 
 /* Listings list */
 .listings-list {
   display: flex;
   flex-direction: column;
-  gap: 15px; /* Уменьшил зазор */
-  margin-top: 10px; /* Уменьшил отступ */
+  gap: 30px;
+  margin-top: 20px;
 }
 
 /* Listing card */
@@ -670,29 +665,24 @@ body[lang="zh"] .offer .modal-btn {
   flex-direction: row;
   position: relative;
   max-width: 100%;
-  border: 1px solid transparent; /* Уменьшил толщину границы */
-  border-radius: 10px; /* Уменьшил радиус */
+  border: 2px solid transparent;
+  border-radius: 16px;
   transition: border-color 0.3s ease, box-shadow 0.3s ease;
-  gap: 10px; /* Уменьшил зазор */
-  min-height: 200px; /* Уменьшил минимальную высоту */
-  height: auto; /* Динамическая высота */
+  gap: 20px;
+  min-height: 316px;
+  height: 316px;
   background-color: #FFFFFF;
-}
-
-.listing-card.mobile {
-  flex-direction: column; /* Вертикальный макет на мобильных */
-  min-height: 250px;
 }
 
 .listing-card:hover {
   border-color: #E5E5E5;
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1); /* Уменьшил тень */
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
 }
 
 .listing-card:not(:last-child)::after {
   content: '';
   position: absolute;
-  bottom: -8px; /* Уменьшил отступ */
+  bottom: -15px;
   left: 0;
   width: 100%;
   height: 1px;
@@ -703,14 +693,9 @@ body[lang="zh"] .offer .modal-btn {
 .listing-image-wrapper {
   display: flex;
   flex-direction: row;
-  width: 100%; /* Гибкая ширина */
+  width: 474px;
   flex-shrink: 0;
-  gap: 5px; /* Уменьшил зазор */
-}
-
-.listing-image-wrapper.mobile {
-  flex-direction: column; /* Миниатюры под основным изображением */
-  gap: 3px;
+  gap: 10px;
 }
 
 /* Image container */
@@ -718,7 +703,7 @@ body[lang="zh"] .offer .modal-btn {
   position: relative;
   width: 100%;
   aspect-ratio: 3 / 2;
-  border-radius: 10px; /* Уменьшил радиус */
+  border-radius: 16px;
   overflow: hidden;
 }
 
@@ -738,8 +723,8 @@ body[lang="zh"] .offer .modal-btn {
   color: #FFFFFF;
   border: none;
   border-radius: 50%;
-  width: 25px; /* Уменьшил размер */
-  height: 25px; /* Уменьшил размер */
+  width: 40px;
+  height: 40px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -753,30 +738,30 @@ body[lang="zh"] .offer .modal-btn {
 }
 
 .image-nav-left {
-  left: 5px; /* Уменьшил отступ */
+  left: 10px;
 }
 
 .image-nav-right {
-  right: 5px; /* Уменьшил отступ */
+  right: 10px;
 }
 
 .image-nav-button span {
-  font-size: 14px; /* Уменьшил шрифт */
+  font-size: 20px;
 }
 
 /* Image dots */
 .image-dots {
   position: absolute;
-  bottom: 5px; /* Уменьшил отступ */
+  bottom: 10px;
   left: 50%;
   transform: translateX(-50%);
   display: flex;
-  gap: 4px; /* Уменьшил зазор */
+  gap: 8px;
 }
 
 .image-dot {
-  width: 6px; /* Уменьшил размер */
-  height: 6px; /* Уменьшил размер */
+  width: 10px;
+  height: 10px;
   background-color: rgba(255, 255, 255, 0.5);
   border-radius: 50%;
   cursor: pointer;
@@ -795,18 +780,10 @@ body[lang="zh"] .offer .modal-btn {
 .listing-thumbnails {
   display: flex;
   flex-direction: column;
-  gap: 4px; /* Уменьшил зазор */
-  width: 60px; /* Уменьшил ширину */
-  max-height: 200px; /* Уменьшил максимальную высоту */
+  gap: 8px;
+  width: 80px;
+  max-height: 316px;
   overflow-y: auto;
-}
-
-.listing-thumbnails.mobile {
-  flex-direction: row;
-  width: 100%;
-  max-height: 50px; /* Ограничил высоту для горизонтального скролла */
-  overflow-x: auto;
-  overflow-y: hidden;
 }
 
 .thumbnail-image {
@@ -814,7 +791,7 @@ body[lang="zh"] .offer .modal-btn {
   aspect-ratio: 3 / 2;
   object-fit: cover;
   cursor: pointer;
-  border-radius: 4px; /* Уменьшил радиус */
+  border-radius: 8px;
   transition: opacity 0.3s ease, border 0.3s ease;
 }
 
@@ -824,40 +801,40 @@ body[lang="zh"] .offer .modal-btn {
 
 .thumbnail-image.active {
   opacity: 0.6;
-  border: 1px solid #6B2D5C; /* Уменьшил толщину границы */
+  border: 2px solid #6B2D5C;
 }
 
 /* Listing details */
 .listing-details {
-  padding: 5px 0; /* Уменьшил отступы */
+  padding: 10px 0;
   flex-grow: 1;
   box-sizing: border-box;
   display: flex;
   flex-direction: row;
-  gap: 10px; /* Уменьшил зазор */
-  height: auto; /* Динамическая высота */
+  gap: 20px;
+  height: 100%;
 }
 
 .listing-details-header {
   display: flex;
   flex-direction: column;
   flex: 1;
-  min-width: 120px; /* Уменьшил минимальную ширину */
+  min-width: 200px;
 }
 
 .listing-details-content {
   display: flex;
   flex-direction: column;
   flex: 1;
-  min-width: 120px; /* Уменьшил минимальную ширину */
+  min-width: 200px;
   justify-content: center;
 }
 
 .listing-title {
-  font-size: 16px; /* Уменьшил шрифт */
+  font-size: 20px;
   font-weight: 600;
-  margin: 0 0 4px; /* Уменьшил отступ */
-  line-height: 1.2; /* Уменьшил высоту строки */
+  margin: 0 0 6px;
+  line-height: 1.4;
   color: #222;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -868,15 +845,15 @@ body[lang="zh"] .offer .modal-btn {
 
 body[lang="zh"] .listing-title {
   font-family: 'Noto Serif SC', serif;
-  font-size: 14px; /* Уменьшил шрифт */
+  font-size: 18px;
 }
 
 .listing-details .price {
-  font-size: 14px; /* Уменьшил шрифт */
+  font-size: 18px;
   font-weight: 600;
   color: #6B2D5C;
-  margin: 0 0 4px; /* Уменьшил отступ */
-  line-height: 1.2; /* Уменьшил высоту строки */
+  margin: 0 0 6px;
+  line-height: 1.4;
 }
 
 body[lang="zh"] .listing-details .price {
@@ -884,10 +861,10 @@ body[lang="zh"] .listing-details .price {
 }
 
 .listing-details .location {
-  font-size: 11px; /* Уменьшил шрифт */
+  font-size: 14px;
   color: #666;
-  margin: 0 0 6px; /* Уменьшил отступ */
-  line-height: 1.2; /* Уменьшил высоту строки */
+  margin: 0 0 10px;
+  line-height: 1.4;
 }
 
 body[lang="zh"] .listing-details .location {
@@ -895,17 +872,17 @@ body[lang="zh"] .listing-details .location {
 }
 
 .listing-details .description {
-  font-size: 10px; /* Уменьшил шрифт */
+  font-size: 13px;
   color: #333;
-  margin: 0 0 5px; /* Уменьшил отступ */
-  line-height: 1.3; /* Чуть увеличил для читаемости */
+  margin: 0 0 8px;
+  line-height: 1.5;
   text-align: center;
   display: -webkit-box;
-  -webkit-line-clamp: 2; /* Ограничил до 2 строк */
+  -webkit-line-clamp: 3;
   -webkit-box-orient: vertical;
   overflow: hidden;
   text-overflow: ellipsis;
-  padding-right: 4px; /* Уменьшил отступ */
+  padding-right: 10px; /* Добавлен отступ справа */
 }
 
 body[lang="zh"] .listing-details .description {
@@ -918,10 +895,10 @@ body[lang="zh"] .listing-details .description {
 }
 
 .realtor-title {
-  font-size: 11px; /* Уменьшил шрифт */
+  font-size: 14px;
   font-weight: 600;
   color: #222;
-  margin: 0 0 2px; /* Уменьшил отступ */
+  margin: 0 0 4px;
   text-align: center;
 }
 
@@ -930,10 +907,10 @@ body[lang="zh"] .realtor-title {
 }
 
 .realtor-name {
-  font-size: 10px; /* Уменьшил шрифт */
+  font-size: 13px;
   font-weight: 400;
   color: #333;
-  margin: 0 0 2px; /* Уменьшил отступ */
+  margin: 0 0 4px;
   text-align: center;
 }
 
@@ -942,9 +919,9 @@ body[lang="zh"] .realtor-name {
 }
 
 .realtor-email {
-  font-size: 9px; /* Уменьшил шрифт */
+  font-size: 12px;
   color: #6B2D5C;
-  margin: 0 0 1px; /* Уменьшил отступ */
+  margin: 0;
   text-align: center;
 }
 
@@ -953,7 +930,7 @@ body[lang="zh"] .realtor-email {
 }
 
 .realtor-phone {
-  font-size: 9px; /* Уменьшил шрифт */
+  font-size: 12px;
   color: #6B2D5C;
   margin: 0;
   text-align: center;
@@ -967,9 +944,9 @@ body[lang="zh"] .realtor-phone {
 .listing-specs {
   display: grid;
   grid-template-columns: repeat(2, auto);
-  gap: 6px 12px; /* Уменьшил зазоры */
+  gap: 10px 20px;
   width: fit-content;
-  margin-bottom: 6px; /* Уменьшил отступ */
+  margin-bottom: 10px;
 }
 
 .listing-specs span {
@@ -983,15 +960,15 @@ body[lang="zh"] .realtor-phone {
 .spec-deal-type {
   grid-column: 1 / 3;
   display: block;
-  font-size: 10px; /* Уменьшил шрифт */
+  font-size: 14px;
   font-weight: 700;
   color: #FFFFFF;
   background-color: #6B2D5C;
-  padding: 2px 6px; /* Уменьшил отступы */
-  border-radius: 6px; /* Уменьшил радиус */
+  padding: 3px 10px;
+  border-radius: 10px;
   text-transform: uppercase;
   width: fit-content;
-  margin-bottom: 4px; /* Уменьшил отступ */
+  margin-bottom: 6px;
 }
 
 body[lang="zh"] .spec-property-type,
@@ -1000,10 +977,10 @@ body[lang="zh"] .spec-deal-type {
 }
 
 .spec-value {
-  font-size: 12px; /* Уменьшил шрифт */
+  font-size: 16px;
   font-weight: 600;
   color: #222;
-  margin-bottom: 1px; /* Уменьшил отступ */
+  margin-bottom: 2px;
 }
 
 body[lang="zh"] .spec-value {
@@ -1011,7 +988,7 @@ body[lang="zh"] .spec-value {
 }
 
 .spec-label {
-  font-size: 8px; /* Уменьшил шрифт */
+  font-size: 10px;
   color: #666;
   text-transform: lowercase;
 }
@@ -1022,16 +999,16 @@ body[lang="zh"] .spec-label {
 
 /* About page */
 .about-page {
-  max-width: 100%; /* Полная ширина на мобильных */
-  margin: 20px auto; /* Уменьшил отступы */
-  padding: 10px; /* Уменьшил отступы */
+  max-width: 800px;
+  margin: 40px auto;
+  padding: 20px;
 }
 
 .about-page h1 {
-  font-size: 20px; /* Уменьшил шрифт */
+  font-size: 32px;
   font-weight: 700;
   color: #222;
-  margin-bottom: 15px; /* Уменьшил отступ */
+  margin-bottom: 20px;
 }
 
 body[lang="zh"] .about-page h1 {
@@ -1039,14 +1016,14 @@ body[lang="zh"] .about-page h1 {
 }
 
 .about-section {
-  margin-bottom: 20px; /* Уменьшил отступ */
+  margin-bottom: 40px;
 }
 
 .about-section h2 {
-  font-size: 18px; /* Уменьшил шрифт */
+  font-size: 24px;
   font-weight: 600;
   color: #222;
-  margin-bottom: 10px; /* Уменьшил отступ */
+  margin-bottom: 15px;
 }
 
 body[lang="zh"] .about-section h2 {
@@ -1054,10 +1031,10 @@ body[lang="zh"] .about-section h2 {
 }
 
 .about-section h3 {
-  font-size: 14px; /* Уменьшил шрифт */
+  font-size: 18px;
   font-weight: 600;
   color: #222;
-  margin: 15px 0 8px; /* Уменьшил отступы */
+  margin: 20px 0 10px;
 }
 
 body[lang="zh"] .about-section h3 {
@@ -1065,10 +1042,10 @@ body[lang="zh"] .about-section h3 {
 }
 
 .about-section p {
-  font-size: 12px; /* Уменьшил шрифт */
+  font-size: 16px;
   color: #333;
-  line-height: 1.5; /* Увеличил для читаемости */
-  margin-bottom: 10px; /* Уменьшил отступ */
+  line-height: 1.6;
+  margin-bottom: 15px;
 }
 
 body[lang="zh"] .about-section p {
@@ -1077,14 +1054,14 @@ body[lang="zh"] .about-section p {
 
 .about-section ul {
   list-style-type: disc;
-  padding-left: 15px; /* Уменьшил отступ */
+  padding-left: 20px;
 }
 
 .about-section li {
-  font-size: 12px; /* Уменьшил шрифт */
+  font-size: 16px;
   color: #333;
-  line-height: 1.5; /* Увеличил для читаемости */
-  margin-bottom: 8px; /* Уменьшил отступ */
+  line-height: 1.6;
+  margin-bottom: 10px;
 }
 
 body[lang="zh"] .about-section li {
@@ -1097,22 +1074,22 @@ body[lang="zh"] .about-section li {
   color: #FFFFFF;
   padding: 0;
   width: 100%;
-  margin-top: 20px; /* Уменьшил отступ */
+  margin-top: 40px;
 }
 
 .footer-container {
   max-width: 1440px;
   margin: 0 auto;
-  padding: 15px; /* Уменьшил отступы */
-  display: flex;
-  flex-direction: column; /* Вертикальный макет на мобильных */
-  gap: 15px; /* Уменьшил зазор */
+  padding: 40px 80px;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 30px;
 }
 
 .footer h3 {
-  font-size: 14px; /* Уменьшил шрифт */
+  font-size: 16px;
   font-weight: 700;
-  margin-bottom: 5px; /* Уменьшил отступ */
+  margin-bottom: 10px;
 }
 
 body[lang="zh"] .footer h3 {
@@ -1120,9 +1097,9 @@ body[lang="zh"] .footer h3 {
 }
 
 .footer p {
-  font-size: 10px; /* Уменьшил шрифт */
+  font-size: 12px;
   margin: 0;
-  line-height: 1.4; /* Увеличил для читаемости */
+  line-height: 1.5;
 }
 
 body[lang="zh"] .footer p {
@@ -1133,7 +1110,7 @@ body[lang="zh"] .footer p {
 .footer-disclaimer-link {
   color: #FFFFFF;
   text-decoration: underline;
-  font-size: 10px; /* Уменьшил шрифт */
+  font-size: 12px;
 }
 
 body[lang="zh"] .footer-about-link,
@@ -1147,8 +1124,8 @@ body[lang="zh"] .footer-disclaimer-link {
 }
 
 .footer-disclaimer {
-  font-size: 10px; /* Уменьшил шрифт */
-  line-height: 1.4; /* Увеличил для читаемости */
+  font-size: 12px;
+  line-height: 1.5;
 }
 
 body[lang="zh"] .footer-disclaimer {
@@ -1158,18 +1135,17 @@ body[lang="zh"] .footer-disclaimer {
 /* Scroll to top button */
 .scroll-to-top-btn {
   position: fixed;
-  bottom: 10px; /* Уменьшил отступ */
-  right: 10px; /* Уменьшил отступ */
-  padding: 8px 12px; /* Уменьшил отступы */
+  bottom: 20px;
+  right: 20px;
+  padding: 10px 15px;
   background: #6B2D5C;
   color: #FFFFFF;
   border: none;
   border-radius: 50%;
   cursor: pointer;
   display: none;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1); /* Уменьшил тень */
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
   transition: opacity 0.3s ease;
-  font-size: 12px; /* Уменьшил шрифт */
 }
 
 .scroll-to-top-btn.visible {
@@ -1183,97 +1159,97 @@ body[lang="zh"] .footer-disclaimer {
 /* Responsive styles */
 @media (max-width: 1024px) {
   .listings {
-    padding: 20px 30px; /* Уменьшил отступы */
+    padding: 40px 60px;
   }
 
   .listing-card {
-    gap: 12px; /* Уменьшил зазор */
-    height: 240px; /* Уменьшил высоту */
+    gap: 15px;
+    height: 266px;
   }
 
   .listing-image-wrapper {
-    width: 350px; /* Уменьшил ширину */
+    width: 400px;
   }
 
   .listing-thumbnails {
-    width: 60px; /* Уменьшил ширину */
-    max-height: 240px; /* Уменьшил максимальную высоту */
+    width: 70px;
+    max-height: 266px;
   }
 
   .listing-details {
-    gap: 12px; /* Уменьшил зазор */
+    gap: 15px;
   }
 
   .listing-title {
-    font-size: 16px; /* Уменьшил шрифт */
+    font-size: 18px;
   }
 
   body[lang="zh"] .listing-title {
-    font-size: 14px; /* Уменьшил шрифт */
+    font-size: 16px;
   }
 
   .listing-details .price {
-    font-size: 14px; /* Уменьшил шрифт */
+    font-size: 16px;
   }
 
   .listing-details .location {
-    font-size: 11px; /* Уменьшил шрифт */
+    font-size: 13px;
   }
 
   .listing-details .description {
-    font-size: 10px; /* Уменьшил шрифт */
-    -webkit-line-clamp: 2; /* Ограничил до 2 строк */
-    padding-right: 6px; /* Уменьшил отступ */
+    font-size: 12px;
+    -webkit-line-clamp: 2;
+    padding-right: 8px; /* Адаптивный отступ */
   }
 
   .realtor-title {
-    font-size: 11px; /* Уменьшил шрифт */
+    font-size: 13px;
   }
 
   .realtor-name {
-    font-size: 10px; /* Уменьшил шрифт */
+    font-size: 12px;
   }
 
   .realtor-email,
   .realtor-phone {
-    font-size: 9px; /* Уменьшил шрифт */
+    font-size: 11px;
   }
 
   .spec-property-type,
   .spec-deal-type {
-    font-size: 11px; /* Уменьшил шрифт */
-    padding: 2px 6px; /* Уменьшил отступы */
+    font-size: 13px;
+    padding: 2px 8px;
   }
 
   .spec-value {
-    font-size: 12px; /* Уменьшил шрифт */
+    font-size: 14px;
   }
 
   .spec-label {
-    font-size: 8px; /* Уменьшил шрифт */
+    font-size: 9px;
   }
 
   .footer-container {
-    padding: 20px 30px; /* Уменьшил отступы */
+    padding: 40px 60px;
   }
 }
 
 @media (max-width: 768px) {
   .listings {
-    padding: 15px; /* Уменьшил отступы */
+    padding: 40px;
   }
 
   .listing-card {
     flex-direction: column;
-    gap: 10px; /* Уменьшил зазор */
+    gap: 10px;
     height: auto;
-    min-height: 300px; /* Уменьшил минимальную высоту */
+    min-height: 400px;
   }
 
   .listing-image-wrapper {
     width: 100%;
     flex-direction: column;
-    gap: 5px; /* Уменьшил зазор */
+    gap: 8px;
   }
 
   .listing-image-container {
@@ -1283,20 +1259,20 @@ body[lang="zh"] .footer-disclaimer {
   .listing-thumbnails {
     flex-direction: row;
     width: 100%;
-    max-height: 60px; /* Ограничил высоту */
+    max-height: 80px;
     overflow-x: auto;
     overflow-y: hidden;
   }
 
   .thumbnail-image {
-    width: 100px; /* Уменьшил ширину */
+    width: 120px;
     flex-shrink: 0;
   }
 
   .listing-details {
-    padding: 5px 0; /* Уменьшил отступы */
+    padding: 10px 0;
     flex-direction: column;
-    gap: 8px; /* Уменьшил зазор */
+    gap: 10px;
   }
 
   .listing-details-header,
@@ -1305,13 +1281,13 @@ body[lang="zh"] .footer-disclaimer {
   }
 
   .listing-specs {
-    gap: 6px 10px; /* Уменьшил зазоры */
+    gap: 8px 15px;
   }
 
   .offer .filter-container {
     flex-wrap: wrap;
-    gap: 4px; /* Уменьшил зазор */
-    padding: 4px; /* Уменьшил отступ */
+    gap: 8px;
+    padding: 8px;
   }
 
   .offer .filter-container > *::after {
@@ -1326,36 +1302,40 @@ body[lang="zh"] .footer-disclaimer {
     flex: 1 1 100%;
     min-width: 100%;
     border: 1px solid #D0D0D0;
-    border-radius: 6px; /* Уменьшил радиус */
+    border-radius: 8px;
   }
 
   .offer .search-btn {
-    margin-top: 4px; /* Уменьшил отступ */
-    min-width: 80px; /* Уменьшил минимальную ширину */
+    margin-top: 8px;
+    min-width: 120px;
   }
 
   .offer .modal-cities {
     width: 90%;
-    max-height: 65vh; /* Уменьшил максимальную высоту */
+    max-height: 80vh;
   }
 
   .offer .cities-grid {
-    grid-template-columns: repeat(auto-fit, minmax(100px, 1fr)); /* Уменьшил минимальную ширину */
+    grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
   }
 
   .footer-container {
-    padding: 15px; /* Уменьшил отступы */
+    padding: 40px;
+  }
+
+  .listing-details .description {
+    padding-right: 6px; /* Адаптивный отступ */
   }
 }
 
 @media (max-width: 480px) {
   .listings {
-    padding: 10px; /* Уменьшил отступы */
+    padding: 20px;
   }
 
   .listing-card {
-    gap: 8px; /* Уменьшил зазор */
-    min-height: 200px; /* Уменьшил минимальную высоту */
+    gap: 8px;
+    min-height: 350px;
   }
 
   .listing-image-container {
@@ -1363,237 +1343,117 @@ body[lang="zh"] .footer-disclaimer {
   }
 
   .listing-thumbnails {
-    max-height: 50px; /* Уменьшил максимальную высоту */
+    max-height: 60px;
   }
 
   .thumbnail-image {
-    width: 80px; /* Уменьшил ширину */
-    min-width: 80px; /* Уменьшил минимальную ширину */
+    width: 100px;
+    min-width: 100px;
   }
 
   .listing-title {
-    font-size: 14px; /* Уменьшил шрифт */
+    font-size: 16px;
   }
 
   body[lang="zh"] .listing-title {
-    font-size: 12px; /* Уменьшил шрифт */
+    font-size: 14px;
   }
 
   .listing-details .price {
-    font-size: 12px; /* Уменьшил шрифт */
+    font-size: 14px;
   }
 
   .listing-details .location {
-    font-size: 10px; /* Уменьшил шрифт */
+    font-size: 12px;
   }
 
   .listing-details .description {
-    font-size: 9px; /* Уменьшил шрифт */
-    -webkit-line-clamp: 1; /* Ограничил до 1 строки для компактности */
-    padding-right: 3px; /* Уменьшил отступ */
+    font-size: 11px;
+    -webkit-line-clamp: 2;
+    padding-right: 5px; /* Адаптивный отступ */
   }
 
   .realtor-title {
-    font-size: 10px; /* Уменьшил шрифт */
+    font-size: 12px;
   }
 
   .realtor-name {
-    font-size: 9px; /* Уменьшил шрифт */
+    font-size: 11px;
   }
 
   .realtor-email,
   .realtor-phone {
-    font-size: 8px; /* Уменьшил шрифт */
+    font-size: 10px;
   }
 
   .spec-property-type,
   .spec-deal-type {
-    font-size: 9px; /* Уменьшил шрифт */
-    padding: 1px 5px; /* Уменьшил отступы */
+    font-size: 12px;
+    padding: 2px 8px;
   }
 
   .spec-value {
-    font-size: 10px; /* Уменьшил шрифт */
+    font-size: 12px;
   }
 
   .spec-label {
-    font-size: 7px; /* Уменьшил шрифт */
+    font-size: 8px;
   }
 
   .offer .filter-container {
-    padding: 2px; /* Уменьшил отступ */
+    padding: 6px;
   }
 
-  .offer .offer-title.centered {
-    font-size: 18px; /* Уменьшил шрифт */
+  .offer .offer-title {
+    font-size: 24px;
   }
 
   .offer .location-selector,
   .offer .deal-type-selector,
   .offer .property-type-selector,
   .offer .search-btn {
-    min-width: 70px; /* Уменьшил минимальную ширину */
-    font-size: 10px; /* Уменьшил шрифт */
-    padding: 0 8px; /* Уменьшил отступы */
-    height: 32px; /* Уменьшил высоту */
+    min-width: 100px;
+    font-size: 12px;
+    padding: 0 12px;
+    height: 40px;
   }
 
   .offer .search-btn {
-    height: 32px; /* Уменьшил высоту */
-  }
-
-  .offer .modal-cities {
-    max-height: 60vh; /* Уменьшил максимальную высоту */
-  }
-
-  .offer .cities-grid {
-    grid-template-columns: repeat(auto-fit, minmax(80px, 1fr)); /* Уменьшил минимальную ширину */
+    height: 40px;
   }
 
   .footer-container {
-    padding: 10px; /* Уменьшил отступы */
+    padding: 20px;
   }
 
   .footer h3 {
-    font-size: 12px; /* Уменьшил шрифт */
+    font-size: 14px;
   }
 
   .footer p,
   .footer-about-link,
   .footer-disclaimer-link {
-    font-size: 9px; /* Уменьшил шрифт */
+    font-size: 10px;
   }
 
   .about-page {
-    padding: 8px; /* Уменьшил отступы */
+    padding: 12px;
   }
 
   .about-page h1 {
-    font-size: 18px; /* Уменьшил шрифт */
+    font-size: 24px;
   }
 
   .about-section h2 {
-    font-size: 16px; /* Уменьшил шрифт */
+    font-size: 20px;
   }
 
   .about-section h3 {
-    font-size: 12px; /* Уменьшил шрифт */
+    font-size: 16px;
   }
 
   .about-section p,
   .about-section li {
-    font-size: 10px; /* Уменьшил шрифт */
-  }
-}
-
-@media (max-width: 320px) {
-  .listings {
-    padding: 5px; /* Минимальные отступы */
-  }
-
-  .listing-card {
-    min-height: 180px; /* Уменьшил минимальную высоту */
-  }
-
-  .thumbnail-image {
-    width: 60px; /* Уменьшил ширину */
-    min-width: 60px; /* Уменьшил минимальную ширину */
-  }
-
-  .listing-title {
-    font-size: 12px; /* Уменьшил шрифт */
-  }
-
-  body[lang="zh"] .listing-title {
-    font-size: 10px; /* Уменьшил шрифт */
-  }
-
-  .listing-details .price {
-    font-size: 10px; /* Уменьшил шрифт */
-  }
-
-  .listing-details .location {
-    font-size: 9px; /* Уменьшил шрифт */
-  }
-
-  .listing-details .description {
-    font-size: 8px; /* Уменьшил шрифт */
-    -webkit-line-clamp: 1; /* Ограничил до 1 строки */
-  }
-
-  .realtor-title {
-    font-size: 9px; /* Уменьшил шрифт */
-  }
-
-  .realtor-name {
-    font-size: 8px; /* Уменьшил шрифт */
-  }
-
-  .realtor-email,
-  .realtor-phone {
-    font-size: 7px; /* Уменьшил шрифт */
-  }
-
-  .spec-property-type,
-  .spec-deal-type {
-    font-size: 8px; /* Уменьшил шрифт */
-    padding: 1px 4px; /* Уменьшил отступы */
-  }
-
-  .spec-value {
-    font-size: 9px; /* Уменьшил шрифт */
-  }
-
-  .spec-label {
-    font-size: 6px; /* Уменьшил шрифт */
-  }
-
-  .offer .offer-title.centered {
-    font-size: 16px; /* Уменьшил шрифт */
-  }
-
-  .offer .location-selector,
-  .offer .deal-type-selector,
-  .offer .property-type-selector,
-  .offer .search-btn {
-    min-width: 60px; /* Уменьшил минимальную ширину */
-    font-size: 9px; /* Уменьшил шрифт */
-    padding: 0 6px; /* Уменьшил отступы */
-    height: 30px; /* Уменьшил высоту */
-  }
-
-  .offer .search-btn {
-    height: 30px; /* Уменьшил высоту */
-  }
-
-  .footer-container {
-    padding: 5px; /* Минимальные отступы */
-  }
-
-  .footer h3 {
-    font-size: 10px; /* Уменьшил шрифт */
-  }
-
-  .footer p,
-  .footer-about-link,
-  .footer-disclaimer-link {
-    font-size: 8px; /* Уменьшил шрифт */
-  }
-
-  .about-page h1 {
-    font-size: 16px; /* Уменьшил шрифт */
-  }
-
-  .about-section h2 {
-    font-size: 14px; /* Уменьшил шрифт */
-  }
-
-  .about-section h3 {
-    font-size: 10px; /* Уменьшил шрифт */
-  }
-
-  .about-section p,
-  .about-section li {
-    font-size: 9px; /* Уменьшил шрифт */
+    font-size: 12px;
   }
 }
