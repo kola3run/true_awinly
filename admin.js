@@ -29,7 +29,7 @@ if (!useState || !useEffect || !h) {
   console.log('React components available');
 }
 
-// Переводы
+// Translations
 const translations = {
   EN: {
     brand: "AWINLY",
@@ -62,6 +62,7 @@ const translations = {
     Shanghai: "Shanghai",
     Guangzhou: "Guangzhou",
     Shenzhen: "Shenzhen",
+    // Add more if needed, but since it's select, not necessary
   },
   zh: {
     brand: "AWINLY",
@@ -97,31 +98,30 @@ const translations = {
   },
 };
 
-// Моковые данные
-const initialProperties = [
-  {
-    id: 1,
-    title: "Property 1",
-    country: "China",
-    city: "Beijing",
-    priceCNY: 500000,
-    priceUSD: 71428,
-    propertyType: "Apartment",
-    dealType: "buy",
-    description: "A beautiful apartment in a prime location.",
-    area: 100,
-    rooms: 3,
-    yearBuilt: 2005,
-    images: ["https://picsum.photos/474/316?random=1"],
-    realtor: { name: "John Doe", email: "john.doe@awinly.com", phone: "+123-456-7890" },
-  },
+// Mock data
+const initialProperties = [];
+
+// Full cities list for admin select
+const adminCities = [
+  'Beijing', 'Shanghai', 'Guangzhou', 'Shenzhen', 'Chengdu', 'Chongqing', 'Tianjin', 'Wuhan',
+  'XiAn', 'Hangzhou', 'Nanjing', 'Suzhou', 'Qingdao', 'Dalian', 'Shenyang', 'Changsha',
+  'Zhengzhou', 'Kunming', 'Hefei', 'Fuzhou', 'Xiamen', 'Jinan', 'Harbin', 'Changchun',
+  'Nanchang', 'Urumqi', 'Shijiazhuang', 'Taiyuan', 'Nanning', 'Guiyang', 'Lanzhou',
+  'Haikou', 'Yinchuan', 'Xining', 'Hohhot', 'Lhasa', 'Changzhou', 'Wuxi', 'Ningbo',
+  'Wenzhou', 'Jiaxing', 'Huzhou', 'Shaoxing', 'Zhoushan', 'Taizhou', 'Lianyungang',
+  'Yancheng', 'Yangzhou', 'Zhenjiang', 'Taizhou', 'HuaiAn', 'Suqian', 'LuAn', 'Huaibei',
+  'Bengbu', 'Fuyang', 'Huainan', 'Chuzhou', 'MaAnshan', 'Tongling', 'AnQing', 'Huangshan',
+  'Chizhou', 'Xuancheng', 'Jinhua', 'Quzhou', 'Lishui', 'Zaozhuang', 'Weifang', 'Yantai',
+  'Weihai', 'Rizhao', 'Laiwu', 'Linyi', 'Dezhou', 'Liaocheng', 'Binzhou', 'Heze', 'Zibo',
+  'Dongying', 'Zhengding', 'Baoding', 'Langfang', 'Tangshan', 'Qinhuangdao', 'Handan',
+  'Xingtai', 'Zhangjiakou', 'Chengde', 'Cangzhou', 'Hengshui'
 ];
 
 function Admin() {
-  const [lang, setLang] = useState ? useState('EN') : [null, () => console.error('setLang fallback')];
+  const [lang, setLang] = useState('EN');
   const t = (key) => (translations[lang] && translations[lang][key]) ? translations[lang][key] : key;
-  const [properties, setProperties] = useState ? useState([]) : [null, () => console.error('setProperties fallback')];
-  const [form, setForm] = useState ? useState({
+  const [properties, setProperties] = useState([]);
+  const [form, setForm] = useState({
     id: null,
     title: '',
     city: '',
@@ -135,8 +135,8 @@ function Admin() {
     yearBuilt: '',
     images: [''],
     realtor: { name: '', email: '', phone: '' },
-  }) : [null, () => console.error('setForm fallback')];
-  const [isEditing, setIsEditing] = useState ? useState(false) : [null, () => console.error('setIsEditing fallback')];
+  });
+  const [isEditing, setIsEditing] = useState(false);
 
   useEffect(() => {
     console.log('Loading properties for admin...');
@@ -237,7 +237,7 @@ function Admin() {
       h('input', { name: 'title', value: form.title, onChange: handleInputChange, placeholder: t('title'), required: true }),
       h('select', { name: 'city', value: form.city, onChange: handleInputChange, required: true }, [
         h('option', { value: '' }, t('search_city')),
-        ...['Beijing', 'Shanghai', 'Guangzhou', 'Shenzhen'].map(city => h('option', { key: city, value: city }, t(city)))
+        ...adminCities.map(city => h('option', { key: city, value: city }, t(city) || city))
       ]),
       h('input', { name: 'priceCNY', type: 'number', value: form.priceCNY, onChange: handleInputChange, placeholder: `${t('price')} (CNY)`, required: true }),
       h('input', { name: 'priceUSD', type: 'number', value: form.priceUSD, onChange: handleInputChange, placeholder: `${t('price')} (USD)` }),

@@ -4,8 +4,14 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Awinly</title>
-  <link rel="stylesheet" href="styles.css">
+  <link rel="stylesheet" href="styles.css"> <!-- Убедись, что styles.css в ~/awinly_mini/ -->
   <link rel="icon" href="data:image/x-icon;base64,">
+  <script>
+    console.log('Index.html loaded at', new Date().toISOString());
+    if (!document.querySelector('link[href="styles.css"]')) {
+      console.error('Stylesheet link not found in DOM!');
+    }
+  </script>
 </head>
 <body>
   <div id="root"></div>
