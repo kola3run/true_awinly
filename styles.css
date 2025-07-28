@@ -7,6 +7,7 @@ body {
   padding: 0;
   background-color: #FFFFFF;
   color: #000000;
+  -webkit-text-size-adjust: 100%; /* Предотвращение масштабирования шрифтов на iOS */
 }
 
 body[lang="zh"] {
@@ -672,6 +673,7 @@ body[lang="zh"] .offer .modal-btn {
   min-height: 316px;
   height: 316px;
   background-color: #FFFFFF;
+  visibility: visible; /* Ensure visibility */
 }
 
 .listing-card:hover {
@@ -882,7 +884,7 @@ body[lang="zh"] .listing-details .location {
   -webkit-box-orient: vertical;
   overflow: hidden;
   text-overflow: ellipsis;
-  padding-right: 10px; /* Добавлен отступ справа */
+  padding-right: 10px;
 }
 
 body[lang="zh"] .listing-details .description {
@@ -1199,7 +1201,7 @@ body[lang="zh"] .footer-disclaimer {
   .listing-details .description {
     font-size: 12px;
     -webkit-line-clamp: 2;
-    padding-right: 8px; /* Адаптивный отступ */
+    padding-right: 8px;
   }
 
   .realtor-title {
@@ -1262,6 +1264,7 @@ body[lang="zh"] .footer-disclaimer {
     max-height: 80px;
     overflow-x: auto;
     overflow-y: hidden;
+    -webkit-overflow-scrolling: touch; /* Smooth scroll iOS/Android */
   }
 
   .thumbnail-image {
@@ -1324,7 +1327,7 @@ body[lang="zh"] .footer-disclaimer {
   }
 
   .listing-details .description {
-    padding-right: 6px; /* Адаптивный отступ */
+    padding-right: 6px;
   }
 }
 
@@ -1335,20 +1338,45 @@ body[lang="zh"] .footer-disclaimer {
 
   .listing-card {
     gap: 8px;
-    min-height: 350px;
+    height: auto;
+    min-height: 300px;
+    visibility: visible !important; /* Force visibility on mobile */
+    transition: none; /* Disable transitions for performance */
+  }
+
+  .listing-image-wrapper {
+    width: 100%;
+    flex-direction: column;
+    gap: 5px;
   }
 
   .listing-image-container {
-    aspect-ratio: 3 / 2;
+    width: 100%;
   }
 
   .listing-thumbnails {
+    flex-direction: row;
+    width: 100%;
     max-height: 60px;
+    overflow-x: auto;
+    overflow-y: hidden;
+    -webkit-overflow-scrolling: touch; /* Smooth scroll iOS/Android */
   }
 
   .thumbnail-image {
-    width: 100px;
-    min-width: 100px;
+    width: 80px;
+    flex-shrink: 0;
+  }
+
+  .listing-details {
+    padding: 5px 0;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .listing-details-header,
+  .listing-details-content {
+    min-width: 100%;
   }
 
   .listing-title {
@@ -1370,7 +1398,7 @@ body[lang="zh"] .footer-disclaimer {
   .listing-details .description {
     font-size: 11px;
     -webkit-line-clamp: 2;
-    padding-right: 5px; /* Адаптивный отступ */
+    padding-right: 5px;
   }
 
   .realtor-title {
@@ -1389,7 +1417,7 @@ body[lang="zh"] .footer-disclaimer {
   .spec-property-type,
   .spec-deal-type {
     font-size: 12px;
-    padding: 2px 8px;
+    padding: 2px 6px;
   }
 
   .spec-value {
@@ -1402,28 +1430,104 @@ body[lang="zh"] .footer-disclaimer {
 
   .offer .filter-container {
     padding: 6px;
+    flex-wrap: wrap;
   }
 
-  .offer .offer-title {
+  .offer .filter-container > * {
+    flex: 1 1 100%;
+    margin-bottom: 4px;
+  }
+
+  .offer .filter-container > *:not(:last-child)::after {
+    display: none;
+  }
+
+  .offer .offer-title.centered {
     font-size: 24px;
+    padding: 8px 0;
   }
 
   .offer .location-selector,
   .offer .deal-type-selector,
-  .offer .property-type-selector,
-  .offer .search-btn {
+  .offer .property-type-selector {
     min-width: 100px;
+    height: 36px;
     font-size: 12px;
-    padding: 0 12px;
-    height: 40px;
+    padding: 0 10px;
+    border-radius: 6px;
   }
 
   .offer .search-btn {
-    height: 40px;
+    height: 36px;
+    min-width: 100px;
+    font-size: 12px;
+    padding: 0 10px;
+    margin-top: 4px;
+  }
+
+  .offer .modal-cities {
+    max-height: 70vh;
+    width: 92vw;
+    border-radius: 12px;
+  }
+
+  .offer .modal-header {
+    padding: 15px 20px;
+  }
+
+  .offer .modal-header h3 {
+    font-size: 18px;
+  }
+
+  .offer .modal-search-container {
+    margin: 15px 20px;
+  }
+
+  .offer .modal-search {
+    height: 36px;
+    font-size: 12px;
+    padding: 0 10px 0 35px;
+  }
+
+  .offer .modal-search-icon {
+    font-size: 12px;
+    left: 10px;
+  }
+
+  .offer .modal-content {
+    padding: 15px 20px;
+    max-height: 300px;
+  }
+
+  .offer .cities-grid {
+    grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+    gap: 8px;
+  }
+
+  .offer .modal-item.city-item {
+    padding: 6px 10px;
+    font-size: 12px;
+    height: 36px;
+    border-radius: 6px;
+  }
+
+  .offer .modal-footer {
+    padding: 10px 20px;
+    gap: 8px;
+  }
+
+  .offer .modal-btn {
+    height: 36px;
+    font-size: 12px;
+    padding: 0 10px;
+    border-radius: 6px;
   }
 
   .footer-container {
     padding: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
   }
 
   .footer h3 {
@@ -1455,5 +1559,123 @@ body[lang="zh"] .footer-disclaimer {
   .about-section p,
   .about-section li {
     font-size: 12px;
+  }
+
+  .image-nav-button {
+    display: none; /* Hide nav buttons on mobile */
+  }
+}
+
+@media (max-width: 320px) {
+  .listings {
+    padding: 10px;
+  }
+
+  .listing-card {
+    min-height: 250px;
+  }
+
+  .thumbnail-image {
+    width: 70px;
+    min-width: 70px;
+  }
+
+  .listing-title {
+    font-size: 14px;
+  }
+
+  body[lang="zh"] .listing-title {
+    font-size: 12px;
+  }
+
+  .listing-details .price {
+    font-size: 12px;
+  }
+
+  .listing-details .location {
+    font-size: 10px;
+  }
+
+  .listing-details .description {
+    font-size: 10px;
+    -webkit-line-clamp: 1;
+  }
+
+  .realtor-title {
+    font-size: 11px;
+  }
+
+  .realtor-name {
+    font-size: 10px;
+  }
+
+  .realtor-email,
+  .realtor-phone {
+    font-size: 9px;
+  }
+
+  .spec-property-type,
+  .spec-deal-type {
+    font-size: 10px;
+    padding: 1px 5px;
+  }
+
+  .spec-value {
+    font-size: 10px;
+  }
+
+  .spec-label {
+    font-size: 7px;
+  }
+
+  .offer .offer-title.centered {
+    font-size: 18px;
+  }
+
+  .offer .location-selector,
+  .offer .deal-type-selector,
+  .offer .property-type-selector {
+    min-width: 60px;
+    height: 32px;
+    font-size: 10px;
+    padding: 0 8px;
+  }
+
+  .offer .search-btn {
+    height: 32px;
+    min-width: 80px;
+    font-size: 10px;
+    padding: 0 8px;
+  }
+
+  .footer-container {
+    padding: 10px;
+  }
+
+  .footer h3 {
+    font-size: 12px;
+  }
+
+  .footer p,
+  .footer-about-link,
+  .footer-disclaimer-link {
+    font-size: 9px;
+  }
+
+  .about-page h1 {
+    font-size: 18px;
+  }
+
+  .about-section h2 {
+    font-size: 16px;
+  }
+
+  .about-section h3 {
+    font-size: 14px;
+  }
+
+  .about-section p,
+  .about-section li {
+    font-size: 10px;
   }
 }

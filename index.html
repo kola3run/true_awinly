@@ -4,8 +4,11 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Awinly</title>
-  <link rel="stylesheet" href="styles.css"> <!-- Убедись, что styles.css в ~/awinly_mini/ -->
-  <link rel="icon" href="data:image/x-icon;base64,">
+  <link rel="stylesheet" href="styles.css">
+  <link rel="icon" href="favicon.ico" type="image/x-icon">
+  <link rel="icon" href="favicon.png" type="image/png">
+  <base href="/"> <!-- Fix для routing на static/mobile -->
+  <script src="https://polyfill.io/v3/polyfill.min.js?features=default"></script> <!-- Polyfill для old Android -->
   <script>
     console.log('Index.html loaded at', new Date().toISOString());
     if (!document.querySelector('link[href="styles.css"]')) {
@@ -15,9 +18,9 @@
 </head>
 <body>
   <div id="root"></div>
-  <script src="https://unpkg.com/react@17/umd/react.production.min.js"></script>
-  <script src="https://unpkg.com/react-dom@17/umd/react-dom.production.min.js"></script>
-  <script src="https://unpkg.com/react-router-dom@5.3.3/umd/react-router-dom.min.js"></script>
+  <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+  <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+  <script src="https://unpkg.com/react-router-dom@5.3.4/umd/react-router-dom.min.js"></script>
   <script src="site.js"></script>
 </body>
 </html>
