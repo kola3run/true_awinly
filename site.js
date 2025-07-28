@@ -334,50 +334,52 @@ const languages = [
 ];
 
 // Mock data for testing
-if (!localStorage.getItem('properties')) {
-  const mockProperties = [
-    {
-      id: 1,
-      titleEN: "Modern Apartment in Beijing",
-      titleZH: "北京现代公寓",
-      city: "Beijing",
-      dealType: "buy",
-      propertyType: "Apartment",
-      priceCNY: 1000000,
-      priceUSD: 140000,
-      area: 100,
-      floor: 5,
-      rooms: 3,
-      yearBuilt: 2020,
-      realtor: { name: "John Doe", email: "john@awinly.com", phone: "+86 123 456 7890" },
-      descriptionEN: "A modern apartment in the heart of Beijing with great amenities.",
-      descriptionZH: "北京中心的一栋现代化公寓，设施齐全。",
-      images: ["https://picsum.photos/474/316?random=1"],
-      country: "China"
-    },
-    {
-      id: 2,
-      titleEN: "Luxury House in Shanghai",
-      titleZH: "上海豪华别墅",
-      city: "Shanghai",
-      dealType: "rent",
-      propertyType: "House",
-      priceCNY: 15000,
-      priceUSD: 2100,
-      area: 200,
-      floor: 2,
-      rooms: 4,
-      yearBuilt: 2018,
-      realtor: { name: "Jane Smith", email: "jane@awinly.com", phone: "+86 987 654 3210" },
-      descriptionEN: "A luxurious house for rent in Shanghai with a private garden.",
-      descriptionZH: "上海一栋带私人花园的豪华出租别墅。",
-      images: ["https://picsum.photos/474/316?random=2"],
-      country: "China"
-    }
-  ];
-  localStorage.setItem('properties', JSON.stringify(mockProperties));
-  console.log('Mock properties initialized:', mockProperties);
-}
+if (!localStorage.getItem('properties-initialized')) {
+    const mockProperties = [
+      {
+        id: 1,
+        titleEN: "Modern Apartment in Beijing",
+        titleZH: "北京现代公寓",
+        city: "Beijing",
+        dealType: "buy",
+        propertyType: "Apartment",
+        priceCNY: 1000000,
+        priceUSD: 140000,
+        area: 100,
+        floor: 5,
+        rooms: 3,
+        yearBuilt: 2020,
+        realtor: { name: "John Doe", email: "john@awinly.com", phone: "+86 123 456 7890" },
+        descriptionEN: "A modern apartment in the heart of Beijing with great amenities.",
+        descriptionZH: "北京中心的一栋现代化公寓，设施齐全。",
+        images: ["https://picsum.photos/474/316?random=1"],
+        country: "China"
+      },
+      {
+        id: 2,
+        titleEN: "Luxury House in Shanghai",
+        titleZH: "上海豪华别墅",
+        city: "Shanghai",
+        dealType: "rent",
+        propertyType: "House",
+        priceCNY: 15000,
+        priceUSD: 2100,
+        area: 200,
+        floor: 2,
+        rooms: 4,
+        yearBuilt: 2018,
+        realtor: { name: "Jane Smith", email: "jane@awinly.com", phone: "+86 987 654 3210" },
+        descriptionEN: "A luxurious house for rent in Shanghai with a private garden.",
+        descriptionZH: "上海一栋带私人花园的豪华出租别墅。",
+        images: ["https://picsum.photos/474/316?random=2"],
+        country: "China"
+      }
+    ];
+    const existingProperties = JSON.parse(localStorage.getItem('properties')) || [];
+    localStorage.setItem('properties', JSON.stringify([...existingProperties, ...mockProperties]));
+    localStorage.setItem('properties-initialized', 'true');
+    console.log('Mock properties initialized:', mockProperties);
+  }
 
 // Components
 function ScrollToTopButton() {
