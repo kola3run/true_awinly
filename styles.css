@@ -7,7 +7,7 @@ body {
   padding: 0;
   background-color: #FFFFFF;
   color: #000000;
-  -webkit-text-size-adjust: 100%;
+  -webkit-text-size-adjust: 100%; /* Предотвращение масштабирования шрифтов на iOS */
 }
 
 body[lang="zh"] {
@@ -658,6 +658,7 @@ body[lang="zh"] .offer .modal-btn {
   flex-direction: column;
   gap: 30px;
   margin-top: 20px;
+  border: 1px solid red; /* Отладочный бордер для проверки */
 }
 
 /* Listing card */
@@ -666,16 +667,18 @@ body[lang="zh"] .offer .modal-btn {
   flex-direction: row;
   position: relative;
   max-width: 100%;
-  border: none; /* Удалена граница для устранения странного контура */
+  border: 2px solid transparent;
   border-radius: 16px;
-  transition: box-shadow 0.3s ease;
+  transition: border-color 0.3s ease, box-shadow 0.3s ease;
   gap: 20px;
   min-height: 316px;
   height: 316px;
   background-color: #FFFFFF;
+  visibility: visible; /* Ensure visibility */
 }
 
 .listing-card:hover {
+  border-color: #E5E5E5;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
 }
 
@@ -1132,99 +1135,233 @@ body[lang="zh"] .footer-disclaimer {
   font-family: 'Noto Serif SC', serif;
 }
 
-/* Scroll to Top Button */
+/* Scroll to top button */
 .scroll-to-top-btn {
   position: fixed;
   bottom: 20px;
   right: 20px;
-  background-color: #6B2D5C;
+  padding: 10px 15px;
+  background: #6B2D5C;
   color: #FFFFFF;
   border: none;
   border-radius: 50%;
-  width: 40px;
-  height: 40px;
-  font-size: 20px;
   cursor: pointer;
-  opacity: 0;
+  display: none;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
   transition: opacity 0.3s ease;
-  z-index: 1000;
 }
 
 .scroll-to-top-btn.visible {
-  opacity: 1;
+  display: block;
 }
 
 .scroll-to-top-btn:hover {
-  background-color: #5A264F;
+  background: #5A264F;
 }
 
-/* Media Queries */
-@media (max-width: 480px) {
+/* Responsive styles */
+@media (max-width: 1024px) {
   .listings {
-    padding: 20px;
+    padding: 40px 60px;
   }
 
-  .listings-header-container {
-    padding: 10px 0;
+  .listing-card {
+    gap: 15px;
+    height: 266px;
   }
 
-  .listings-header-title h3 {
+  .listing-image-wrapper {
+    width: 400px;
+  }
+
+  .listing-thumbnails {
+    width: 70px;
+    max-height: 266px;
+  }
+
+  .listing-details {
+    gap: 15px;
+  }
+
+  .listing-title {
     font-size: 18px;
   }
 
-  .listings-header-about {
+  body[lang="zh"] .listing-title {
+    font-size: 16px;
+  }
+
+  .listing-details .price {
+    font-size: 16px;
+  }
+
+  .listing-details .location {
+    font-size: 13px;
+  }
+
+  .listing-details .description {
     font-size: 12px;
-    padding: 6px 12px;
+    -webkit-line-clamp: 2;
+    padding-right: 8px;
   }
 
-  .listings-dropdown-btn {
+  .realtor-title {
+    font-size: 13px;
+  }
+
+  .realtor-name {
     font-size: 12px;
-    padding: 6px 12px;
-    min-width: 120px;
   }
 
-  .offer .offer-title.centered {
-    font-size: 24px;
+  .realtor-email,
+  .realtor-phone {
+    font-size: 11px;
   }
 
-  .offer .filter-container {
-    flex-direction: column;
-    padding: 5px;
+  .spec-property-type,
+  .spec-deal-type {
+    font-size: 13px;
+    padding: 2px 8px;
   }
 
-  .offer .filter-container > *:not(:last-child)::after {
-    display: none;
+  .spec-value {
+    font-size: 14px;
   }
 
-  .offer .location-selector,
-  .offer .deal-type-selector,
-  .offer .property-type-selector {
-    width: 100%;
-    margin-bottom: 5px;
-    border-radius: 8px;
+  .spec-label {
+    font-size: 9px;
   }
 
-  .offer .search-btn {
-    width: 100%;
-    margin-top: 5px;
-    border-radius: 8px;
+  .footer-container {
+    padding: 40px 60px;
+  }
+}
+
+@media (max-width: 768px) {
+  .listings {
+    padding: 40px;
   }
 
   .listing-card {
     flex-direction: column;
+    gap: 10px;
     height: auto;
-    min-height: auto;
+    min-height: 400px;
   }
 
   .listing-image-wrapper {
+    width: 100%;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .listing-image-container {
     width: 100%;
   }
 
   .listing-thumbnails {
     flex-direction: row;
-    overflow-x: auto;
     width: 100%;
     max-height: 80px;
+    overflow-x: auto;
+    overflow-y: hidden;
+    -webkit-overflow-scrolling: touch; /* Smooth scroll iOS/Android */
+  }
+
+  .thumbnail-image {
+    width: 120px;
+    flex-shrink: 0;
+  }
+
+  .listing-details {
+    padding: 10px 0;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .listing-details-header,
+  .listing-details-content {
+    min-width: 100%;
+  }
+
+  .listing-specs {
+    gap: 8px 15px;
+  }
+
+  .offer .filter-container {
+    flex-wrap: wrap;
+    gap: 8px;
+    padding: 8px;
+  }
+
+  .offer .filter-container > *::after {
+    display: none;
+  }
+
+  .offer .offer-title.centered,
+  .offer .location-selector,
+  .offer .deal-type-selector,
+  .offer .property-type-selector,
+  .offer .search-btn {
+    flex: 1 1 100%;
+    min-width: 100%;
+    border: 1px solid #D0D0D0;
+    border-radius: 8px;
+  }
+
+  .offer .search-btn {
+    margin-top: 8px;
+    min-width: 120px;
+  }
+
+  .offer .modal-cities {
+    width: 90%;
+    max-height: 80vh;
+  }
+
+  .offer .cities-grid {
+    grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+  }
+
+  .footer-container {
+    padding: 40px;
+  }
+
+  .listing-details .description {
+    padding-right: 6px;
+  }
+}
+
+@media (max-width: 480px) {
+  .listings {
+    padding: 20px;
+  }
+
+  .listing-card {
+    gap: 8px;
+    height: auto;
+    min-height: 300px;
+    visibility: visible !important; /* Force visibility on mobile */
+    transition: none; /* Disable transitions for performance */
+  }
+
+  .listing-image-wrapper {
+    width: 100%;
+    flex-direction: column;
+    gap: 5px;
+  }
+
+  .listing-image-container {
+    width: 100%;
+  }
+
+  .listing-thumbnails {
+    flex-direction: row;
+    width: 100%;
+    max-height: 60px;
+    overflow-x: auto;
+    overflow-y: hidden;
+    -webkit-overflow-scrolling: touch; /* Smooth scroll iOS/Android */
   }
 
   .thumbnail-image {
@@ -1233,13 +1370,179 @@ body[lang="zh"] .footer-disclaimer {
   }
 
   .listing-details {
-    padding: 10px;
+    padding: 5px 0;
     flex-direction: column;
+    gap: 8px;
+  }
+
+  .listing-details-header,
+  .listing-details-content {
+    min-width: 100%;
+  }
+
+  .listing-title {
+    font-size: 16px;
+  }
+
+  body[lang="zh"] .listing-title {
+    font-size: 14px;
+  }
+
+  .listing-details .price {
+    font-size: 14px;
+  }
+
+  .listing-details .location {
+    font-size: 12px;
+  }
+
+  .listing-details .description {
+    font-size: 11px;
+    -webkit-line-clamp: 2;
+    padding-right: 5px;
+  }
+
+  .realtor-title {
+    font-size: 12px;
+  }
+
+  .realtor-name {
+    font-size: 11px;
+  }
+
+  .realtor-email,
+  .realtor-phone {
+    font-size: 10px;
+  }
+
+  .spec-property-type,
+  .spec-deal-type {
+    font-size: 12px;
+    padding: 2px 6px;
+  }
+
+  .spec-value {
+    font-size: 12px;
+  }
+
+  .spec-label {
+    font-size: 8px;
+  }
+
+  .offer .filter-container {
+    padding: 6px;
+    flex-wrap: wrap;
+  }
+
+  .offer .filter-container > * {
+    flex: 1 1 100%;
+    margin-bottom: 4px;
+  }
+
+  .offer .filter-container > *:not(:last-child)::after {
+    display: none;
+  }
+
+  .offer .offer-title.centered {
+    font-size: 24px;
+    padding: 8px 0;
+  }
+
+  .offer .location-selector,
+  .offer .deal-type-selector,
+  .offer .property-type-selector {
+    min-width: 100px;
+    height: 36px;
+    font-size: 12px;
+    padding: 0 10px;
+    border-radius: 6px;
+  }
+
+  .offer .search-btn {
+    height: 36px;
+    min-width: 100px;
+    font-size: 12px;
+    padding: 0 10px;
+    margin-top: 4px;
+  }
+
+  .offer .modal-cities {
+    max-height: 70vh;
+    width: 92vw;
+    border-radius: 12px;
+  }
+
+  .offer .modal-header {
+    padding: 15px 20px;
+  }
+
+  .offer .modal-header h3 {
+    font-size: 18px;
+  }
+
+  .offer .modal-search-container {
+    margin: 15px 20px;
+  }
+
+  .offer .modal-search {
+    height: 36px;
+    font-size: 12px;
+    padding: 0 10px 0 35px;
+  }
+
+  .offer .modal-search-icon {
+    font-size: 12px;
+    left: 10px;
+  }
+
+  .offer .modal-content {
+    padding: 15px 20px;
+    max-height: 300px;
+  }
+
+  .offer .cities-grid {
+    grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+    gap: 8px;
+  }
+
+  .offer .modal-item.city-item {
+    padding: 6px 10px;
+    font-size: 12px;
+    height: 36px;
+    border-radius: 6px;
+  }
+
+  .offer .modal-footer {
+    padding: 10px 20px;
+    gap: 8px;
+  }
+
+  .offer .modal-btn {
+    height: 36px;
+    font-size: 12px;
+    padding: 0 10px;
+    border-radius: 6px;
+  }
+
+  .footer-container {
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+  }
+
+  .footer h3 {
+    font-size: 14px;
+  }
+
+  .footer p,
+  .footer-about-link,
+  .footer-disclaimer-link {
+    font-size: 10px;
   }
 
   .about-page {
-    margin: 20px;
-    padding: 10px;
+    padding: 12px;
   }
 
   .about-page h1 {
@@ -1256,19 +1559,128 @@ body[lang="zh"] .footer-disclaimer {
 
   .about-section p,
   .about-section li {
+    font-size: 12px;
+  }
+
+  .image-nav-button {
+    display: none; /* Hide nav buttons on mobile */
+  }
+
+  .listings-list {
+    min-height: 100vh !important; /* Усиленный приоритет */
+  }
+}
+
+@media (max-width: 320px) {
+  .listings {
+    padding: 10px;
+  }
+
+  .listing-card {
+    min-height: 250px;
+  }
+
+  .thumbnail-image {
+    width: 70px;
+    min-width: 70px;
+  }
+
+  .listing-title {
     font-size: 14px;
+  }
+
+  body[lang="zh"] .listing-title {
+    font-size: 12px;
+  }
+
+  .listing-details .price {
+    font-size: 12px;
+  }
+
+  .listing-details .location {
+    font-size: 10px;
+  }
+
+  .listing-details .description {
+    font-size: 10px;
+    -webkit-line-clamp: 1;
+  }
+
+  .realtor-title {
+    font-size: 11px;
+  }
+
+  .realtor-name {
+    font-size: 10px;
+  }
+
+  .realtor-email,
+  .realtor-phone {
+    font-size: 9px;
+  }
+
+  .spec-property-type,
+  .spec-deal-type {
+    font-size: 10px;
+    padding: 1px 5px;
+  }
+
+  .spec-value {
+    font-size: 10px;
+  }
+
+  .spec-label {
+    font-size: 7px;
+  }
+
+  .offer .offer-title.centered {
+    font-size: 18px;
+  }
+
+  .offer .location-selector,
+  .offer .deal-type-selector,
+  .offer .property-type-selector {
+    min-width: 60px;
+    height: 32px;
+    font-size: 10px;
+    padding: 0 8px;
+  }
+
+  .offer .search-btn {
+    height: 32px;
+    min-width: 80px;
+    font-size: 10px;
+    padding: 0 8px;
   }
 
   .footer-container {
-    padding: 20px;
-    grid-template-columns: 1fr;
+    padding: 10px;
   }
 
   .footer h3 {
+    font-size: 12px;
+  }
+
+  .footer p,
+  .footer-about-link,
+  .footer-disclaimer-link {
+    font-size: 9px;
+  }
+
+  .about-page h1 {
+    font-size: 18px;
+  }
+
+  .about-section h2 {
+    font-size: 16px;
+  }
+
+  .about-section h3 {
     font-size: 14px;
   }
 
-  .footer p {
+  .about-section p,
+  .about-section li {
     font-size: 10px;
   }
 }
