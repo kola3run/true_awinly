@@ -15,7 +15,7 @@ body[lang="zh"] {
 .listings {
   max-width: 1440px;
   margin: 0 auto;
-  padding: 40px 20px;
+  padding: 40px 20px; /* Уменьшен padding для мобильных */
   box-sizing: border-box;
   min-height: calc(100vh - 120px);
 }
@@ -67,13 +67,13 @@ body[lang="zh"] .listings-header-about {
 .listings-header-actions {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 10px; /* Уменьшен gap для мобильных */
 }
 .listings-dropdown {
   position: relative;
 }
 .listings-dropdown-btn {
-  padding: 8px 12px;
+  padding: 8px 12px; /* Уменьшен padding для мобильных */
   background-color: #fff;
   border: 1px solid #E5E5E5;
   border-radius: 8px;
@@ -85,7 +85,7 @@ body[lang="zh"] .listings-header-about {
   align-items: center;
   justify-content: center;
   gap: 5px;
-  min-width: 120px;
+  min-width: 120px; /* Уменьшен min-width */
   white-space: nowrap;
   transition: all 0.3s ease;
 }
@@ -595,7 +595,7 @@ body[lang="zh"] .offer .modal-btn {
   transition: box-shadow 0.3s ease;
   gap: 20px;
   min-height: 316px;
-  height: auto;
+  height: auto; /* Изменено для адаптивности */
   background-color: #FFFFFF;
 }
 .listing-card:hover {
@@ -614,7 +614,7 @@ body[lang="zh"] .offer .modal-btn {
 /* Image wrapper */
 .listing-image-wrapper {
   display: flex;
-  flex-direction: column;
+  flex-direction: column; /* Изменено для мобильной версии */
   width: 100%;
   flex-shrink: 0;
   gap: 10px;
@@ -624,7 +624,7 @@ body[lang="zh"] .offer .modal-btn {
 .listing-image-container {
   position: relative;
   width: 100%;
-  aspect-ratio: 16 / 9; /* Изменён на более широкий формат для мобильных */
+  aspect-ratio: 3 / 2;
   border-radius: 16px;
   overflow: hidden;
 }
@@ -644,8 +644,8 @@ body[lang="zh"] .offer .modal-btn {
   color: #FFFFFF;
   border: none;
   border-radius: 50%;
-  width: 30px;
-  height: 30px;
+  width: 30px; /* Уменьшен для мобильных */
+  height: 30px; /* Уменьшен для мобильных */
   display: flex;
   align-items: center;
   justify-content: center;
@@ -663,7 +663,7 @@ body[lang="zh"] .offer .modal-btn {
   right: 5px;
 }
 .image-nav-button span {
-  font-size: 16px;
+  font-size: 16px; /* Уменьшен для мобильных */
 }
 
 /* Image dots */
@@ -673,11 +673,11 @@ body[lang="zh"] .offer .modal-btn {
   left: 50%;
   transform: translateX(-50%);
   display: flex;
-  gap: 6px;
+  gap: 6px; /* Уменьшен для мобильных */
 }
 .image-dot {
-  width: 8px;
-  height: 8px;
+  width: 8px; /* Уменьшен для мобильных */
+  height: 8px; /* Уменьшен для мобильных */
   background-color: rgba(255, 255, 255, 0.5);
   border-radius: 50%;
   cursor: pointer;
@@ -693,23 +693,18 @@ body[lang="zh"] .offer .modal-btn {
 /* Thumbnails */
 .listing-thumbnails {
   display: flex;
-  flex-direction: row;
-  gap: 10px;
+  flex-direction: row; /* Изменено для мобильной версии */
+  gap: 8px;
   width: 100%;
-  overflow-x: auto; /* Горизонтальная прокрутка */
-  scroll-behavior: smooth; /* Плавная прокрутка */
-  -webkit-overflow-scrolling: touch; /* Плавность на iOS */
-  padding: 5px 0;
-  scroll-snap-type: x mandatory; /* Фиксация на миниатюрах */
+  max-height: 80px; /* Ограничено для мобильных */
+  overflow-x: auto; /* Горизонтальная прокрутка на мобильных */
 }
 .thumbnail-image {
-  width: 100px; /* Увеличена ширина */
+  width: 80px;
   aspect-ratio: 3 / 2;
   object-fit: cover;
   cursor: pointer;
   border-radius: 8px;
-  flex-shrink: 0; /* Запрещаем сжатие */
-  scroll-snap-align: center; /* Выравнивание при прокрутке */
   transition: opacity 0.3s ease, border 0.3s ease;
 }
 .thumbnail-image:hover {
@@ -726,21 +721,21 @@ body[lang="zh"] .offer .modal-btn {
   flex-grow: 1;
   box-sizing: border-box;
   display: flex;
-  flex-direction: column;
+  flex-direction: column; /* Изменено для мобильной версии */
   gap: 15px;
-  height: auto;
+  height: auto; /* Изменено для адаптивности */
 }
 .listing-details-header {
   display: flex;
   flex-direction: column;
   flex: 1;
-  min-width: 0;
+  min-width: 0; /* Убрано минимальное ограничение для мобильных */
 }
 .listing-details-content {
   display: flex;
   flex-direction: column;
   flex: 1;
-  min-width: 0;
+  min-width: 0; /* Убрано минимальное ограничение для мобильных */
   justify-content: center;
 }
 .listing-title {
@@ -958,10 +953,10 @@ body[lang="zh"] .about-section li {
 .footer-container {
   max-width: 1440px;
   margin: 0 auto;
-  padding: 40px 20px;
+  padding: 40px 20px; /* Уменьшен padding для мобильных */
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-  gap: 20px;
+  gap: 20px; /* Уменьшен gap для мобильных */
 }
 .footer h3 {
   font-size: 16px;
@@ -1005,7 +1000,7 @@ body[lang="zh"] .footer-disclaimer {
 .scroll-to-top-btn {
   position: fixed;
   bottom: 20px;
-  right: 10px;
+  right: 10px; /* Сдвинут для мобильных */
   background-color: #6B2D5C;
   color: #FFFFFF;
   border: none;
@@ -1085,7 +1080,7 @@ body[lang="zh"] .footer-disclaimer {
     flex-direction: row;
     overflow-x: auto;
     width: 100%;
-    max-height: 120px; /* Увеличен для большего пространства */
+    max-height: 80px;
   }
   .listing-details {
     padding: 10px;
@@ -1157,16 +1152,6 @@ body[lang="zh"] .footer-disclaimer {
   .listing-card {
     gap: 10px;
   }
-  .listing-image-container {
-    aspect-ratio: 16 / 9; /* Сохранён широкий формат */
-    width: 100%; /* Полная ширина */
-    margin: 0 -10px; /* Убираем отступы для максимального заполнения */
-  }
-  .listing-image {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-  }
   .image-nav-button {
     width: 25px;
     height: 25px;
@@ -1175,13 +1160,10 @@ body[lang="zh"] .footer-disclaimer {
     font-size: 14px;
   }
   .listing-thumbnails {
-    max-height: 120px; /* Увеличен для большего пространства */
-    gap: 15px; /* Больше пространства между миниатюрами */
+    max-height: 60px;
   }
   .thumbnail-image {
-    width: 100px; /* Увеличена ширина */
-    aspect-ratio: 3 / 2;
-    flex-shrink: 0;
+    width: 60px;
   }
   .listing-details-header,
   .listing-details-content {
