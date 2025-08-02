@@ -590,13 +590,14 @@ body[lang="zh"] .offer .modal-btn {
   flex-direction: row;
   position: relative;
   max-width: 100%;
-  border: none;
+  border: none; /* Убрали возможный border */
   border-radius: 16px;
   transition: box-shadow 0.3s ease;
   gap: 20px;
   min-height: 316px;
   height: auto;
   background-color: #FFFFFF;
+  outline: none; /* Убрали возможный outline */
 }
 .listing-card:hover {
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
@@ -624,7 +625,7 @@ body[lang="zh"] .offer .modal-btn {
 .listing-image-container {
   position: relative;
   width: 100%;
-  aspect-ratio: 3 / 2; /* Вернули исходный формат для десктопа */
+  aspect-ratio: 3 / 2;
   border-radius: 16px;
   overflow: hidden;
 }
@@ -1077,6 +1078,7 @@ body[lang="zh"] .footer-disclaimer {
     flex-direction: column;
     height: auto;
     min-height: auto;
+    outline: none; /* Убрали возможный outline */
   }
   .listing-image-wrapper {
     width: 100%;
@@ -1156,11 +1158,13 @@ body[lang="zh"] .footer-disclaimer {
   }
   .listing-card {
     gap: 10px;
+    outline: none; /* Убрали возможный outline */
   }
   .listing-image-container {
     width: 100%;
-    aspect-ratio: 3 / 2; /* Вернули исходный формат */
+    aspect-ratio: 3 / 2;
     margin: 0 -5px; /* Убрали небольшие отступы для максимальной ширины */
+    border: none; /* Убрали возможный border */
   }
   .listing-image {
     width: 100%;
