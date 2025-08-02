@@ -617,6 +617,7 @@ body[lang="zh"] .offer .modal-btn {
   display: flex;
   flex-direction: column;
   width: 100%;
+  max-width: 474px; /* Ограничим максимальную ширину изображения, как было изначально */
   flex-shrink: 0;
   gap: 10px;
 }
@@ -625,7 +626,8 @@ body[lang="zh"] .offer .modal-btn {
 .listing-image-container {
   position: relative;
   width: 100%;
-  aspect-ratio: 3 / 2; /* Восстановили исходный формат для десктопа */
+  aspect-ratio: 3 / 2; /* Восстановили исходный формат */
+  max-width: 474px; /* Явное ограничение ширины */
   border-radius: 16px;
   overflow: hidden;
 }
@@ -1160,8 +1162,8 @@ body[lang="zh"] .footer-disclaimer {
   }
   .listing-image-container {
     width: 100%;
-    aspect-ratio: 3 / 2; /* Сохраняем исходный формат */
-    margin: 0 -5px; /* Убираем небольшие отступы для максимальной ширины */
+    aspect-ratio: 3 / 2;
+    margin: 0 -5px; /* Убираем небольшие отступы для максимальной ширины на мобильных */
     border: none;
   }
   .listing-image {
