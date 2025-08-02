@@ -2,15 +2,14 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Awinly</title>
     <link rel="stylesheet" href="styles.css">
     <link rel="icon" href="favicon.ico" type="image/x-icon">
     <link rel="icon" href="favicon.png" type="image/png">
     <base href="/">
-    <script src="https://polyfill.io/v3/polyfill.min.js?features=default"></script>
     <script>
-        console.log('Index.html loaded at', new Date().toISOString());
+        console.log('Index.html loaded at', new Date().toISOString(), 'on domain:', window.location.hostname);
         if (!document.querySelector('link[href="styles.css"]')) {
             console.error('Stylesheet link not found in DOM!');
         }

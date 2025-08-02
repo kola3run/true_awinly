@@ -1,5 +1,4 @@
 'use strict';
-
 const { useState, useEffect, useRef } = React;
 const { HashRouter: BrowserRouter, Route, Switch, Link } = ReactRouterDOM;
 const h = React.createElement;
@@ -294,14 +293,13 @@ const translations = {
     Tangshan: "唐山",
     Qinhuangdao: "秦皇岛",
     Handan: "邯郸",
-    Xingtai: "邢台",
+    Xingtai: "邢tai",
     Zhangjiakou: "张家口",
     Chengde: "承德",
     Cangzhou: "沧州",
     Hengshui: "衡水"
-  }
+  },
 };
-
 // Cities in China
 const cities = [
   'Beijing', 'Shanghai', 'Guangzhou', 'Shenzhen', 'Chengdu', 'Chongqing', 'Tianjin', 'Wuhan',
@@ -317,46 +315,37 @@ const cities = [
   'Dongying', 'Zhengding', 'Baoding', 'Langfang', 'Tangshan', 'Qinhuangdao', 'Handan',
   'Xingtai', 'Zhangjiakou', 'Chengde', 'Cangzhou', 'Hengshui'
 ];
-
 const dealTypes = [
   { value: 'buy', label: 'buy' },
   { value: 'rent', label: 'rent' }
 ];
-
 const propertyTypes = [
   { value: 'Apartment', label: 'Apartment' },
   { value: 'House', label: 'House' },
   { value: 'Land', label: 'Land' }
 ];
-
 const currencies = [
   { code: 'CNY', name: 'Chinese Yuan', symbol: '¥' },
   { code: 'USD', name: 'US Dollar', symbol: '$' }
 ];
-
 const languages = [
   { code: 'EN', name: 'English', flag: '🇬🇧' },
   { code: 'zh', name: '中文', flag: '🇨🇳' }
 ];
-
 // Components
 function ScrollToTopButton() {
   const [isVisible, setIsVisible] = useState(false);
-
   useEffect(() => {
     const handleScroll = () => setIsVisible(window.scrollY > 300);
     window.addEventListener('scroll', handleScroll);
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
-
   const scrollToTop = () => window.scrollTo({ top: 0, behavior: 'smooth' });
-
   return h('button', {
     className: `scroll-to-top-btn ${isVisible ? 'visible' : ''}`,
     onClick: scrollToTop
   }, '↑');
 }
-
 function Filter({ onFilter, getTranslation, lang, currency }) {
   const [searchCity, setSearchCity] = useState('');
   const [tempCity, setTempCity] = useState('');
@@ -369,41 +358,34 @@ function Filter({ onFilter, getTranslation, lang, currency }) {
   const [locationSelectorWidth, setLocationSelectorWidth] = useState('150px');
   const [dealTypeSelectorWidth, setDealTypeSelectorWidth] = useState('100px');
   const [propertyTypeSelectorWidth, setPropertyTypeSelectorWidth] = useState('120px');
-
   const locationSelectorRef = useRef(null);
   const dealTypeSelectorRef = useRef(null);
   const propertyTypeSelectorRef = useRef(null);
   const dealTypeTimeoutRef = useRef(null);
   const propertyTypeTimeoutRef = useRef(null);
-
   const handleDealTypeChange = (type) => {
     setDealType(type);
     setIsDealTypeDropdownOpen(false);
   };
-
   const handlePropertyTypeChange = (type) => {
     setPropertyType(type);
     setIsPropertyTypeDropdownOpen(false);
   };
-
   const handleCitySelect = (city) => {
     setTempCity(city);
     setSearchCity(city);
     setIsCityModalOpen(false);
     setCitySearch('');
   };
-
   const handleClearCity = () => {
     setTempCity('');
     setSearchCity('');
     setIsCityModalOpen(false);
     setCitySearch('');
   };
-
   const handleLocationClick = () => {
     setIsCityModalOpen(true);
   };
-
   const handleDealTypeMouseEnter = () => {
     clearTimeout(dealTypeTimeoutRef.current);
     dealTypeTimeoutRef.current = setTimeout(() => {
@@ -411,14 +393,12 @@ function Filter({ onFilter, getTranslation, lang, currency }) {
       setIsPropertyTypeDropdownOpen(false);
     }, 100);
   };
-
   const handleDealTypeMouseLeave = () => {
     clearTimeout(dealTypeTimeoutRef.current);
     dealTypeTimeoutRef.current = setTimeout(() => {
       setIsDealTypeDropdownOpen(false);
     }, 200);
   };
-
   const handlePropertyTypeMouseEnter = () => {
     clearTimeout(propertyTypeTimeoutRef.current);
     propertyTypeTimeoutRef.current = setTimeout(() => {
@@ -426,14 +406,12 @@ function Filter({ onFilter, getTranslation, lang, currency }) {
       setIsDealTypeDropdownOpen(false);
     }, 100);
   };
-
   const handlePropertyTypeMouseLeave = () => {
     clearTimeout(propertyTypeTimeoutRef.current);
     propertyTypeTimeoutRef.current = setTimeout(() => {
       setIsPropertyTypeDropdownOpen(false);
     }, 200);
   };
-
   const handleModalOverlayClick = (e) => {
     if (e.target === e.currentTarget) {
       setIsCityModalOpen(false);
@@ -441,7 +419,6 @@ function Filter({ onFilter, getTranslation, lang, currency }) {
       setTempCity(searchCity);
     }
   };
-
   const handleSearch = () => {
     const filterParams = {
       country: 'China',
@@ -451,7 +428,6 @@ function Filter({ onFilter, getTranslation, lang, currency }) {
     };
     onFilter(filterParams);
   };
-
   useEffect(() => {
     const updateWidths = () => {
       if (locationSelectorRef.current) setLocationSelectorWidth(`${Math.max(150, locationSelectorRef.current.scrollWidth)}px`);
@@ -460,18 +436,15 @@ function Filter({ onFilter, getTranslation, lang, currency }) {
     };
     updateWidths();
   }, [searchCity, dealType, propertyType]);
-
   useEffect(() => {
     if (isCityModalOpen) document.body.style.overflow = 'hidden';
     else document.body.style.overflow = 'auto';
     return () => { document.body.style.overflow = 'auto'; };
   }, [isCityModalOpen]);
-
-  const filteredCities = cities.filter(c => 
-    c.toLowerCase().includes(citySearch.toLowerCase()) || 
+  const filteredCities = cities.filter(c =>
+    c.toLowerCase().includes(citySearch.toLowerCase()) ||
     getTranslation(c, lang).toLowerCase().includes(citySearch.toLowerCase())
   ).sort((a, b) => getTranslation(a, lang).localeCompare(getTranslation(b, lang)));
-
   return h('section', { className: 'search-bar offer' }, [
     h('div', { className: 'offer-title centered' }, [
       h('h1', null, getTranslation('title', lang))
@@ -562,21 +535,17 @@ function Filter({ onFilter, getTranslation, lang, currency }) {
     ])
   ]);
 }
-
 function PropertyCard({ property, currency, getTranslation, lang }) {
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const images = property.images?.length > 0 ? property.images : [`https://picsum.photos/474/316?random=${property.id}`];
-
   const handlePrevImage = () => setCurrentImageIndex(prev => (prev === 0 ? images.length - 1 : prev - 1));
   const handleNextImage = () => setCurrentImageIndex(prev => (prev === images.length - 1 ? 0 : prev + 1));
   const handleDotClick = index => setCurrentImageIndex(index);
-
   const price = currency === 'CNY' ? property.priceCNY : property.priceUSD;
   const currencySymbol = currencies.find(c => c.code === currency)?.symbol || '¥';
   const title = lang === 'zh' ? (property.titleZH || property.titleEN) : property.titleEN;
   const description = lang === 'zh' ? (property.descriptionZH || property.descriptionEN) : property.descriptionEN;
   const floorText = property.floor !== null ? (property.floor === 1 ? '1st' : property.floor === 2 ? '2nd' : property.floor === 3 ? '3rd' : `${property.floor}th`) : '';
-
   return h('div', { className: 'listing-card' }, [
     h('div', { className: 'listing-image-wrapper' }, [
       h('div', { className: 'listing-image-container' }, [
@@ -642,7 +611,6 @@ function PropertyCard({ property, currency, getTranslation, lang }) {
     ])
   ]);
 }
-
 function About({ lang, getTranslation }) {
   return h('div', { className: 'about-page' }, [
     h('h1', null, getTranslation('about_title', lang)),
@@ -666,7 +634,6 @@ function About({ lang, getTranslation }) {
     ])
   ]);
 }
-
 function App() {
   const [lang, setLang] = useState('zh');
   const [filteredProperties, setFilteredProperties] = useState([]);
@@ -676,15 +643,14 @@ function App() {
   const [isCurrencyDropdownOpen, setIsCurrencyDropdownOpen] = useState(false);
   const languageTimeoutRef = useRef(null);
   const currencyTimeoutRef = useRef(null);
-
   const listingsPerPage = 5;
-
   useEffect(() => {
+    console.log('Loading properties from localStorage...');
     const savedProperties = JSON.parse(localStorage.getItem('properties')) || [];
+    console.log('Loaded properties:', savedProperties);
     setFilteredProperties(savedProperties);
     setDisplayedProperties(savedProperties.slice(0, listingsPerPage));
   }, []);
-
   useEffect(() => {
     const handleScroll = () => {
       if (window.innerHeight + window.scrollY >= document.body.offsetHeight - 100) {
@@ -698,7 +664,6 @@ function App() {
     window.addEventListener('scroll', handleScroll);
     return () => window.removeEventListener('scroll', handleScroll);
   }, [filteredProperties, displayedProperties]);
-
   const handleFilter = (filters) => {
     const savedProperties = JSON.parse(localStorage.getItem('properties')) || [];
     const filtered = savedProperties.filter(property => {
@@ -711,17 +676,14 @@ function App() {
     setFilteredProperties(filtered);
     setDisplayedProperties(filtered.slice(0, listingsPerPage));
   };
-
   const handleLanguageChange = langCode => {
     setLang(langCode);
     setIsLanguageDropdownOpen(false);
   };
-
   const handleCurrencyChange = curr => {
     setCurrency(curr);
     setIsCurrencyDropdownOpen(false);
   };
-
   const handleLanguageMouseEnter = () => {
     clearTimeout(languageTimeoutRef.current);
     languageTimeoutRef.current = setTimeout(() => {
@@ -729,14 +691,12 @@ function App() {
       setIsCurrencyDropdownOpen(false);
     }, 100);
   };
-
   const handleLanguageMouseLeave = () => {
     clearTimeout(languageTimeoutRef.current);
     languageTimeoutRef.current = setTimeout(() => {
       setIsLanguageDropdownOpen(false);
     }, 200);
   };
-
   const handleCurrencyMouseEnter = () => {
     clearTimeout(currencyTimeoutRef.current);
     currencyTimeoutRef.current = setTimeout(() => {
@@ -744,21 +704,18 @@ function App() {
       setIsLanguageDropdownOpen(false);
     }, 100);
   };
-
   const handleCurrencyMouseLeave = () => {
     clearTimeout(currencyTimeoutRef.current);
     currencyTimeoutRef.current = setTimeout(() => {
       setIsCurrencyDropdownOpen(false);
     }, 200);
   };
-
   function getTranslation(key, lng) {
     if (Array.isArray(translations[lng]?.[key])) {
       return translations[lng][key];
     }
     return translations[lng]?.[key] || translations.EN[key] || key;
   }
-
   const Footer = () => h('footer', { className: 'footer' }, [
     h('div', { className: 'footer-container' }, [
       h('div', null, [
@@ -779,7 +736,6 @@ function App() {
       ])
     ])
   ]);
-
   return h(BrowserRouter, null, [
     h('div', { className: 'listings' }, [
       h('header', { className: 'listings-header' }, [
@@ -801,7 +757,7 @@ function App() {
                 ' ',
                 languages.find(l => l.code === lang)?.name || getTranslation('language', lang)
               ]),
-              h('div', { className: `listings-dropdown-content ${isLanguageDropdownOpen ? 'open' : ''}` }, 
+              h('div', { className: `listings-dropdown-content ${isLanguageDropdownOpen ? 'open' : ''}` },
                 languages.map(langOption => h('div', {
                   key: langOption.code,
                   className: 'listings-dropdown-item',
@@ -822,7 +778,7 @@ function App() {
                 ' ',
                 currencies.find(c => c.code === currency)?.code || getTranslation('currency', lang)
               ]),
-              h('div', { className: `listings-dropdown-content ${isCurrencyDropdownOpen ? 'open' : ''}` }, 
+              h('div', { className: `listings-dropdown-content ${isCurrencyDropdownOpen ? 'open' : ''}` },
                 currencies.map(curr => h('div', {
                   key: curr.code,
                   className: 'listings-dropdown-item',
@@ -856,5 +812,4 @@ function App() {
     ])
   ]);
 }
-
 ReactDOM.render(h(App), document.getElementById('root'));
