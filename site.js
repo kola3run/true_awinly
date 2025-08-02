@@ -1,7 +1,7 @@
 'use strict';
 
 const { useState, useEffect, useRef } = React;
-const { HashRouter, Route, Switch, Link } = ReactRouterDOM; // Используем Switch для v5
+const { HashRouter: BrowserRouter, Route, Switch, Link } = ReactRouterDOM;
 const h = React.createElement;
 
 // Translations
@@ -21,7 +21,6 @@ const translations = {
     currency: "Currency",
     USD: "USD",
     CNY: "CNY",
-    clear: "Clear",
     no_results: "No properties found.",
     footer_about: "About AWINLY",
     footer_support: "Support",
@@ -169,7 +168,6 @@ const translations = {
     currency: "货币",
     USD: "美元",
     CNY: "人民币",
-    clear: "清除",
     no_results: "未找到物业。",
     footer_about: "关于 AWINLY",
     footer_support: "支持",
@@ -320,8 +318,16 @@ const cities = [
   'Xingtai', 'Zhangjiakou', 'Chengde', 'Cangzhou', 'Hengshui'
 ];
 
-const dealTypes = ['buy', 'rent'];
-const propertyTypes = ['Apartment', 'House', 'Land'];
+const dealTypes = [
+  { value: 'buy', label: 'buy' },
+  { value: 'rent', label: 'rent' }
+];
+
+const propertyTypes = [
+  { value: 'Apartment', label: 'Apartment' },
+  { value: 'House', label: 'House' },
+  { value: 'Land', label: 'Land' }
+];
 
 const currencies = [
   { code: 'CNY', name: 'Chinese Yuan', symbol: '¥' },
@@ -333,60 +339,12 @@ const languages = [
   { code: 'zh', name: '中文', flag: '🇨🇳' }
 ];
 
-// Mock data for testing
-if (!localStorage.getItem('properties-initialized')) {
-    const mockProperties = [
-      {
-        id: 1,
-        titleEN: "Modern Apartment in Beijing",
-        titleZH: "北京现代公寓",
-        city: "Beijing",
-        dealType: "buy",
-        propertyType: "Apartment",
-        priceCNY: 1000000,
-        priceUSD: 140000,
-        area: 100,
-        floor: 5,
-        rooms: 3,
-        yearBuilt: 2020,
-        realtor: { name: "John Doe", email: "john@awinly.com", phone: "+86 123 456 7890" },
-        descriptionEN: "A modern apartment in the heart of Beijing with great amenities.",
-        descriptionZH: "北京中心的一栋现代化公寓，设施齐全。",
-        images: ["https://picsum.photos/474/316?random=1"],
-        country: "China"
-      },
-      {
-        id: 2,
-        titleEN: "Luxury House in Shanghai",
-        titleZH: "上海豪华别墅",
-        city: "Shanghai",
-        dealType: "rent",
-        propertyType: "House",
-        priceCNY: 15000,
-        priceUSD: 2100,
-        area: 200,
-        floor: 2,
-        rooms: 4,
-        yearBuilt: 2018,
-        realtor: { name: "Jane Smith", email: "jane@awinly.com", phone: "+86 987 654 3210" },
-        descriptionEN: "A luxurious house for rent in Shanghai with a private garden.",
-        descriptionZH: "上海一栋带私人花园的豪华出租别墅。",
-        images: ["https://picsum.photos/474/316?random=2"],
-        country: "China"
-      }
-    ];
-    const existingProperties = JSON.parse(localStorage.getItem('properties')) || [];
-    localStorage.setItem('properties', JSON.stringify([...existingProperties, ...mockProperties]));
-    localStorage.setItem('properties-initialized', 'true');
-    console.log('Mock properties initialized:', mockProperties);
-  }
-
 // Components
 function ScrollToTopButton() {
   const [isVisible, setIsVisible] = useState(false);
 
   useEffect(() => {
-    const handleScroll = () => setIsVisible(window.scrollY > 200);
+    const handleScroll = () => setIsVisible(window.scrollY > 300);
     window.addEventListener('scroll', handleScroll);
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
@@ -485,7 +443,6 @@ function Filter({ onFilter, getTranslation, lang, currency }) {
   };
 
   const handleSearch = () => {
-    console.log('Search filters:', { country: 'China', city: searchCity, dealType, propertyType });
     const filterParams = {
       country: 'China',
       city: searchCity,
@@ -544,10 +501,10 @@ function Filter({ onFilter, getTranslation, lang, currency }) {
               h('div', {
                 className: `deal-type-dropdown ${isDealTypeDropdownOpen ? 'open' : ''}`
               }, dealTypes.map(type => h('div', {
-                key: type,
+                key: type.value,
                 className: 'deal-type-option',
-                onClick: () => handleDealTypeChange(type)
-              }, getTranslation(type, lang))))
+                onClick: () => handleDealTypeChange(type.value)
+              }, getTranslation(type.label, lang))))
             ])
           ]),
           h('div', {
@@ -562,10 +519,10 @@ function Filter({ onFilter, getTranslation, lang, currency }) {
               h('div', {
                 className: `property-type-dropdown ${isPropertyTypeDropdownOpen ? 'open' : ''}`
               }, propertyTypes.map(type => h('div', {
-                key: type,
+                key: type.value,
                 className: 'property-type-option',
-                onClick: () => handlePropertyTypeChange(type)
-              }, getTranslation(type, lang))))
+                onClick: () => handlePropertyTypeChange(type.value)
+              }, getTranslation(type.label, lang))))
             ])
           ]),
           h('button', { className: 'search-btn', onClick: handleSearch }, [
@@ -599,7 +556,7 @@ function Filter({ onFilter, getTranslation, lang, currency }) {
           ])
         ]),
         h('div', { className: 'modal-footer' }, [
-          h('button', { className: 'modal-btn clear', onClick: handleClearCity }, getTranslation('clear', lang))
+          h('button', { className: 'modal-btn clear', onClick: handleClearCity }, getTranslation('clear', lang) || 'Clear')
         ])
       ])
     ])
@@ -609,18 +566,6 @@ function Filter({ onFilter, getTranslation, lang, currency }) {
 function PropertyCard({ property, currency, getTranslation, lang }) {
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const images = property.images?.length > 0 ? property.images : [`https://picsum.photos/474/316?random=${property.id}`];
-  const [isMobile, setIsMobile] = useState(window.innerWidth <= 480);
-
-  useEffect(() => {
-    console.log('PropertyCard rendering, property:', property, 'isMobile:', isMobile);
-    const handleResize = () => {
-      const mobile = window.innerWidth <= 480;
-      setIsMobile(mobile);
-      console.log('Window resized, isMobile:', mobile);
-    };
-    window.addEventListener('resize', handleResize);
-    return () => window.removeEventListener('resize', handleResize);
-  }, [property, isMobile]);
 
   const handlePrevImage = () => setCurrentImageIndex(prev => (prev === 0 ? images.length - 1 : prev - 1));
   const handleNextImage = () => setCurrentImageIndex(prev => (prev === images.length - 1 ? 0 : prev + 1));
@@ -632,7 +577,7 @@ function PropertyCard({ property, currency, getTranslation, lang }) {
   const description = lang === 'zh' ? (property.descriptionZH || property.descriptionEN) : property.descriptionEN;
   const floorText = property.floor !== null ? (property.floor === 1 ? '1st' : property.floor === 2 ? '2nd' : property.floor === 3 ? '3rd' : `${property.floor}th`) : '';
 
-  return h('div', { className: `listing-card ${isMobile ? 'mobile' : ''}` }, [
+  return h('div', { className: 'listing-card' }, [
     h('div', { className: 'listing-image-wrapper' }, [
       h('div', { className: 'listing-image-container' }, [
         h('img', {
@@ -644,24 +589,20 @@ function PropertyCard({ property, currency, getTranslation, lang }) {
         images.length > 1 && [
           h('button', { className: 'image-nav-button image-nav-left', onClick: handlePrevImage }, '←'),
           h('button', { className: 'image-nav-button image-nav-right', onClick: handleNextImage }, '→'),
-          h('div', { className: 'image-dots' }, images.map((_, index) => 
-            h('span', {
-              key: index,
-              className: `image-dot ${currentImageIndex === index ? 'active' : ''}`,
-              onClick: () => handleDotClick(index)
-            })
-          ))
+          h('div', { className: 'image-dots' }, images.map((_, index) => h('span', {
+            key: index,
+            className: `image-dot ${currentImageIndex === index ? 'active' : ''}`,
+            onClick: () => handleDotClick(index)
+          })))
         ]
       ]),
-      isMobile && images.length > 1 && h('div', { className: 'listing-thumbnails mobile' }, images.map((image, index) => 
-        h('img', {
-          key: index,
-          src: image,
-          alt: `${title} thumbnail ${index + 1}`,
-          className: `thumbnail-image ${currentImageIndex === index ? 'active' : ''}`,
-          onClick: () => handleDotClick(index)
-        })
-      ))
+      images.length > 1 && h('div', { className: 'listing-thumbnails' }, images.map((image, index) => h('img', {
+        key: index,
+        src: image,
+        alt: `${title} thumbnail ${index + 1}`,
+        className: `thumbnail-image ${currentImageIndex === index ? 'active' : ''}`,
+        onClick: () => handleDotClick(index)
+      })))
     ]),
     h('div', { className: 'listing-details' }, [
       h('div', { className: 'listing-details-header' }, [
@@ -722,16 +663,6 @@ function About({ lang, getTranslation }) {
       h('ul', null, getTranslation('about_extended_functionality_list', lang).map(item => h('li', { key: item }, item))),
       h('h3', null, getTranslation('about_for_all_segments', lang)),
       h('ul', null, getTranslation('about_for_all_segments_list', lang).map(item => h('li', { key: item }, item)))
-    ]),
-    h('section', { className: 'about-section ai-test' }, [
-      h('h2', null, 'AI Test Product: Real Estate Listing Platform'),
-      h('p', null, 'AWINLY is testing an AI-driven platform to streamline real estate listings. The AI analyzes market trends, suggests optimal prices, and automates property matching based on user preferences. This pilot uses open-source data to evaluate demand. If successful, the platform will integrate advanced features like predictive analytics and automated negotiations, targeting global expansion starting with China.'),
-      h('p', null, 'Key features in testing include:'),
-      h('ul', null, [
-        h('li', { key: '1' }, 'AI-powered price optimization'),
-        h('li', { key: '2' }, 'Automated property matching'),
-        h('li', { key: '3' }, 'Real-time market trend analysis')
-      ])
     ])
   ]);
 }
@@ -749,26 +680,16 @@ function App() {
   const listingsPerPage = 5;
 
   useEffect(() => {
-    console.log('App useEffect: Loading properties...');
-    try {
-      const savedProperties = JSON.parse(localStorage.getItem('properties')) || [];
-      console.log('Loaded properties:', savedProperties);
-      setFilteredProperties(savedProperties);
-      setDisplayedProperties(savedProperties.slice(0, listingsPerPage));
-    } catch (error) {
-      console.error('Error loading properties from localStorage:', error);
-      setFilteredProperties([]);
-      setDisplayedProperties([]);
-    }
+    const savedProperties = JSON.parse(localStorage.getItem('properties')) || [];
+    setFilteredProperties(savedProperties);
+    setDisplayedProperties(savedProperties.slice(0, listingsPerPage));
   }, []);
 
   useEffect(() => {
     const handleScroll = () => {
-      console.log('Scroll event triggered, scrollY:', window.scrollY);
       if (window.innerHeight + window.scrollY >= document.body.offsetHeight - 100) {
         const nextPage = Math.floor(displayedProperties.length / listingsPerPage) + 1;
         const newProperties = filteredProperties.slice(0, nextPage * listingsPerPage);
-        console.log('Loading more properties:', newProperties.length);
         if (newProperties.length > displayedProperties.length) {
           setDisplayedProperties(newProperties);
         }
@@ -779,18 +700,14 @@ function App() {
   }, [filteredProperties, displayedProperties]);
 
   const handleFilter = (filters) => {
-    console.log('Applying filters:', filters);
     const savedProperties = JSON.parse(localStorage.getItem('properties')) || [];
     const filtered = savedProperties.filter(property => {
-      const matchesCountry = !filters.country || property.country === filters.country;
+      const matchesCountry = property.country === 'China';
       const matchesCity = !filters.city || property.city === filters.city;
       const matchesDealType = !filters.dealType || property.dealType === filters.dealType;
       const matchesPropertyType = !filters.propertyType || property.propertyType === filters.propertyType;
-      const result = matchesCountry && matchesCity && matchesDealType && matchesPropertyType;
-      console.log('Property:', property, 'Matches:', result);
-      return result;
+      return matchesCountry && matchesCity && matchesDealType && matchesPropertyType;
     });
-    console.log('Filtered properties:', filtered);
     setFilteredProperties(filtered);
     setDisplayedProperties(filtered.slice(0, listingsPerPage));
   };
@@ -835,43 +752,43 @@ function App() {
     }, 200);
   };
 
-  function getTranslation(key) {
-    if (Array.isArray(translations[lang]?.[key])) {
-      return translations[lang][key];
+  function getTranslation(key, lng) {
+    if (Array.isArray(translations[lng]?.[key])) {
+      return translations[lng][key];
     }
-    return translations[lang]?.[key] || translations.EN[key] || key;
+    return translations[lng]?.[key] || translations.EN[key] || key;
   }
 
   const Footer = () => h('footer', { className: 'footer' }, [
     h('div', { className: 'footer-container' }, [
       h('div', null, [
-        h('h3', null, getTranslation('footer_about')),
-        h(Link, { to: '/about', className: 'footer-about-link' }, getTranslation('about'))
+        h('h3', null, getTranslation('footer_about', lang)),
+        h(Link, { to: '/about', className: 'footer-about-link' }, getTranslation('about', lang))
       ]),
       h('div', null, [
-        h('h3', null, getTranslation('footer_support')),
-        h('p', null, getTranslation('footer_support_email'))
+        h('h3', null, getTranslation('footer_support', lang)),
+        h('p', null, getTranslation('footer_support_email', lang))
       ]),
       h('div', null, [
-        h('h3', null, getTranslation('footer_contacts')),
+        h('h3', null, getTranslation('footer_contacts', lang)),
         h('p', { className: 'footer-disclaimer' }, [
-          getTranslation('footer_disclaimer'),
+          getTranslation('footer_disclaimer', lang),
           ' ',
-          h(Link, { to: '/about', className: 'footer-disclaimer-link' }, getTranslation('about'))
+          h(Link, { to: '/about', className: 'footer-disclaimer-link' }, getTranslation('about', lang))
         ])
       ])
     ])
   ]);
 
-  return h(HashRouter, null, [
+  return h(BrowserRouter, null, [
     h('div', { className: 'listings' }, [
       h('header', { className: 'listings-header' }, [
         h('div', { className: 'listings-header-container' }, [
           h('div', { className: 'listings-header-left' }, [
             h('div', { className: 'listings-header-title' }, [
-              h('h3', null, getTranslation('brand'))
+              h('h3', null, getTranslation('brand', lang))
             ]),
-            h(Link, { to: '/about', className: 'listings-header-about' }, getTranslation('about'))
+            h(Link, { to: '/about', className: 'listings-header-about' }, getTranslation('about', lang))
           ]),
           h('div', { className: 'listings-header-actions' }, [
             h('div', {
@@ -882,7 +799,7 @@ function App() {
               h('button', { className: 'listings-dropdown-btn' }, [
                 languages.find(l => l.code === lang)?.flag || '🌐',
                 ' ',
-                languages.find(l => l.code === lang)?.name || getTranslation('language')
+                languages.find(l => l.code === lang)?.name || getTranslation('language', lang)
               ]),
               h('div', { className: `listings-dropdown-content ${isLanguageDropdownOpen ? 'open' : ''}` }, 
                 languages.map(langOption => h('div', {
@@ -903,7 +820,7 @@ function App() {
               h('button', { className: 'listings-dropdown-btn' }, [
                 currencies.find(c => c.code === currency)?.symbol || '¥',
                 ' ',
-                currencies.find(c => c.code === currency)?.code || getTranslation('currency')
+                currencies.find(c => c.code === currency)?.code || getTranslation('currency', lang)
               ]),
               h('div', { className: `listings-dropdown-content ${isCurrencyDropdownOpen ? 'open' : ''}` }, 
                 currencies.map(curr => h('div', {
@@ -926,9 +843,11 @@ function App() {
             h(Filter, { onFilter: handleFilter, getTranslation, lang, currency })
           ]),
           h('div', { className: 'listings-container' }, [
-            displayedProperties.length === 0
-              ? h('p', null, getTranslation('no_results'))
-              : h('div', { className: 'listings-list' }, displayedProperties.map(property => h(PropertyCard, { key: property.id, property, currency, getTranslation, lang })))
+            displayedProperties.length > 0
+              ? h('div', { className: 'listings-list' }, displayedProperties.map(property =>
+                  h(PropertyCard, { key: property.id, property, currency, getTranslation, lang })
+                ))
+              : h('div', { className: 'no-results' }, getTranslation('no_results', lang))
           ])
         ])
       ]),
@@ -938,9 +857,4 @@ function App() {
   ]);
 }
 
-if (typeof ReactDOM !== 'undefined' && document.getElementById('root')) {
-  console.log('Rendering App at', new Date().toISOString());
-  ReactDOM.render(h(App), document.getElementById('root'));
-} else {
-  console.error('Cannot render App: ReactDOM or root element missing at', new Date().toISOString());
-}
+ReactDOM.render(h(App), document.getElementById('root'));

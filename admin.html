@@ -207,25 +207,24 @@
 <body>
   <div id="root"></div>
   <script>
-    // Пароль для админки (изменяй здесь)
     const ADMIN_PASSWORD = 'Awinly-Awinly228';
+    const CLOUD_NAME = 'dkjakynhh'; // Замените на ваш Cloud Name
+    const API_KEY = '724711754654635'; // Замените на ваш API Key
+    const API_SECRET = 'v4vizym6WCttYT-13k5XXw7yps8'; // Замените на ваш API Secret
 
-    // Проверка пароля при загрузке
+    // Удаление хэша из URL при загрузке
+    if (window.location.hash) {
+      window.history.replaceState(null, null, window.location.pathname);
+    }
+
+    // Проверка пароля
     (function() {
       const storedPassword = localStorage.getItem('adminPassword');
-      if (!storedPassword) {
-        const enteredPassword = prompt('Enter admin password:');
+      if (!storedPassword || storedPassword !== ADMIN_PASSWORD) {
+        const enteredPassword = prompt('Введите пароль администратора:');
         if (enteredPassword !== ADMIN_PASSWORD) {
-          alert('Incorrect password. Access denied.');
-          window.location.href = '/'; // Редирект на главную или другую страницу
-          return;
-        }
-        localStorage.setItem('adminPassword', enteredPassword); // Сохраняем после первого входа
-      } else if (storedPassword !== ADMIN_PASSWORD) {
-        const enteredPassword = prompt('Enter admin password:');
-        if (enteredPassword !== ADMIN_PASSWORD) {
-          alert('Incorrect password. Access denied.');
-          window.location.href = '/';
+          alert('Неверный пароль. Доступ запрещен.');
+          window.location.replace('/');
           return;
         }
         localStorage.setItem('adminPassword', enteredPassword);
@@ -387,8 +386,8 @@
         realtor_name: "经纪人姓名",
         realtor_email: "经纪人邮箱",
         realtor_phone: "经纪人电话",
-        description_en: "描述（英文）",
-        description_zh: "描述（中文）",
+        description_en: "描述（英文)",
+        description_zh: "描述（中文)",
         upload_images: "上传图片",
         required_fields: "请填写所有必填字段（标题、城市、人民币价格、美元价格）。",
         invalid_email: "请输入有效的经纪人邮箱。",
@@ -472,7 +471,7 @@
         Tangshan: "唐山",
         Tianjin: "天津",
         Tongling: "铜陵",
-        Urumqi: "乌鲁木qi",
+        Urumqi: "乌鲁木齐",
         Weifang: "潍坊",
         Weihai: "威海",
         Wenzhou: "温州",
@@ -494,12 +493,144 @@
         Zhenjiang: "镇江",
         Zhoushan: "舟山",
         Zibo: "淄博"
+      },
+      ru: {
+        admin_title: "Админ-панель AWINLY",
+        add_property: "Добавить объект",
+        update_property: "Обновить объект",
+        existing_properties: "Существующие объекты",
+        no_properties: "Объекты не найдены.",
+        edit: "Редактировать",
+        delete: "Удалить",
+        title_en: "Название (на английском)",
+        title_zh: "Название (на китайском)",
+        city: "Город",
+        select_city: "Выберите город",
+        deal_type: "Тип сделки",
+        property_type: "Тип недвижимости",
+        price_cny: "Цена в CNY",
+        price_usd: "Цена в USD",
+        area: "Площадь (м²)",
+        floor: "Этаж",
+        rooms: "Комнаты",
+        year_built: "Год постройки",
+        realtor_name: "Имя риелтора",
+        realtor_email: "Email риелтора",
+        realtor_phone: "Телефон риелтора",
+        description_en: "Описание (на английском)",
+        description_zh: "Описание (на китайском)",
+        upload_images: "Загрузить изображения",
+        required_fields: "Заполните все обязательные поля (Название, Город, Цена в CNY, Цена в USD).",
+        invalid_email: "Введите корректный email риелтора.",
+        confirm_delete: "Вы уверены, что хотите удалить этот объект?",
+        property_added: "Объект успешно добавлен!",
+        property_updated: "Объект успешно обновлен!",
+        property_deleted: "Объект успешно удален!",
+        upload_error: "Ошибка загрузки изображения",
+        cloudinary_error: "Ошибка загрузки в Cloudinary. Проверьте консоль для деталей.",
+        language: "Язык",
+        buy: "Покупка",
+        rent: "Аренда",
+        Apartment: "Квартира",
+        House: "Дом",
+        Land: "Земля",
+        Anqing: "Аньцин",
+        Baoding: "Баодин",
+        Beijing: "Пекин",
+        Bengbu: "Бэнбу",
+        Binzhou: "Биньчжоу",
+        Cangzhou: "Цанчжоу",
+        Changchun: "Чанчунь",
+        Changsha: "Чанша",
+        Changzhou: "Чанчжоу",
+        Chengde: "Чэндэ",
+        Chengdu: "Чэнду",
+        Chizhou: "Чичжоу",
+        Chongqing: "Чунцин",
+        Chuzhou: "Чучжоу",
+        Dalian: "Далянь",
+        Dezhou: "Дэчжоу",
+        Dongying: "Дунъин",
+        Fuyang: "Фуян",
+        Fuzhou: "Фучжоу",
+        Guangzhou: "Гуанчжоу",
+        Guiyang: "Гуйян",
+        Haikou: "Хайкоу",
+        Handan: "Ханьдань",
+        Hangzhou: "Ханчжоу",
+        Harbin: "Харбин",
+        Hefei: "Хэфэй",
+        Hengshui: "Хэншуй",
+        Heze: "Хэцзэ",
+        Hohhot: "Хух-Хото",
+        HuaiAn: "Хуайань",
+        Huaibei: "Хуайбэй",
+        Huainan: "Хуайнань",
+        Huangshan: "Хуаншань",
+        Huzhou: "Хучжоу",
+        Jiaxing: "Цзясин",
+        Jinan: "Цзинань",
+        Jinhua: "Цзиньхуа",
+        Kunming: "Куньмин",
+        Laiwu: "Лайу",
+        Langfang: "Ланфан",
+        Lanzhou: "Ланьчжоу",
+        Lhasa: "Лхаса",
+        Lianyungang: "Ляньюньган",
+        Liaocheng: "Ляочэн",
+        Linyi: "Линьий",
+        Lishui: "Лишуй",
+        LuAn: "Луань",
+        MaAnshan: "Мааньшань",
+        Nanchang: "Наньчан",
+        Nanjing: "Нанкин",
+        Nanning: "Наньнин",
+        Ningbo: "Нинбо",
+        Qingdao: "Циндао",
+        Qinhuangdao: "Циньхуандао",
+        Quzhou: "Цюйчжоу",
+        Rizhao: "Жичжао",
+        Shanghai: "Шанхай",
+        Shaoxing: "Шаосин",
+        Shenyang: "Шэньян",
+        Shenzhen: "Шэньчжэнь",
+        Shijiazhuang: "Шицзячжуан",
+        Suqian: "Суцянь",
+        Suzhou: "Сучжоу",
+        Taiyuan: "Тайюань",
+        Taizhou: "Тайчжоу",
+        Tangshan: "Таншань",
+        Tianjin: "Тяньцзинь",
+        Tongling: "Тунлин",
+        Urumqi: "Урумчи",
+        Weifang: "Вэйфан",
+        Weihai: "Вэйхай",
+        Wenzhou: "Вэньчжоу",
+        Wuhan: "Ухань",
+        Wuxi: "Уси",
+        XiAn: "Сиань",
+        Xiamen: "Сямэнь",
+        Xingtai: "Синтай",
+        Xining: "Синин",
+        Xuancheng: "Сюаньчэн",
+        Yancheng: "Яньчэн",
+        Yangzhou: "Янчжоу",
+        Yantai: "Яньтай",
+        Yinchuan: "Иньчуань",
+        Zaozhuang: "Цзаочжуан",
+        Zhangjiakou: "Чжанцзякоу",
+        Zhengding: "Чжэндин",
+        Zhengzhou: "Чжэнчжоу",
+        Zhenjiang: "Чжэньцзян",
+        Zhoushan: "Чжоушань",
+        Zibo: "Цзыбо"
       }
     };
 
     const languages = [
       { code: 'EN', name: 'English', flag: '🇬🇧' },
-      { code: 'zh', name: '中文', flag: '🇨🇳' }
+      { code: 'zh', name: '中文', flag: '🇨🇳' },
+      { code: 'ru', name: 'Русский', flag: '🇷🇺' }
     ];
 
     const adminCities = [
@@ -521,11 +652,6 @@
 
     const { useState, useEffect, useRef } = React;
     const h = React.createElement;
-
-    // Cloudinary configuration for signed upload
-    const CLOUD_NAME = 'dkjakynhh';
-    const API_KEY = '724711754654635';
-    const API_SECRET = 'v4vizym6WCttYT-13k5XXw7yps8';
 
     function generateSignature(paramsToSign) {
       const timestamp = Math.floor(Date.now() / 1000);
@@ -568,12 +694,15 @@
       const getTranslation = (key) => translations[lang][key] || translations.EN[key] || key;
 
       useEffect(() => {
-        const savedProperties = JSON.parse(localStorage.getItem('properties')) || [];
-        const normalizedProperties = savedProperties.map(p => ({
-          ...p,
-          realtor: p.realtor && typeof p.realtor === 'object' ? p.realtor : { name: '', email: '', phone: '' }
-        }));
-        setProperties(normalizedProperties);
+        try {
+          const savedProperties = JSON.parse(localStorage.getItem('properties')) || [];
+          setProperties(savedProperties);
+          console.log('Admin loaded properties:', savedProperties);
+        } catch (error) {
+          console.error('Ошибка загрузки объектов из localStorage:', error);
+          setProperties([]);
+          setError(getTranslation('cloudinary_error'));
+        }
       }, []);
 
       useEffect(() => {
@@ -600,16 +729,17 @@
 
       const uploadFiles = async (files) => {
         const url = `https://api.cloudinary.com/v1_1/${CLOUD_NAME}/image/upload`;
-        for (const file of files) {
-          const formDataToSend = new FormData();
-          const paramsToSign = {};
-          const { signature, timestamp } = generateSignature(paramsToSign);
-          formDataToSend.append('file', file);
-          formDataToSend.append('api_key', API_KEY);
-          formDataToSend.append('timestamp', timestamp);
-          formDataToSend.append('signature', signature);
+        try {
+          const uploadedUrls = [];
+          for (const file of files) {
+            const formDataToSend = new FormData();
+            const paramsToSign = {};
+            const { signature, timestamp } = generateSignature(paramsToSign);
+            formDataToSend.append('file', file);
+            formDataToSend.append('api_key', API_KEY);
+            formDataToSend.append('timestamp', timestamp);
+            formDataToSend.append('signature', signature);
 
-          try {
             const response = await fetch(url, {
               method: 'POST',
               body: formDataToSend
@@ -618,16 +748,17 @@
             if (result.error) {
               throw new Error(result.error.message);
             }
-            setFormData(prev => ({
-              ...prev,
-              images: [...prev.images, result.secure_url]
-            }));
-            setError('');
-            console.log('Upload successful:', result.secure_url);
-          } catch (error) {
-            console.error('Upload error:', error);
-            setError(getTranslation('upload_error') + ': ' + error.message);
+            uploadedUrls.push(result.secure_url);
+            console.log('Изображение успешно загружено:', result.secure_url);
           }
+          setFormData(prev => ({
+            ...prev,
+            images: [...prev.images, ...uploadedUrls]
+          }));
+          setError('');
+        } catch (error) {
+          console.error('Ошибка загрузки в Cloudinary:', error);
+          setError(getTranslation('cloudinary_error') + ': ' + error.message);
         }
       };
 
@@ -637,36 +768,52 @@
 
       const handleSubmit = (e) => {
         e.preventDefault();
+        console.log('Отправка формы:', formData);
         if (!formData.titleEN || !formData.titleZH || !formData.city || !formData.priceCNY || !formData.priceUSD) {
           setError(getTranslation('required_fields'));
+          console.error('Отсутствуют обязательные поля');
           return;
         }
         if (!formData.realtor.email.includes('@')) {
           setError(getTranslation('invalid_email'));
+          console.error('Неверный email риелтора');
           return;
         }
         const newProperty = {
           id: formData.id || Date.now(),
           country: 'China',
-          ...formData,
+          titleEN: formData.titleEN,
+          titleZH: formData.titleZH,
+          city: formData.city,
+          dealType: formData.dealType,
+          propertyType: formData.propertyType,
           priceCNY: parseFloat(formData.priceCNY) || 0,
           priceUSD: parseFloat(formData.priceUSD) || 0,
           area: parseInt(formData.area) || null,
           floor: parseInt(formData.floor) || null,
           rooms: parseInt(formData.rooms) || null,
-          yearBuilt: parseInt(formData.yearBuilt) || null
+          yearBuilt: parseInt(formData.yearBuilt) || null,
+          realtor: formData.realtor,
+          descriptionEN: formData.descriptionEN,
+          descriptionZH: formData.descriptionZH,
+          images: formData.images
         };
-        let updatedProperties;
-        if (isEditing) {
-          updatedProperties = properties.map(p => p.id === newProperty.id ? newProperty : p);
-          alert(getTranslation('property_updated'));
-        } else {
-          updatedProperties = [...properties, newProperty];
-          alert(getTranslation('property_added'));
+        try {
+          let updatedProperties;
+          if (isEditing) {
+            updatedProperties = properties.map(p => p.id === newProperty.id ? newProperty : p);
+            alert(getTranslation('property_updated'));
+          } else {
+            updatedProperties = [...properties, newProperty];
+            alert(getTranslation('property_added'));
+          }
+          localStorage.setItem('properties', JSON.stringify(updatedProperties));
+          setProperties(updatedProperties);
+          resetForm();
+        } catch (error) {
+          console.error('Ошибка сохранения в localStorage:', error);
+          setError(getTranslation('cloudinary_error'));
         }
-        localStorage.setItem('properties', JSON.stringify(updatedProperties));
-        setProperties(updatedProperties);
-        resetForm();
       };
 
       const handleEdit = (property) => {
@@ -674,11 +821,11 @@
           id: property.id,
           titleEN: property.titleEN || '',
           titleZH: property.titleZH || '',
-          city: property.city,
-          dealType: property.dealType,
-          propertyType: property.propertyType,
-          priceCNY: property.priceCNY.toString(),
-          priceUSD: property.priceUSD.toString(),
+          city: property.city || '',
+          dealType: property.dealType || 'buy',
+          propertyType: property.propertyType || 'Apartment',
+          priceCNY: property.priceCNY?.toString() || '',
+          priceUSD: property.priceUSD?.toString() || '',
           area: property.area?.toString() || '',
           floor: property.floor?.toString() || '',
           rooms: property.rooms?.toString() || '',
@@ -694,10 +841,16 @@
 
       const handleDelete = (id) => {
         if (window.confirm(getTranslation('confirm_delete'))) {
-          const updatedProperties = properties.filter(p => p.id !== id);
-          localStorage.setItem('properties', JSON.stringify(updatedProperties));
-          setProperties(updatedProperties);
-          alert(getTranslation('property_deleted'));
+          try {
+            const updatedProperties = properties.filter(p => p.id !== id);
+            localStorage.setItem('properties', JSON.stringify(updatedProperties));
+            setProperties(updatedProperties);
+            alert(getTranslation('property_deleted'));
+            console.log('Объект удален, id:', id);
+          } catch (error) {
+            console.error('Ошибка удаления объекта:', error);
+            setError(getTranslation('cloudinary_error'));
+          }
         }
       };
 
