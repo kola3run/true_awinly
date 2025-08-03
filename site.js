@@ -277,7 +277,7 @@ const translations = {
     Zaozhuang: "枣庄",
     Weifang: "潍坊",
     Yantai: "烟台",
-    Weihai: "威海",
+    Weihai: "威hai",
     Rizhao: "日照",
     Laiwu: "莱芜",
     Linyi: "临沂",
@@ -289,7 +289,7 @@ const translations = {
     Dongying: "东营",
     Zhengding: "正定",
     Baoding: "保定",
-    Langfang: "廊坊",
+    Langfang: "廊fang",
     Tangshan: "唐山",
     Qinhuangdao: "秦皇岛",
     Handan: "邯郸",
@@ -644,13 +644,24 @@ function App() {
   const languageTimeoutRef = useRef(null);
   const currencyTimeoutRef = useRef(null);
   const listingsPerPage = 5;
+
   useEffect(() => {
-    console.log('Loading properties from localStorage...');
-    const savedProperties = JSON.parse(localStorage.getItem('properties')) || [];
-    console.log('Loaded properties:', savedProperties);
-    setFilteredProperties(savedProperties);
-    setDisplayedProperties(savedProperties.slice(0, listingsPerPage));
+    console.log('Loading properties from localStorage on:', window.location.hostname);
+    try {
+      const savedProperties = JSON.parse(localStorage.getItem('properties')) || [];
+      console.log('Loaded properties:', savedProperties); // Отладка загрузки
+      if (savedProperties.length === 0) {
+        console.warn('No properties found in localStorage. Please add properties via admin panel.');
+      }
+      setFilteredProperties(savedProperties);
+      setDisplayedProperties(savedProperties.slice(0, listingsPerPage));
+    } catch (error) {
+      console.error('Error loading properties:', error);
+      setFilteredProperties([]);
+      setDisplayedProperties([]);
+    }
   }, []);
+
   useEffect(() => {
     const handleScroll = () => {
       if (window.innerHeight + window.scrollY >= document.body.offsetHeight - 100) {
@@ -664,7 +675,9 @@ function App() {
     window.addEventListener('scroll', handleScroll);
     return () => window.removeEventListener('scroll', handleScroll);
   }, [filteredProperties, displayedProperties]);
+
   const handleFilter = (filters) => {
+    console.log('Applying filters:', filters); // Отладка фильтров
     const savedProperties = JSON.parse(localStorage.getItem('properties')) || [];
     const filtered = savedProperties.filter(property => {
       const matchesCountry = property.country === 'China';
@@ -673,17 +686,21 @@ function App() {
       const matchesPropertyType = !filters.propertyType || property.propertyType === filters.propertyType;
       return matchesCountry && matchesCity && matchesDealType && matchesPropertyType;
     });
+    console.log('Filtered properties:', filtered); // Отладка результата фильтрации
     setFilteredProperties(filtered);
     setDisplayedProperties(filtered.slice(0, listingsPerPage));
   };
-  const handleLanguageChange = langCode => {
+
+  const handleLanguageChange = (langCode) => {
     setLang(langCode);
     setIsLanguageDropdownOpen(false);
   };
-  const handleCurrencyChange = curr => {
-    setCurrency(curr);
+
+  const handleCurrencyChange = (currencyCode) => {
+    setCurrency(currencyCode);
     setIsCurrencyDropdownOpen(false);
   };
+
   const handleLanguageMouseEnter = () => {
     clearTimeout(languageTimeoutRef.current);
     languageTimeoutRef.current = setTimeout(() => {
@@ -691,12 +708,14 @@ function App() {
       setIsCurrencyDropdownOpen(false);
     }, 100);
   };
+
   const handleLanguageMouseLeave = () => {
     clearTimeout(languageTimeoutRef.current);
     languageTimeoutRef.current = setTimeout(() => {
       setIsLanguageDropdownOpen(false);
     }, 200);
   };
+
   const handleCurrencyMouseEnter = () => {
     clearTimeout(currencyTimeoutRef.current);
     currencyTimeoutRef.current = setTimeout(() => {
@@ -704,40 +723,20 @@ function App() {
       setIsLanguageDropdownOpen(false);
     }, 100);
   };
+
   const handleCurrencyMouseLeave = () => {
     clearTimeout(currencyTimeoutRef.current);
     currencyTimeoutRef.current = setTimeout(() => {
       setIsCurrencyDropdownOpen(false);
     }, 200);
   };
-  function getTranslation(key, lng) {
-    if (Array.isArray(translations[lng]?.[key])) {
-      return translations[lng][key];
-    }
-    return translations[lng]?.[key] || translations.EN[key] || key;
-  }
-  const Footer = () => h('footer', { className: 'footer' }, [
-    h('div', { className: 'footer-container' }, [
-      h('div', null, [
-        h('h3', null, getTranslation('footer_about', lang)),
-        h(Link, { to: '/about', className: 'footer-about-link' }, getTranslation('about', lang))
-      ]),
-      h('div', null, [
-        h('h3', null, getTranslation('footer_support', lang)),
-        h('p', null, getTranslation('footer_support_email', lang))
-      ]),
-      h('div', null, [
-        h('h3', null, getTranslation('footer_contacts', lang)),
-        h('p', { className: 'footer-disclaimer' }, [
-          getTranslation('footer_disclaimer', lang),
-          ' ',
-          h(Link, { to: '/about', className: 'footer-disclaimer-link' }, getTranslation('about', lang))
-        ])
-      ])
-    ])
-  ]);
+
+  const getTranslation = (key, currentLang = lang) => {
+    return translations[currentLang][key] || translations.EN[key] || key;
+  };
+
   return h(BrowserRouter, null, [
-    h('div', { className: 'listings' }, [
+    h('div', null, [
       h('header', { className: 'listings-header' }, [
         h('div', { className: 'listings-header-container' }, [
           h('div', { className: 'listings-header-left' }, [
@@ -757,16 +756,15 @@ function App() {
                 ' ',
                 languages.find(l => l.code === lang)?.name || getTranslation('language', lang)
               ]),
-              h('div', { className: `listings-dropdown-content ${isLanguageDropdownOpen ? 'open' : ''}` },
-                languages.map(langOption => h('div', {
-                  key: langOption.code,
-                  className: 'listings-dropdown-item',
-                  onClick: () => handleLanguageChange(langOption.code)
-                }, [
-                  langOption.flag,
-                  ' ',
-                  langOption.name
-                ])))
+              h('div', { className: `listings-dropdown-content ${isLanguageDropdownOpen ? 'open' : ''}` }, languages.map(langOption => h('div', {
+                key: langOption.code,
+                className: 'listings-dropdown-item',
+                onClick: () => handleLanguageChange(langOption.code)
+              }, [
+                langOption.flag,
+                ' ',
+                langOption.name
+              ])))
             ]),
             h('div', {
               className: 'listings-dropdown',
@@ -774,42 +772,54 @@ function App() {
               onMouseLeave: handleCurrencyMouseLeave
             }, [
               h('button', { className: 'listings-dropdown-btn' }, [
-                currencies.find(c => c.code === currency)?.symbol || '¥',
+                getTranslation(currency, lang),
                 ' ',
-                currencies.find(c => c.code === currency)?.code || getTranslation('currency', lang)
+                currencies.find(c => c.code === currency)?.symbol || '¥'
               ]),
-              h('div', { className: `listings-dropdown-content ${isCurrencyDropdownOpen ? 'open' : ''}` },
-                currencies.map(curr => h('div', {
-                  key: curr.code,
-                  className: 'listings-dropdown-item',
-                  onClick: () => handleCurrencyChange(curr.code)
-                }, [
-                  curr.symbol,
-                  ' ',
-                  curr.code
-                ])))
+              h('div', { className: `listings-dropdown-content ${isCurrencyDropdownOpen ? 'open' : ''}` }, currencies.map(curr => h('div', {
+                key: curr.code,
+                className: 'listings-dropdown-item',
+                onClick: () => handleCurrencyChange(curr.code)
+              }, getTranslation(curr.code, lang))))
             ])
           ])
         ])
       ]),
-      h(Switch, null, [
-        h(Route, { path: '/about', exact: true }, h(About, { lang, getTranslation })),
-        h(Route, { path: '/', exact: true }, [
-          h('div', { className: 'filter-section' }, [
-            h(Filter, { onFilter: handleFilter, getTranslation, lang, currency })
+      h(Filter, { onFilter: handleFilter, getTranslation, lang, currency }),
+      h('div', { className: 'listings-container' }, [
+        h('div', { className: 'listings-list' }, [
+          displayedProperties.length > 0 ? displayedProperties.map(property => h(PropertyCard, {
+            key: property.id,
+            property,
+            currency,
+            getTranslation,
+            lang
+          })) : h('p', null, getTranslation('no_results', lang))
+        ])
+      ]),
+      h('footer', { className: 'footer' }, [
+        h('div', { className: 'footer-container' }, [
+          h('div', null, [
+            h('h3', null, getTranslation('footer_about', lang)),
+            h('p', null, getTranslation('about_project_idea_text', lang).substring(0, 50) + '...')
           ]),
-          h('div', { className: 'listings-container' }, [
-            displayedProperties.length > 0
-              ? h('div', { className: 'listings-list' }, displayedProperties.map(property =>
-                  h(PropertyCard, { key: property.id, property, currency, getTranslation, lang })
-                ))
-              : h('div', { className: 'no-results' }, getTranslation('no_results', lang))
+          h('div', null, [
+            h('h3', null, getTranslation('footer_support', lang)),
+            h('p', null, getTranslation('footer_support_email', lang))
+          ]),
+          h('div', null, [
+            h('h3', null, getTranslation('footer_contacts', lang)),
+            h('p', null, getTranslation('footer_disclaimer', lang))
           ])
         ])
       ]),
-      h(ScrollToTopButton),
-      h(Footer)
+      h(ScrollToTopButton)
+    ]),
+    h(Switch, null, [
+      h(Route, { path: '/about', render: () => h(About, { lang, getTranslation }) })
     ])
   ]);
 }
+
+// Render
 ReactDOM.render(h(App), document.getElementById('root'));

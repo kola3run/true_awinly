@@ -616,8 +616,8 @@ body[lang="zh"] .offer .modal-btn {
 .listing-image-wrapper {
   display: flex;
   flex-direction: column;
-  width: 100%;
-  max-width: 474px; /* Ограничим максимальную ширину изображения, как было изначально */
+  width: 100%; /* Вернули гибкую ширину */
+  max-width: 474px; /* Ограничение, как изначально */
   flex-shrink: 0;
   gap: 10px;
 }
@@ -626,8 +626,8 @@ body[lang="zh"] .offer .modal-btn {
 .listing-image-container {
   position: relative;
   width: 100%;
-  aspect-ratio: 3 / 2; /* Восстановили исходный формат */
-  max-width: 474px; /* Явное ограничение ширины */
+  aspect-ratio: 3 / 2; /* Исходный формат */
+  max-width: 474px; /* Ограничение ширины */
   border-radius: 16px;
   overflow: hidden;
 }
