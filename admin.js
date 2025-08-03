@@ -40,6 +40,7 @@ const translations = {
     property_updated: "Property updated successfully!",
     property_deleted: "Property deleted successfully!",
     upload_error: "Image upload failed",
+    cloudinary_error: "Cloudinary upload failed. Check console for details.",
     language: "Language",
     buy: "Buy",
     rent: "Rent",
@@ -170,6 +171,7 @@ const translations = {
     property_updated: "物业更新成功！",
     property_deleted: "物业删除成功！",
     upload_error: "图片上传失败",
+    cloudinary_error: "Cloudinary 上传失败。请检查控制台详情。",
     language: "语言",
     buy: "购买",
     rent: "租赁",
@@ -202,7 +204,7 @@ const translations = {
     Changchun: "长春",
     Nanchang: "南昌",
     Urumqi: "乌鲁木齐",
-    Shijiazhuang: "石�庄",
+    Shijiazhuang: "石家庄",
     Taiyuan: "太原",
     Nanning: "南宁",
     Guiyang: "贵阳",
@@ -277,18 +279,16 @@ const languages = [
 
 // Cities
 const adminCities = [
-  'Beijing', 'Shanghai', 'Guangzhou', 'Shenzhen', 'Chengdu', 'Chongqing', 'Tianjin', 'Wuhan',
-  'XiAn', 'Hangzhou', 'Nanjing', 'Suzhou', 'Qingdao', 'Dalian', 'Shenyang', 'Changsha',
-  'Zhengzhou', 'Kunming', 'Hefei', 'Fuzhou', 'Xiamen', 'Jinan', 'Harbin', 'Changchun',
-  'Nanchang', 'Urumqi', 'Shijiazhuang', 'Taiyuan', 'Nanning', 'Guiyang', 'Lanzhou',
-  'Haikou', 'Yinchuan', 'Xining', 'Hohhot', 'Lhasa', 'Changzhou', 'Wuxi', 'Ningbo',
-  'Wenzhou', 'Jiaxing', 'Huzhou', 'Shaoxing', 'Zhoushan', 'Taizhou', 'Lianyungang',
-  'Yancheng', 'Yangzhou', 'Zhenjiang', 'HuaiAn', 'Suqian', 'LuAn', 'Huaibei',
-  'Bengbu', 'Fuyang', 'Huainan', 'Chuzhou', 'MaAnshan', 'Tongling', 'Anqing', 'Huangshan',
-  'Chizhou', 'Xuancheng', 'Jinhua', 'Quzhou', 'Lishui', 'Zaozhuang', 'Weifang', 'Yantai',
-  'Weihai', 'Rizhao', 'Laiwu', 'Linyi', 'Dezhou', 'Liaocheng', 'Binzhou', 'Heze', 'Zibo',
-  'Dongying', 'Zhengding', 'Baoding', 'Langfang', 'Tangshan', 'Qinhuangdao', 'Handan',
-  'Xingtai', 'Zhangjiakou', 'Chengde', 'Cangzhou', 'Hengshui'
+  'Beijing', 'Shanghai', 'Guangzhou', 'Shenzhen', 'Chengdu', 'Chongqing', 'Tianjin', 'Wuhan', 'XiAn', 'Hangzhou',
+  'Nanjing', 'Suzhou', 'Qingdao', 'Dalian', 'Shenyang', 'Changsha', 'Zhengzhou', 'Kunming', 'Hefei', 'Fuzhou',
+  'Xiamen', 'Jinan', 'Harbin', 'Changchun', 'Nanchang', 'Urumqi', 'Shijiazhuang', 'Taiyuan', 'Nanning', 'Guiyang',
+  'Lanzhou', 'Haikou', 'Yinchuan', 'Xining', 'Hohhot', 'Lhasa', 'Changzhou', 'Wuxi', 'Ningbo', 'Wenzhou',
+  'Jiaxing', 'Huzhou', 'Shaoxing', 'Zhoushan', 'Taizhou', 'Lianyungang', 'Yancheng', 'Yangzhou', 'Zhenjiang',
+  'HuaiAn', 'Suqian', 'LuAn', 'Huaibei', 'Bengbu', 'Fuyang', 'Huainan', 'Chuzhou', 'MaAnshan', 'Tongling',
+  'AnQing', 'Huangshan', 'Chizhou', 'Xuancheng', 'Jinhua', 'Quzhou', 'Lishui', 'Zaozhuang', 'Weifang',
+  'Yantai', 'Weihai', 'Rizhao', 'Laiwu', 'Linyi', 'Dezhou', 'Liaocheng', 'Binzhou', 'Heze', 'Zibo',
+  'Dongying', 'Zhengding', 'Baoding', 'Langfang', 'Tangshan', 'Qinhuangdao', 'Handan', 'Xingtai',
+  'Zhangjiakou', 'Chengde', 'Cangzhou', 'Hengshui'
 ];
 
 const dealTypes = ['buy', 'rent'];
@@ -345,39 +345,26 @@ function AdminPanel() {
 
   const getTranslation = (key) => translations[lang][key] || translations.EN[key] || key;
 
+  // Load properties from Firestore
   useEffect(() => {
-    console.log('Загрузка свойств в админке...');
-    try {
-      const savedProperties = JSON.parse(localStorage.getItem('properties')) || [];
-      const normalizedProperties = savedProperties.map(p => ({
-        ...p,
-        realtor: p.realtor && typeof p.realtor === 'object' ? p.realtor : { name: '', email: '', phone: '' },
-        images: p.images || [],
-        titleEN: p.titleEN || p.title || '',
-        titleZH: p.titleZH || p.title || '',
-        descriptionEN: p.descriptionEN || p.description || '',
-        descriptionZH: p.descriptionZH || p.description || ''
+    getDocs(collection(db, 'properties')).then(snapshot => {
+      const propertiesList = snapshot.docs.map(doc => ({
+        id: doc.id,
+        ...doc.data()
       }));
-      setProperties(normalizedProperties);
-      console.log('Свойства загружены:', normalizedProperties);
-    } catch (error) {
-      console.error('Ошибка при загрузке свойств из localStorage:', error);
-      setProperties([]);
-    }
+      setProperties(propertiesList);
+      console.log('Loaded properties from Firestore:', propertiesList);
+    }).catch(error => {
+      console.error('Error loading properties:', error);
+      setError('Failed to load properties');
+    });
   }, []);
-
-  useEffect(() => {
-    document.documentElement.lang = lang.toLowerCase();
-  }, [lang]);
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     if (name.startsWith('realtor.')) {
       const field = name.split('.')[1];
-      setFormData(prev => ({
-        ...prev,
-        realtor: { ...prev.realtor, [field]: value }
-      }));
+      setFormData(prev => ({ ...prev, realtor: { ...prev.realtor, [field]: value } }));
     } else {
       setFormData(prev => ({ ...prev, [name]: value }));
     }
@@ -390,10 +377,7 @@ function AdminPanel() {
 
   const uploadFiles = async (files) => {
     const placeholderUrl = `https://picsum.photos/474/316?random=${Date.now()}`;
-    setFormData(prev => ({
-      ...prev,
-      images: [...prev.images, placeholderUrl]
-    }));
+    setFormData(prev => ({ ...prev, images: [...prev.images, placeholderUrl] }));
     setError('');
     console.log('Используется заглушка для изображения:', placeholderUrl);
   };
@@ -416,7 +400,6 @@ function AdminPanel() {
       return;
     }
     const newProperty = {
-      id: formData.id || Date.now(),
       country: 'China',
       titleEN: formData.titleEN,
       titleZH: formData.titleZH,
@@ -435,22 +418,20 @@ function AdminPanel() {
       images: formData.images
     };
     console.log('Новое свойство:', newProperty);
-    let updatedProperties;
     if (isEditing) {
-      updatedProperties = properties.map(p => p.id === newProperty.id ? newProperty : p);
-      alert(getTranslation('property_updated'));
+      updateDoc(doc(db, 'properties', formData.id), newProperty).then(() => {
+        alert(getTranslation('property_updated'));
+        resetForm();
+      }).catch(error => {
+        setError('Failed to update property');
+      });
     } else {
-      updatedProperties = [...properties, newProperty];
-      alert(getTranslation('property_added'));
-    }
-    try {
-      localStorage.setItem('properties', JSON.stringify(updatedProperties));
-      console.log('Сохранено в localStorage:', updatedProperties);
-      setProperties(updatedProperties);
-      resetForm();
-    } catch (error) {
-      console.error('Ошибка сохранения в localStorage:', error);
-      setError('Не удалось сохранить свойство в localStorage');
+      addDoc(collection(db, 'properties'), newProperty).then(() => {
+        alert(getTranslation('property_added'));
+        resetForm();
+      }).catch(error => {
+        setError('Failed to add property');
+      });
     }
   };
 
@@ -479,16 +460,12 @@ function AdminPanel() {
 
   const handleDelete = (id) => {
     if (window.confirm(getTranslation('confirm_delete'))) {
-      const updatedProperties = properties.filter(p => p.id !== id);
-      try {
-        localStorage.setItem('properties', JSON.stringify(updatedProperties));
-        setProperties(updatedProperties);
+      deleteDoc(doc(db, 'properties', id)).then(() => {
         alert(getTranslation('property_deleted'));
         console.log('Свойство удалено, id:', id);
-      } catch (error) {
-        console.error('Ошибка при удалении свойства:', error);
+      }).catch(error => {
         setError('Не удалось удалить свойство');
-      }
+      });
     }
   };
 
@@ -536,245 +513,118 @@ function AdminPanel() {
 
   return h('div', { className: 'admin-container' }, [
     h('div', { className: 'language-selector' }, [
-      h('div', {
-        className: 'listings-dropdown',
-        onMouseEnter: handleLanguageMouseEnter,
-        onMouseLeave: handleLanguageMouseLeave
-      }, [
+      h('div', { className: 'listings-dropdown', onMouseEnter: handleLanguageMouseEnter, onMouseLeave: handleLanguageMouseLeave }, [
         h('button', { className: 'listings-dropdown-btn' }, [
           languages.find(l => l.code === lang)?.flag || '🌐',
           ' ',
           languages.find(l => l.code === lang)?.name || getTranslation('language')
         ]),
-        h('div', { className: `listings-dropdown-content ${isLanguageDropdownOpen ? 'open' : ''}` }, 
-          languages.map(langOption => h('div', {
-            key: langOption.code,
-            className: 'listings-dropdown-item',
-            onClick: () => handleLanguageChange(langOption.code)
-          }, [
-            langOption.flag,
-            ' ',
-            langOption.name
-          ])))
+        h('div', { className: `listings-dropdown-content ${isLanguageDropdownOpen ? 'open' : ''}` }, languages.map(langOption => h('div', { key: langOption.code, className: 'listings-dropdown-item', onClick: () => handleLanguageChange(langOption.code) }, [ langOption.flag, ' ', langOption.name ])))
       ])
     ]),
     h('h1', null, getTranslation('admin_title')),
     h('form', { onSubmit: handleSubmit }, [
       h('div', { className: 'form-group' }, [
         h('label', { htmlFor: 'titleEN' }, getTranslation('title_en') + ' *'),
-        h('input', {
-          type: 'text',
-          id: 'titleEN',
-          name: 'titleEN',
-          value: formData.titleEN,
-          onChange: handleInputChange,
-          required: true
-        })
+        h('input', { type: 'text', id: 'titleEN', name: 'titleEN', value: formData.titleEN, onChange: handleInputChange, required: true })
       ]),
       h('div', { className: 'form-group' }, [
         h('label', { htmlFor: 'titleZH' }, getTranslation('title_zh') + ' *'),
-        h('input', {
-          type: 'text',
-          id: 'titleZH',
-          name: 'titleZH',
-          value: formData.titleZH,
-          onChange: handleInputChange,
-          required: true
-        })
+        h('input', { type: 'text', id: 'titleZH', name: 'titleZH', value: formData.titleZH, onChange: handleInputChange, required: true })
       ]),
       h('div', { className: 'form-group' }, [
         h('label', { htmlFor: 'city' }, getTranslation('city') + ' *'),
-        h('select', {
-          id: 'city',
-          name: 'city',
-          value: formData.city,
-          onChange: handleInputChange,
-          required: true
-        }, [
+        h('select', { id: 'city', name: 'city', value: formData.city, onChange: handleInputChange, required: true }, [
           h('option', { value: '' }, getTranslation('select_city')),
           ...adminCities.map(city => h('option', { key: city, value: city }, getTranslation(city)))
         ])
       ]),
       h('div', { className: 'form-group' }, [
         h('label', { htmlFor: 'dealType' }, getTranslation('deal_type')),
-        h('select', {
-          id: 'dealType',
-          name: 'dealType',
-          value: formData.dealType,
-          onChange: handleInputChange
-        }, dealTypes.map(type => h('option', { key: type, value: type }, getTranslation(type)))
-        )
+        h('select', { id: 'dealType', name: 'dealType', value: formData.dealType, onChange: handleInputChange }, dealTypes.map(type => h('option', { key: type, value: type }, getTranslation(type))))
       ]),
       h('div', { className: 'form-group' }, [
         h('label', { htmlFor: 'propertyType' }, getTranslation('property_type')),
-        h('select', {
-          id: 'propertyType',
-          name: 'propertyType',
-          value: formData.propertyType,
-          onChange: handleInputChange
-        }, propertyTypes.map(type => h('option', { key: type, value: type }, getTranslation(type)))
-        )
+        h('select', { id: 'propertyType', name: 'propertyType', value: formData.propertyType, onChange: handleInputChange }, propertyTypes.map(type => h('option', { key: type, value: type }, getTranslation(type))))
       ]),
       h('div', { className: 'form-group' }, [
         h('label', { htmlFor: 'priceCNY' }, getTranslation('price_cny') + ' *'),
-        h('input', {
-          type: 'number',
-          id: 'priceCNY',
-          name: 'priceCNY',
-          value: formData.priceCNY,
-          onChange: handleInputChange,
-          required: true
-        })
+        h('input', { type: 'number', id: 'priceCNY', name: 'priceCNY', value: formData.priceCNY, onChange: handleInputChange, required: true })
       ]),
       h('div', { className: 'form-group' }, [
         h('label', { htmlFor: 'priceUSD' }, getTranslation('price_usd') + ' *'),
-        h('input', {
-          type: 'number',
-          id: 'priceUSD',
-          name: 'priceUSD',
-          value: formData.priceUSD,
-          onChange: handleInputChange,
-          required: true
-        })
+        h('input', { type: 'number', id: 'priceUSD', name: 'priceUSD', value: formData.priceUSD, onChange: handleInputChange, required: true })
       ]),
       h('div', { className: 'form-group' }, [
         h('label', { htmlFor: 'area' }, getTranslation('area')),
-        h('input', {
-          type: 'number',
-          id: 'area',
-          name: 'area',
-          value: formData.area,
-          onChange: handleInputChange
-        })
+        h('input', { type: 'number', id: 'area', name: 'area', value: formData.area, onChange: handleInputChange })
       ]),
       h('div', { className: 'form-group' }, [
         h('label', { htmlFor: 'floor' }, getTranslation('floor')),
-        h('input', {
-          type: 'number',
-          id: 'floor',
-          name: 'floor',
-          value: formData.floor,
-          onChange: handleInputChange
-        })
+        h('input', { type: 'number', id: 'floor', name: 'floor', value: formData.floor, onChange: handleInputChange })
       ]),
       h('div', { className: 'form-group' }, [
         h('label', { htmlFor: 'rooms' }, getTranslation('rooms')),
-        h('input', {
-          type: 'number',
-          id: 'rooms',
-          name: 'rooms',
-          value: formData.rooms,
-          onChange: handleInputChange
-        })
+        h('input', { type: 'number', id: 'rooms', name: 'rooms', value: formData.rooms, onChange: handleInputChange })
       ]),
       h('div', { className: 'form-group' }, [
         h('label', { htmlFor: 'yearBuilt' }, getTranslation('year_built')),
-        h('input', {
-          type: 'number',
-          id: 'yearBuilt',
-          name: 'yearBuilt',
-          value: formData.yearBuilt,
-          onChange: handleInputChange
-        })
+        h('input', { type: 'number', id: 'yearBuilt', name: 'yearBuilt', value: formData.yearBuilt, onChange: handleInputChange })
       ]),
       h('div', { className: 'form-group' }, [
         h('label', { htmlFor: 'realtor.name' }, getTranslation('realtor_name')),
-        h('input', {
-          type: 'text',
-          id: 'realtor.name',
-          name: 'realtor.name',
-          value: formData.realtor.name,
-          onChange: handleInputChange
-        })
+        h('input', { type: 'text', id: 'realtor.name', name: 'realtor.name', value: formData.realtor.name, onChange: handleInputChange })
       ]),
       h('div', { className: 'form-group' }, [
         h('label', { htmlFor: 'realtor.email' }, getTranslation('realtor_email')),
-        h('input', {
-          type: 'email',
-          id: 'realtor.email',
-          name: 'realtor.email',
-          value: formData.realtor.email,
-          onChange: handleInputChange
-        })
+        h('input', { type: 'email', id: 'realtor.email', name: 'realtor.email', value: formData.realtor.email, onChange: handleInputChange })
       ]),
       h('div', { className: 'form-group' }, [
         h('label', { htmlFor: 'realtor.phone' }, getTranslation('realtor_phone')),
-        h('input', {
-          type: 'tel',
-          id: 'realtor.phone',
-          name: 'realtor.phone',
-          value: formData.realtor.phone,
-          onChange: handleInputChange,
-          placeholder: '+86 123 456 7890'
-        })
+        h('input', { type: 'tel', id: 'realtor.phone', name: 'realtor.phone', value: formData.realtor.phone, onChange: handleInputChange, placeholder: '+86 123 456 7890' })
       ]),
       h('div', { className: 'form-group' }, [
         h('label', { htmlFor: 'descriptionEN' }, getTranslation('description_en')),
-        h('textarea', {
-          id: 'descriptionEN',
-          name: 'descriptionEN',
-          value: formData.descriptionEN,
-          onChange: handleInputChange
-        })
+        h('textarea', { id: 'descriptionEN', name: 'descriptionEN', value: formData.descriptionEN, onChange: handleInputChange })
       ]),
       h('div', { className: 'form-group' }, [
         h('label', { htmlFor: 'descriptionZH' }, getTranslation('description_zh')),
-        h('textarea', {
-          id: 'descriptionZH',
-          name: 'descriptionZH',
-          value: formData.descriptionZH,
-          onChange: handleInputChange
-        })
+        h('textarea', { id: 'descriptionZH', name: 'descriptionZH', value: formData.descriptionZH, onChange: handleInputChange })
       ]),
       h('div', { className: 'form-group' }, [
         h('label', null, getTranslation('upload_images')),
-        h('input', {
-          type: 'file',
-          id: 'file-input',
-          ref: fileInputRef,
-          multiple: true,
-          style: { display: 'none' },
-          onChange: handleFileChange
-        }),
+        h('input', { type: 'file', id: 'file-input', ref: fileInputRef, multiple: true, style: { display: 'none' }, onChange: handleFileChange }),
         h('button', { type: 'button', onClick: handleUploadClick }, getTranslation('upload_images')),
-        h('div', { className: 'image-preview' }, formData.images.map((url, index) => 
-          h('img', { key: index, src: url, alt: `Превью ${index + 1}` })
-        ))
+        h('div', { className: 'image-preview' }, formData.images.map((url, index) => h('img', { key: index, src: url, alt: `Превью ${index + 1}` })))
       ]),
       error && h('div', { className: 'error' }, error),
       h('button', { type: 'submit' }, getTranslation(isEditing ? 'update_property' : 'add_property'))
     ]),
     h('div', { className: 'properties-list' }, [
       h('h2', null, getTranslation('existing_properties')),
-      properties.length === 0
-        ? h('p', null, getTranslation('no_properties'))
-        : properties.map(property => h('div', { key: property.id, className: 'property-item' }, [
-            h('p', null, `${getTranslation('title_en')}: ${property.titleEN || ''}`),
-            h('p', null, `${getTranslation('title_zh')}: ${property.titleZH || ''}`),
-            h('p', null, `${getTranslation('city')}: ${getTranslation(property.city) || ''}`),
-            h('p', null, `${getTranslation('deal_type')}: ${getTranslation(property.dealType) || ''}`),
-            h('p', null, `${getTranslation('property_type')}: ${getTranslation(property.propertyType) || ''}`),
-            h('p', null, `${getTranslation('price_cny')}: ¥${(property.priceCNY || 0).toLocaleString()}`),
-            h('p', null, `${getTranslation('price_usd')}: $${(property.priceUSD || 0).toLocaleString()}`),
-            property.area && h('p', null, `${getTranslation('area')}: ${property.area} m²`),
-            property.floor && h('p', null, `${getTranslation('floor')}: ${property.floor}`),
-            property.rooms && h('p', null, `${getTranslation('rooms')}: ${property.rooms}`),
-            property.yearBuilt && h('p', null, `${getTranslation('year_built')}: ${property.yearBuilt}`),
-            (property.realtor && property.realtor.name) && h('p', null, `${getTranslation('realtor_name')}: ${property.realtor.name}`),
-            (property.realtor && property.realtor.email) && h('p', null, `${getTranslation('realtor_email')}: ${property.realtor.email}`),
-            (property.realtor && property.realtor.phone) && h('p', null, `${getTranslation('realtor_phone')}: ${property.realtor.phone}`),
-            property.descriptionEN && h('p', null, `${getTranslation('description_en')}: ${property.descriptionEN}`),
-            property.descriptionZH && h('p', null, `${getTranslation('description_zh')}: ${property.descriptionZH}`),
-            property.images.length > 0 && h('div', { className: 'property-images' }, 
-              property.images.map((url, index) => 
-                h('img', { key: index, src: url, alt: `Изображение свойства ${index + 1}` })
-              )
-            ),
-            h('div', { className: 'property-actions' }, [
-              h('button', { onClick: () => handleEdit(property) }, getTranslation('edit')),
-              h('button', { className: 'secondary', onClick: () => handleDelete(property.id) }, getTranslation('delete'))
-            ])
-          ]))
+      properties.length === 0 ? h('p', null, getTranslation('no_properties')) : properties.map(property => h('div', { key: property.id, className: 'property-item' }, [
+        h('p', null, `${getTranslation('title_en')}: ${property.titleEN || ''}`),
+        h('p', null, `${getTranslation('title_zh')}: ${property.titleZH || ''}`),
+        h('p', null, `${getTranslation('city')}: ${getTranslation(property.city) || ''}`),
+        h('p', null, `${getTranslation('deal_type')}: ${getTranslation(property.dealType) || ''}`),
+        h('p', null, `${getTranslation('property_type')}: ${getTranslation(property.propertyType) || ''}`),
+        h('p', null, `${getTranslation('price_cny')}: ¥${(property.priceCNY || 0).toLocaleString()}`),
+        h('p', null, `${getTranslation('price_usd')}: $${(property.priceUSD || 0).toLocaleString()}`),
+        property.area && h('p', null, `${getTranslation('area')}: ${property.area} m²`),
+        property.floor && h('p', null, `${getTranslation('floor')}: ${property.floor}`),
+        property.rooms && h('p', null, `${getTranslation('rooms')}: ${property.rooms}`),
+        property.yearBuilt && h('p', null, `${getTranslation('year_built')}: ${property.yearBuilt}`),
+        (property.realtor && property.realtor.name) && h('p', null, `${getTranslation('realtor_name')}: ${property.realtor.name}`),
+        (property.realtor && property.realtor.email) && h('p', null, `${getTranslation('realtor_email')}: ${property.realtor.email}`),
+        (property.realtor && property.realtor.phone) && h('p', null, `${getTranslation('realtor_phone')}: ${property.realtor.phone}`),
+        property.descriptionEN && h('p', null, `${getTranslation('description_en')}: ${property.descriptionEN}`),
+        property.descriptionZH && h('p', null, `${getTranslation('description_zh')}: ${property.descriptionZH}`),
+        property.images.length > 0 && h('div', { className: 'property-images' }, property.images.map((url, index) => h('img', { key: index, src: url, alt: `Изображение свойства ${index + 1}` }))),
+        h('div', { className: 'property-actions' }, [
+          h('button', { onClick: () => handleEdit(property) }, getTranslation('edit')),
+          h('button', { className: 'secondary', onClick: () => handleDelete(property.id) }, getTranslation('delete'))
+        ])
+      ]))
     ])
   ]);
 }

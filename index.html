@@ -1,25 +1,44 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Awinly</title>
-    <link rel="stylesheet" href="styles.css">
-    <link rel="icon" href="favicon.ico" type="image/x-icon">
-    <link rel="icon" href="favicon.png" type="image/png">
-    <base href="/">
-    <script>
-        console.log('Index.html loaded at', new Date().toISOString(), 'on domain:', window.location.hostname);
-        if (!document.querySelector('link[href="styles.css"]')) {
-            console.error('Stylesheet link not found in DOM!');
-        }
-    </script>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Awinly</title>
+  <link rel="stylesheet" href="styles.css">
+  <link rel="icon" href="favicon.ico" type="image/x-icon">
+  <link rel="icon" href="favicon.png" type="image/png">
+  <base href="/">
+  <script>
+    console.log('Index.html loaded at', new Date().toISOString(), 'on domain:', window.location.hostname);
+    if (!document.querySelector('link[href="styles.css"]')) {
+      console.error('Stylesheet link not found in DOM!');
+    }
+  </script>
 </head>
 <body>
-    <div id="root"></div>
-    <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
-    <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
-    <script src="https://unpkg.com/react-router-dom@5.3.4/umd/react-router-dom.min.js"></script>
-    <script src="site.js"></script>
+  <div id="root"></div>
+  <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+  <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+  <script src="https://unpkg.com/react-router-dom@5.3.4/umd/react-router-dom.min.js"></script>
+  <script type="module">
+    // Import Firebase
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-app.js";
+    import { getFirestore, collection, onSnapshot, query } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-firestore.js";
+
+    // Your Firebase configuration
+    const firebaseConfig = {
+      apiKey: "AIzaSyB4E1fY3e9vP8f3o4T5K1n9M0r5U0s3W4", // Replace with your actual apiKey
+      authDomain: "awinly-db.firebaseapp.com",
+      projectId: "awinly-db",
+      storageBucket: "awinly-db.appspot.com",
+      messagingSenderId: "123456789012", // Replace with your actual messagingSenderId
+      appId: "1:123456789012:web:abcdef1234567890", // Replace with your actual appId
+      databaseURL: "https://awinly-db-default-rtdb.firebaseio.com" // Your Database URL
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+  </script>
+  <script src="site.js"></script>
 </body>
 </html>
