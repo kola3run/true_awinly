@@ -1,0 +1,8 @@
+{
+  "name": "awinly_mini",
+  "version": "1.0.0",
+  "description": "Awinly real estate platform",
+  "dependencies": {
+    "@netlify/functions": "^2.0.0"
+  }
+}

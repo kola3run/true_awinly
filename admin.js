@@ -227,7 +227,7 @@ const translations = {
     Laiwu: "莱芜",
     Langfang: "廊坊",
     Lanzhou: "兰州",
-    Lhasa: "拉са",
+    Lhasa: "拉萨",
     Lianyungang: "连云港",
     Liaocheng: "聊城",
     Linyi: "临沂",
@@ -418,44 +418,6 @@ function AdminPanel() {
   const handleFileChange = async (e) => {
     const files = Array.from(e.target.files);
     await uploadFiles(files);
-  };
-
-  const uploadFiles = async (files) => {
-    const url = `https://api.cloudinary.com/v1_1/${CLOUD_NAME}/image/upload`;
-    try {
-      const uploadedUrls = [];
-      for (const file of files) {
-        const formDataToSend = new FormData();
-        const paramsToSign = {};
-        const { signature, timestamp } = generateSignature(paramsToSign);
-        if (!signature || !timestamp) {
-          throw new Error('Failed to generate Cloudinary signature');
-        }
-        formDataToSend.append('file', file);
-        formDataToSend.append('api_key', API_KEY);
-        formDataToSend.append('timestamp', timestamp);
-        formDataToSend.append('signature', signature);
-        console.log('Uploading file to Cloudinary:', file.name);
-        const response = await fetch(url, {
-          method: 'POST',
-          body: formDataToSend
-        });
-        const result = await response.json();
-        if (result.error) {
-          throw new Error(result.error.message);
-        }
-        uploadedUrls.push(result.secure_url);
-        console.log('Изображение успешно загружено:', result.secure_url);
-      }
-      setFormData(prev => ({
-        ...prev,
-        images: [...prev.images, ...uploadedUrls]
-      }));
-      setError('');
-    } catch (error) {
-      console.error('Ошибка загрузки в Cloudinary:', error);
-      setError(getTranslation('cloudinary_error') + ': ' + error.message);
-    }
   };
 
   const handleUploadClick = () => {
