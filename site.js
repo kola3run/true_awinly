@@ -4,7 +4,7 @@ const { useState, useEffect, useRef } = React;
 const { BrowserRouter, Route, Switch, Link } = ReactRouterDOM;
 const h = React.createElement;
 
-// Translations
+// Translations (same as previous, kept for brevity)
 const translations = {
   EN: {
     title: "FIND YOUR PERFECT PROPERTY",
@@ -62,97 +62,96 @@ const translations = {
       "B2B: Agencies, realtors, developers",
       "Short-term rentals (Airbnb alternative), long-term rentals, and buying/selling"
     ],
-    // City translations
+    Anqing: "Anqing",
+    Baoding: "Baoding",
     Beijing: "Beijing",
-    Shanghai: "Shanghai",
-    Guangzhou: "Guangzhou",
-    Shenzhen: "Shenzhen",
-    Chengdu: "Chengdu",
-    Chongqing: "Chongqing",
-    Tianjin: "Tianjin",
-    Wuhan: "Wuhan",
-    XiAn: "Xi'an",
-    Hangzhou: "Hangzhou",
-    Nanjing: "Nanjing",
-    Suzhou: "Suzhou",
-    Qingdao: "Qingdao",
-    Dalian: "Dalian",
-    Shenyang: "Shenyang",
-    Changsha: "Changsha",
-    Zhengzhou: "Zhengzhou",
-    Kunming: "Kunming",
-    Hefei: "Hefei",
-    Fuzhou: "Fuzhou",
-    Xiamen: "Xiamen",
-    Jinan: "Jinan",
-    Harbin: "Harbin",
+    Bengbu: "Bengbu",
+    Binzhou: "Binzhou",
+    Cangzhou: "Cangzhou",
     Changchun: "Changchun",
-    Nanchang: "Nanchang",
-    Urumqi: "Urumqi",
-    Shijiazhuang: "Shijiazhuang",
-    Taiyuan: "Taiyuan",
-    Nanning: "Nanning",
-    Guiyang: "Guiyang",
-    Lanzhou: "Lanzhou",
-    Haikou: "Haikou",
-    Yinchuan: "Yinchuan",
-    Xining: "Xining",
-    Hohhot: "Hohhot",
-    Lhasa: "Lhasa",
+    Changsha: "Changsha",
     Changzhou: "Changzhou",
-    Wuxi: "Wuxi",
-    Ningbo: "Ningbo",
-    Wenzhou: "Wenzhou",
-    Jiaxing: "Jiaxing",
+    Chengde: "Chengde",
+    Chengdu: "Chengdu",
+    Chizhou: "Chizhou",
+    Chongqing: "Chongqing",
+    Chuzhou: "Chuzhou",
+    Dalian: "Dalian",
+    Dezhou: "Dezhou",
+    Dongying: "Dongying",
+    Fuyang: "Fuyang",
+    Fuzhou: "Fuzhou",
+    Guangzhou: "Guangzhou",
+    Guiyang: "Guiyang",
+    Haikou: "Haikou",
+    Handan: "Handan",
+    Hangzhou: "Hangzhou",
+    Harbin: "Harbin",
+    Hefei: "Hefei",
+    Hengshui: "Hengshui",
+    Heze: "Heze",
+    Hohhot: "Hohhot",
+    HuaiAn: "Huai'an",
+    Huaibei: "Huaibei",
+    Huainan: "Huainan",
+    Huangshan: "Huangshan",
     Huzhou: "Huzhou",
-    Shaoxing: "Shaoxing",
-    Zhoushan: "Zhoushan",
-    Taizhou: "Taizhou",
+    Jiaxing: "Jiaxing",
+    Jinan: "Jinan",
+    Jinhua: "Jinhua",
+    Kunming: "Kunming",
+    Laiwu: "Laiwu",
+    Langfang: "Langfang",
+    Lanzhou: "Lanzhou",
+    Lhasa: "Lhasa",
     Lianyungang: "Lianyungang",
+    Liaocheng: "Liaocheng",
+    Linyi: "Linyi",
+    Lishui: "Lishui",
+    LuAn: "Lu'an",
+    MaAnshan: "Ma'anshan",
+    Nanchang: "Nanchang",
+    Nanjing: "Nanjing",
+    Nanning: "Nanning",
+    Ningbo: "Ningbo",
+    Qingdao: "Qingdao",
+    Qinhuangdao: "Qinhuangdao",
+    Quzhou: "Quzhou",
+    Rizhao: "Rizhao",
+    Shanghai: "Shanghai",
+    Shaoxing: "Shaoxing",
+    Shenyang: "Shenyang",
+    Shenzhen: "Shenzhen",
+    Shijiazhuang: "Shijiazhuang",
+    Suqian: "Suqian",
+    Suzhou: "Suzhou",
+    Taiyuan: "Taiyuan",
+    Taizhou: "Taizhou",
+    Tangshan: "Tangshan",
+    Tianjin: "Tianjin",
+    Tongling: "Tongling",
+    Urumqi: "Urumqi",
+    Weifang: "Weifang",
+    Weihai: "Weihai",
+    Wenzhou: "Wenzhou",
+    Wuhan: "Wuhan",
+    Wuxi: "Wuxi",
+    XiAn: "Xi'an",
+    Xiamen: "Xiamen",
+    Xingtai: "Xingtai",
+    Xining: "Xining",
+    Xuancheng: "Xuancheng",
     Yancheng: "Yancheng",
     Yangzhou: "Yangzhou",
-    Zhenjiang: "Zhenjiang",
-    HuaiAn: "Huai'an",
-    Suqian: "Suqian",
-    LuAn: "Lu'an",
-    Huaibei: "Huaibei",
-    Bengbu: "Bengbu",
-    Fuyang: "Fuyang",
-    Huainan: "Huainan",
-    Chuzhou: "Chuzhou",
-    MaAnshan: "Ma'anshan",
-    Tongling: "Tongling",
-    AnQing: "Anqing",
-    Huangshan: "Huangshan",
-    Chizhou: "Chizhou",
-    Xuancheng: "Xuancheng",
-    Jinhua: "Jinhua",
-    Quzhou: "Quzhou",
-    Lishui: "Lishui",
-    Zaozhuang: "Zaozhuang",
-    Weifang: "Weifang",
     Yantai: "Yantai",
-    Weihai: "Weihai",
-    Rizhao: "Rizhao",
-    Laiwu: "Laiwu",
-    Linyi: "Linyi",
-    Dezhou: "Dezhou",
-    Liaocheng: "Liaocheng",
-    Binzhou: "Binzhou",
-    Heze: "Heze",
-    Zibo: "Zibo",
-    Dongying: "Dongying",
-    Zhengding: "Zhengding",
-    Baoding: "Baoding",
-    Langfang: "Langfang",
-    Tangshan: "Tangshan",
-    Qinhuangdao: "Qinhuangdao",
-    Handan: "Handan",
-    Xingtai: "Xingtai",
+    Yinchuan: "Yinchuan",
+    Zaozhuang: "Zaozhuang",
     Zhangjiakou: "Zhangjiakou",
-    Chengde: "Chengde",
-    Cangzhou: "Cangzhou",
-    Hengshui: "Hengshui"
+    Zhengding: "Zhengding",
+    Zhengzhou: "Zhengzhou",
+    Zhenjiang: "Zhenjiang",
+    Zhoushan: "Zhoushan",
+    Zibo: "Zibo"
   },
   zh: {
     title: "寻找您的理想物业",
@@ -210,112 +209,112 @@ const translations = {
       "B2B：代理机构、房地产经纪人、开发商",
       "短期租赁（Airbnb替代品）、长期租赁和买卖"
     ],
-    // City translations
+    Anqing: "安庆",
+    Baoding: "保定",
     Beijing: "北京",
-    Shanghai: "上海",
-    Guangzhou: "广州",
-    Shenzhen: "深圳",
-    Chengdu: "成都",
-    Chongqing: "重庆",
-    Tianjin: "天津",
-    Wuhan: "武汉",
-    XiAn: "西安",
-    Hangzhou: "杭州",
-    Nanjing: "南京",
-    Suzhou: "苏州",
-    Qingdao: "青岛",
-    Dalian: "大连",
-    Shenyang: "沈阳",
-    Changsha: "长沙",
-    Zhengzhou: "郑州",
-    Kunming: "昆明",
-    Hefei: "合肥",
-    Fuzhou: "福州",
-    Xiamen: "厦门",
-    Jinan: "济南",
-    Harbin: "哈尔滨",
+    Bengbu: "蚌埠",
+    Binzhou: "滨州",
+    Cangzhou: "沧州",
     Changchun: "长春",
-    Nanchang: "南昌",
-    Urumqi: "乌鲁木齐",
-    Shijiazhuang: "石家庄",
-    Taiyuan: "太原",
-    Nanning: "南宁",
-    Guiyang: "贵阳",
-    Lanzhou: "兰州",
-    Haikou: "海口",
-    Yinchuan: "银川",
-    Xining: "西宁",
-    Hohhot: "呼和浩特",
-    Lhasa: "拉萨",
+    Changsha: "长沙",
     Changzhou: "常州",
-    Wuxi: "无锡",
-    Ningbo: "宁波",
-    Wenzhou: "温州",
-    Jiaxing: "嘉兴",
+    Chengde: "承德",
+    Chengdu: "成都",
+    Chizhou: "池州",
+    Chongqing: "重庆",
+    Chuzhou: "滁州",
+    Dalian: "大连",
+    Dezhou: "德州",
+    Dongying: "东营",
+    Fuyang: "阜阳",
+    Fuzhou: "福州",
+    Guangzhou: "广州",
+    Guiyang: "贵阳",
+    Haikou: "海口",
+    Handan: "邯郸",
+    Hangzhou: "杭州",
+    Harbin: "哈尔滨",
+    Hefei: "合肥",
+    Hengshui: "衡水",
+    Heze: "菏泽",
+    Hohhot: "呼和浩特",
+    HuaiAn: "淮安",
+    Huaibei: "淮北",
+    Huainan: "淮南",
+    Huangshan: "黄山",
     Huzhou: "湖州",
-    Shaoxing: "绍兴",
-    Zhoushan: "舟山",
-    Taizhou: "台州",
+    Jiaxing: "嘉兴",
+    Jinan: "济南",
+    Jinhua: "金华",
+    Kunming: "昆明",
+    Laiwu: "莱芜",
+    Langfang: "廊坊",
+    Lanzhou: "兰州",
+    Lhasa: "拉萨",
     Lianyungang: "连云港",
+    Liaocheng: "聊城",
+    Linyi: "临沂",
+    Lishui: "丽水",
+    LuAn: "六安",
+    MaAnshan: "马鞍山",
+    Nanchang: "南昌",
+    Nanjing: "南京",
+    Nanning: "南宁",
+    Ningbo: "宁波",
+    Qingdao: "青岛",
+    Qinhuangdao: "秦皇岛",
+    Quzhou: "衢州",
+    Rizhao: "日照",
+    Shanghai: "上海",
+    Shaoxing: "绍兴",
+    Shenyang: "沈阳",
+    Shenzhen: "深圳",
+    Shijiazhuang: "石家庄",
+    Suqian: "宿迁",
+    Suzhou: "苏州",
+    Taiyuan: "太原",
+    Taizhou: "台州",
+    Tangshan: "唐山",
+    Tianjin: "天津",
+    Tongling: "铜陵",
+    Urumqi: "乌鲁木齐",
+    Weifang: "潍坊",
+    Weihai: "威海",
+    Wenzhou: "温州",
+    Wuhan: "武汉",
+    Wuxi: "无锡",
+    XiAn: "西安",
+    Xiamen: "厦门",
+    Xingtai: "邢台",
+    Xining: "西宁",
+    Xuancheng: "宣城",
     Yancheng: "盐城",
     Yangzhou: "扬州",
-    Zhenjiang: "镇江",
-    HuaiAn: "淮安",
-    Suqian: "宿迁",
-    LuAn: "六安",
-    Huaibei: "淮北",
-    Bengbu: "蚌埠",
-    Fuyang: "阜阳",
-    Huainan: "淮南",
-    Chuzhou: "滁州",
-    MaAnshan: "马鞍山",
-    Tongling: "铜陵",
-    AnQing: "安庆",
-    Huangshan: "黄山",
-    Chizhou: "池州",
-    Xuancheng: "宣城",
-    Jinhua: "金华",
-    Quzhou: "衢州",
-    Lishui: "丽水",
-    Zaozhuang: "枣庄",
-    Weifang: "潍坊",
     Yantai: "烟台",
-    Weihai: "威海",
-    Rizhao: "日照",
-    Laiwu: "莱芜",
-    Linyi: "临沂",
-    Dezhou: "德州",
-    Liaocheng: "聊城",
-    Binzhou: "滨州",
-    Heze: "菏泽",
-    Zibo: "淄博",
-    Dongying: "东营",
-    Zhengding: "正定",
-    Baoding: "保定",
-    Langfang: "廊坊",
-    Tangshan: "唐山",
-    Qinhuangdao: "秦皇岛",
-    Handan: "邯郸",
-    Xingtai: "邢台",
+    Yinchuan: "银川",
+    Zaozhuang: "枣庄",
     Zhangjiakou: "张家口",
-    Chengde: "承德",
-    Cangzhou: "沧州",
-    Hengshui: "衡水"
+    Zhengding: "正定",
+    Zhengzhou: "郑州",
+    Zhenjiang: "镇江",
+    Zhoushan: "舟山",
+    Zibo: "淄博"
   }
 };
 
-// Cities in China
+// Cities
 const cities = [
-  'Beijing', 'Shanghai', 'Guangzhou', 'Shenzhen', 'Chengdu', 'Chongqing', 'Tianjin', 'Wuhan', 'XiAn', 'Hangzhou',
-  'Nanjing', 'Suzhou', 'Qingdao', 'Dalian', 'Shenyang', 'Changsha', 'Zhengzhou', 'Kunming', 'Hefei', 'Fuzhou',
-  'Xiamen', 'Jinan', 'Harbin', 'Changchun', 'Nanchang', 'Urumqi', 'Shijiazhuang', 'Taiyuan', 'Nanning', 'Guiyang',
-  'Lanzhou', 'Haikou', 'Yinchuan', 'Xining', 'Hohhot', 'Lhasa', 'Changzhou', 'Wuxi', 'Ningbo', 'Wenzhou',
-  'Jiaxing', 'Huzhou', 'Shaoxing', 'Zhoushan', 'Taizhou', 'Lianyungang', 'Yancheng', 'Yangzhou', 'Zhenjiang',
-  'HuaiAn', 'Suqian', 'LuAn', 'Huaibei', 'Bengbu', 'Fuyang', 'Huainan', 'Chuzhou', 'MaAnshan', 'Tongling',
-  'AnQing', 'Huangshan', 'Chizhou', 'Xuancheng', 'Jinhua', 'Quzhou', 'Lishui', 'Zaozhuang', 'Weifang',
-  'Yantai', 'Weihai', 'Rizhao', 'Laiwu', 'Linyi', 'Dezhou', 'Liaocheng', 'Binzhou', 'Heze', 'Zibo',
-  'Dongying', 'Zhengding', 'Baoding', 'Langfang', 'Tangshan', 'Qinhuangdao', 'Handan', 'Xingtai',
-  'Zhangjiakou', 'Chengde', 'Cangzhou', 'Hengshui'
+  'Anqing', 'Baoding', 'Beijing', 'Bengbu', 'Binzhou', 'Cangzhou', 'Changchun', 'Changsha',
+  'Changzhou', 'Chengde', 'Chengdu', 'Chizhou', 'Chongqing', 'Chuzhou', 'Dalian', 'Dezhou',
+  'Dongying', 'Fuyang', 'Fuzhou', 'Guangzhou', 'Guiyang', 'Haikou', 'Handan', 'Hangzhou',
+  'Harbin', 'Hefei', 'Hengshui', 'Heze', 'Hohhot', 'HuaiAn', 'Huaibei', 'Huainan', 'Huangshan',
+  'Huzhou', 'Jiaxing', 'Jinan', 'Jinhua', 'Kunming', 'Laiwu', 'Langfang', 'Lanzhou', 'Lhasa',
+  'Lianyungang', 'Liaocheng', 'Linyi', 'Lishui', 'LuAn', 'MaAnshan', 'Nanchang', 'Nanjing',
+  'Nanning', 'Ningbo', 'Qingdao', 'Qinhuangdao', 'Quzhou', 'Rizhao', 'Shanghai', 'Shaoxing',
+  'Shenyang', 'Shenzhen', 'Shijiazhuang', 'Suqian', 'Suzhou', 'Taiyuan', 'Taizhou', 'Tangshan',
+  'Tianjin', 'Tongling', 'Urumqi', 'Weifang', 'Weihai', 'Wenzhou', 'Wuhan', 'Wuxi', 'XiAn',
+  'Xiamen', 'Xingtai', 'Xining', 'Xuancheng', 'Yancheng', 'Yangzhou', 'Yantai', 'Yinchuan',
+  'Zaozhuang', 'Zhangjiakou', 'Zhengding', 'Zhengzhou', 'Zhenjiang', 'Zhoushan', 'Zibo'
 ];
 
 const dealTypes = [
@@ -458,7 +457,7 @@ function Filter({ onFilter, getTranslation, lang, currency }) {
     return () => { document.body.style.overflow = 'auto'; };
   }, [isCityModalOpen]);
 
-  const filteredCities = cities.filter(c => c.toLowerCase().includes(citySearch.toLowerCase()) || getTranslation(c, lang).toLowerCase().includes(citySearch.toLowerCase()) ).sort((a, b) => getTranslation(a, lang).localeCompare(getTranslation(b, lang)));
+  const filteredCities = cities.filter(c => c.toLowerCase().includes(citySearch.toLowerCase()) || getTranslation(c, lang).toLowerCase().includes(citySearch.toLowerCase())).sort((a, b) => getTranslation(a, lang).localeCompare(getTranslation(b, lang)));
 
   return h('section', { className: 'search-bar offer' }, [
     h('div', { className: 'offer-title centered' }, [
@@ -613,19 +612,27 @@ function App() {
   const currencyTimeoutRef = useRef(null);
   const listingsPerPage = 5;
 
-  // Load properties from Firestore
+  // Load properties from data.json via Netlify Function
   useEffect(() => {
-    const q = query(collection(db, "properties"));
-    const unsubscribe = onSnapshot(q, (querySnapshot) => {
-      const propertiesData = [];
-      querySnapshot.forEach((doc) => {
-        propertiesData.push({ id: doc.id, ...doc.data() });
-      });
-      setFilteredProperties(propertiesData);
-      setDisplayedProperties(propertiesData.slice(0, listingsPerPage));
-    });
-
-    return () => unsubscribe();
+    const fetchProperties = async () => {
+      try {
+        console.log('Fetching properties from /api/properties');
+        const response = await fetch('/api/properties');
+        if (!response.ok) {
+          throw new Error(`Failed to fetch properties: ${response.status} ${response.statusText}`);
+        }
+        const data = await response.json();
+        if (!Array.isArray(data.properties)) {
+          throw new Error('Invalid properties data format');
+        }
+        setFilteredProperties(data.properties);
+        setDisplayedProperties(data.properties.slice(0, listingsPerPage));
+        console.log('Loaded properties:', data.properties);
+      } catch (error) {
+        console.error('Error loading properties:', error);
+      }
+    };
+    fetchProperties();
   }, []);
 
   useEffect(() => {
@@ -642,13 +649,14 @@ function App() {
     return () => window.removeEventListener('scroll', handleScroll);
   }, [filteredProperties, displayedProperties]);
 
-  const handleFilter = (filters) => {
-    const q = query(collection(db, "properties"));
-    const unsubscribe = onSnapshot(q, (querySnapshot) => {
-      const propertiesData = [];
-      querySnapshot.forEach((doc) => {
-        propertiesData.push({ id: doc.id, ...doc.data() });
-      });
+  const handleFilter = async (filters) => {
+    try {
+      console.log('Filtering properties with:', filters);
+      const response = await fetch('/api/properties');
+      if (!response.ok) {
+        throw new Error(`Failed to fetch properties: ${response.status} ${response.statusText}`);
+      }
+      const propertiesData = (await response.json()).properties || [];
       const filtered = propertiesData.filter(property => {
         const matchesCountry = property.country === 'China';
         const matchesCity = !filters.city || property.city === filters.city;
@@ -658,8 +666,10 @@ function App() {
       });
       setFilteredProperties(filtered);
       setDisplayedProperties(filtered.slice(0, listingsPerPage));
-    });
-    return () => unsubscribe();
+      console.log('Filtered properties:', filtered);
+    } catch (error) {
+      console.error('Filter error:', error);
+    }
   };
 
   const handleLanguageChange = langCode => {
@@ -777,4 +787,9 @@ function App() {
   ]);
 }
 
-ReactDOM.render(h(App), document.getElementById('root'));
+try {
+  ReactDOM.render(h(App), document.getElementById('root'));
+  console.log('App rendered successfully at', new Date().toISOString());
+} catch (error) {
+  console.error('Error rendering App:', error);
+}
