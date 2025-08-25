@@ -1,8 +1,23 @@
 {
   "name": "awinly_mini",
   "version": "1.0.0",
-  "description": "Awinly real estate platform",
+  "main": "admin.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/kola3run/true_awinly.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/kola3run/true_awinly/issues"
+  },
+  "homepage": "https://github.com/kola3run/true_awinly#readme",
+  "description": "",
   "dependencies": {
-    "@netlify/functions": "^2.0.0"
+    "mongodb": "^6.18.0"
   }
 }

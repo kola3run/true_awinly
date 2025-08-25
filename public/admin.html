@@ -9,7 +9,7 @@
     body {
       font-family: 'Inter', sans-serif;
       margin: 0;
-      padding: 40px;
+      padding: 20px;
       background-color: #F9F9F9;
       color: #222;
     }
@@ -20,14 +20,14 @@
       max-width: 1000px;
       margin: 0 auto;
       background-color: #FFFFFF;
-      padding: 20px;
+      padding: 15px;
       border-radius: 8px;
       box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
     }
     h1, h2 {
       font-size: 24px;
       font-weight: 700;
-      margin-bottom: 20px;
+      margin-bottom: 15px;
     }
     body[lang="zh"] h1, body[lang="zh"] h2 {
       font-family: 'Noto Serif SC', serif;
@@ -69,6 +69,8 @@
       font-weight: 600;
       cursor: pointer;
       transition: background-color 0.3s ease;
+      margin-right: 10px;
+      margin-bottom: 10px;
     }
     body[lang="zh"] button {
       font-family: 'Noto Serif SC', serif;
@@ -108,16 +110,16 @@
       font-family: 'Noto Serif SC', serif;
     }
     .properties-list {
-      margin-top: 40px;
+      margin-top: 20px;
     }
     .property-item {
       border: 1px solid #D0D0D0;
       border-radius: 8px;
-      padding: 15px;
-      margin-bottom: 15px;
+      padding: 10px;
+      margin-bottom: 10px;
       display: flex;
       flex-direction: column;
-      gap: 10px;
+      gap: 8px;
     }
     .property-item img {
       width: 100px;
@@ -143,8 +145,8 @@
     }
     .language-selector {
       position: absolute;
-      top: 20px;
-      right: 20px;
+      top: 10px;
+      right: 10px;
     }
     .listings-dropdown {
       position: relative;
@@ -198,13 +200,37 @@
     .listings-dropdown-item:hover {
       background-color: #F9F9F9;
     }
+    @media (max-width: 768px) {
+      body {
+        padding: 10px;
+      }
+      .admin-container {
+        padding: 10px;
+      }
+      .properties-list, .property-item, .form-group {
+        display: block !important;
+        visibility: visible !important;
+      }
+      .listings-dropdown-content {
+        position: static;
+        width: 100%;
+      }
+      button {
+        width: 100%;
+        margin-bottom: 10px;
+      }
+      .image-preview img, .property-item img {
+        width: 80px;
+        height: 53px;
+      }
+    }
   </style>
   <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
   <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
+  <script src="admin.js"></script>
 </head>
 <body>
   <div id="root"></div>
-  <script type="module" src="admin.js"></script>
 </body>
 </html>

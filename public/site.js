@@ -1,10 +1,9 @@
 'use strict';
-
 const { useState, useEffect, useRef } = React;
 const { BrowserRouter, Route, Switch, Link } = ReactRouterDOM;
 const h = React.createElement;
 
-// Translations (same as previous, kept for brevity)
+// Translations
 const translations = {
   EN: {
     title: "FIND YOUR PERFECT PROPERTY",
@@ -301,7 +300,6 @@ const translations = {
     Zibo: "淄博"
   }
 };
-
 // Cities
 const cities = [
   'Anqing', 'Baoding', 'Beijing', 'Bengbu', 'Binzhou', 'Cangzhou', 'Changchun', 'Changsha',
@@ -316,40 +314,75 @@ const cities = [
   'Xiamen', 'Xingtai', 'Xining', 'Xuancheng', 'Yancheng', 'Yangzhou', 'Yantai', 'Yinchuan',
   'Zaozhuang', 'Zhangjiakou', 'Zhengding', 'Zhengzhou', 'Zhenjiang', 'Zhoushan', 'Zibo'
 ];
-
 const dealTypes = [
   { value: 'buy', label: 'buy' },
   { value: 'rent', label: 'rent' }
 ];
-
 const propertyTypes = [
   { value: 'Apartment', label: 'Apartment' },
   { value: 'House', label: 'House' },
   { value: 'Land', label: 'Land' }
 ];
-
 const currencies = [
   { code: 'CNY', name: 'Chinese Yuan', symbol: '¥' },
   { code: 'USD', name: 'US Dollar', symbol: '$' }
 ];
-
 const languages = [
   { code: 'EN', name: 'English', flag: '🇬🇧' },
   { code: 'zh', name: '中文', flag: '🇨🇳' }
 ];
 
+// Function to fetch properties from DB
+const fetchPropertiesFromDB = async () => {
+  try {
+    const response = await fetch('/.netlify/functions/properties', {
+      method: 'GET',
+      headers: { 'Content-Type': 'application/json' }
+    });
+    if (!response.ok) {
+      throw new Error(`Failed to fetch from DB: ${response.status} ${response.statusText}`);
+    }
+    const text = await response.text();
+    if (!text) {
+      console.warn('Empty response from server');
+      return [];
+    }
+    const data = JSON.parse(text);
+    const processedData = data.map(item => ({
+      id: item.id,
+      city: item.city || null,
+      dealType: item.dealType || null,
+      propertyType: item.propertyType || null,
+      priceCNY: Number(item.priceCNY) || 0,
+      priceUSD: Number(item.priceUSD) || 0,
+      titleEN: item.titleEN || null,
+      titleZH: item.titleZH || null,
+      descriptionEN: item.descriptionEN || null,
+      descriptionZH: item.descriptionZH || null,
+      area: Number(item.area) || null,
+      floor: Number(item.floor) || null,
+      rooms: Number(item.rooms) || null,
+      yearBuilt: Number(item.yearBuilt) || null,
+      realtor: item.realtor || null,
+      images: item.images?.length ? item.images : ['https://picsum.photos/474/316?random=1'],
+      country: item.country || 'China'
+    }));
+    return processedData;
+  } catch (error) {
+    console.error('Error fetching from DB:', error);
+    return [];
+  }
+};
+
 // Components
 function ScrollToTopButton() {
   const [isVisible, setIsVisible] = useState(false);
-
   useEffect(() => {
     const handleScroll = () => setIsVisible(window.scrollY > 300);
     window.addEventListener('scroll', handleScroll);
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
-
   const scrollToTop = () => window.scrollTo({ top: 0, behavior: 'smooth' });
-
   return h('button', { className: `scroll-to-top-btn ${isVisible ? 'visible' : ''}`, onClick: scrollToTop }, '↑');
 }
 
@@ -511,15 +544,12 @@ function Filter({ onFilter, getTranslation, lang, currency }) {
     ])
   ]);
 }
-
 function PropertyCard({ property, currency, getTranslation, lang }) {
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const images = property.images?.length > 0 ? property.images : [`https://picsum.photos/474/316?random=${property.id}`];
-
   const handlePrevImage = () => setCurrentImageIndex(prev => (prev === 0 ? images.length - 1 : prev - 1));
   const handleNextImage = () => setCurrentImageIndex(prev => (prev === images.length - 1 ? 0 : prev + 1));
   const handleDotClick = index => setCurrentImageIndex(index);
-
   const price = currency === 'CNY' ? property.priceCNY : property.priceUSD;
   const currencySymbol = currencies.find(c => c.code === currency)?.symbol || '¥';
   const title = lang === 'zh' ? (property.titleZH || property.titleEN) : property.titleEN;
@@ -612,22 +642,20 @@ function App() {
   const currencyTimeoutRef = useRef(null);
   const listingsPerPage = 5;
 
-  // Load properties from data.json via Netlify Function
+  const getTranslation = (key, lng = lang) => {
+    if (Array.isArray(translations[lng]?.[key])) {
+      return translations[lng][key];
+    }
+    return translations[lng]?.[key] || translations.EN[key] || key;
+  };
+
   useEffect(() => {
     const fetchProperties = async () => {
       try {
-        console.log('Fetching properties from /api/properties');
-        const response = await fetch('/api/properties');
-        if (!response.ok) {
-          throw new Error(`Failed to fetch properties: ${response.status} ${response.statusText}`);
-        }
-        const data = await response.json();
-        if (!Array.isArray(data.properties)) {
-          throw new Error('Invalid properties data format');
-        }
-        setFilteredProperties(data.properties);
-        setDisplayedProperties(data.properties.slice(0, listingsPerPage));
-        console.log('Loaded properties:', data.properties);
+        const data = await fetchPropertiesFromDB();
+        setFilteredProperties(data);
+        setDisplayedProperties(data.slice(0, listingsPerPage));
+        console.log('Loaded properties:', data);
       } catch (error) {
         console.error('Error loading properties:', error);
       }
@@ -652,11 +680,7 @@ function App() {
   const handleFilter = async (filters) => {
     try {
       console.log('Filtering properties with:', filters);
-      const response = await fetch('/api/properties');
-      if (!response.ok) {
-        throw new Error(`Failed to fetch properties: ${response.status} ${response.statusText}`);
-      }
-      const propertiesData = (await response.json()).properties || [];
+      const propertiesData = await fetchPropertiesFromDB();
       const filtered = propertiesData.filter(property => {
         const matchesCountry = property.country === 'China';
         const matchesCity = !filters.city || property.city === filters.city;
@@ -675,6 +699,7 @@ function App() {
   const handleLanguageChange = langCode => {
     setLang(langCode);
     setIsLanguageDropdownOpen(false);
+    console.log('Language changed to:', langCode);
   };
 
   const handleCurrencyChange = curr => {
@@ -711,13 +736,6 @@ function App() {
       setIsCurrencyDropdownOpen(false);
     }, 200);
   };
-
-  function getTranslation(key, lng) {
-    if (Array.isArray(translations[lng]?.[key])) {
-      return translations[lng][key];
-    }
-    return translations[lng]?.[key] || translations.EN[key] || key;
-  }
 
   const Footer = () => h('footer', { className: 'footer' }, [
     h('div', { className: 'footer-container' }, [
@@ -757,7 +775,7 @@ function App() {
                 ' ',
                 languages.find(l => l.code === lang)?.name || getTranslation('language', lang)
               ]),
-              h('div', { className: `listings-dropdown-content ${isLanguageDropdownOpen ? 'open' : ''}` }, languages.map(langOption => h('div', { key: langOption.code, className: 'listings-dropdown-item', onClick: () => handleLanguageChange(langOption.code) }, [langOption.flag, ' ', langOption.name])))
+              h('div', { className: `listings-dropdown-content ${isLanguageDropdownOpen ? 'open' : ''}` }, languages.map(langOption => h('div', { key: langOption.code, className: 'listings-dropdown-item', onClick: () => handleLanguageChange(langOption.code) }, [ langOption.flag, ' ', langOption.name ])))
             ]),
             h('div', { className: 'listings-dropdown', onMouseEnter: handleCurrencyMouseEnter, onMouseLeave: handleCurrencyMouseLeave }, [
               h('button', { className: 'listings-dropdown-btn' }, [
@@ -765,7 +783,7 @@ function App() {
                 ' ',
                 currencies.find(c => c.code === currency)?.code || getTranslation('currency', lang)
               ]),
-              h('div', { className: `listings-dropdown-content ${isCurrencyDropdownOpen ? 'open' : ''}` }, currencies.map(curr => h('div', { key: curr.code, className: 'listings-dropdown-item', onClick: () => handleCurrencyChange(curr.code) }, [curr.symbol, ' ', curr.code])))
+              h('div', { className: `listings-dropdown-content ${isCurrencyDropdownOpen ? 'open' : ''}` }, currencies.map(curr => h('div', { key: curr.code, className: 'listings-dropdown-item', onClick: () => handleCurrencyChange(curr.code) }, [ curr.symbol, ' ', curr.code ])))
             ])
           ])
         ])
@@ -787,9 +805,4 @@ function App() {
   ]);
 }
 
-try {
-  ReactDOM.render(h(App), document.getElementById('root'));
-  console.log('App rendered successfully at', new Date().toISOString());
-} catch (error) {
-  console.error('Error rendering App:', error);
-}
+ReactDOM.render(h(App), document.getElementById('root'));

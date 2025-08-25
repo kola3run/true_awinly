@@ -7,428 +7,7 @@ body {
   padding: 0;
   background-color: #FFFFFF;
   color: #000000;
-}
-
-body[lang="zh"] {
-  font-family: 'Noto Serif SC', serif;
-}
-
-.listings {
-  max-width: 1440px;
-  margin: 0 auto;
-  padding: 40px 80px;
-  box-sizing: border-box;
-  min-height: calc(100vh - 120px);
-}
-
-/* Header styles for desktop */
-.listings-header {
-  background-color: #FFFFFF;
-  padding: 0;
-  z-index: 1000;
-}
-
-.listings-header-container {
-  max-width: 1440px;
-  margin: 0 auto;
-  padding: 15px 0;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-
-.listings-header-left {
-  display: flex;
-  align-items: center;
-  gap: 15px;
-}
-
-.listings-header-title h3 {
-  font-size: 24px;
-  font-weight: 700;
-  color: #000000;
-  margin: 0;
-}
-
-body[lang="zh"] .listings-header-title h3 {
-  font-family: 'Noto Serif SC', serif;
-}
-
-.listings-header-about {
-  font-size: 14px;
-  font-weight: 600;
-  color: #000000;
-  text-decoration: none;
-  padding: 8px 16px;
-  border: 1px solid #E5E5E5;
-  border-radius: 8px;
-  transition: background-color 0.3s ease;
-}
-
-body[lang="zh"] .listings-header-about {
-  font-family: 'Noto Serif SC', serif;
-}
-
-.listings-header-about:hover {
-  background-color: #F0F0F0;
-}
-
-.listings-header-actions {
-  display: flex;
-  align-items: center;
-  gap: 15px;
-}
-
-.listings-dropdown {
-  position: relative;
-}
-
-.listings-dropdown-btn {
-  padding: 8px 16px;
-  background-color: #fff;
-  border: 1px solid #E5E5E5;
-  border-radius: 8px;
-  font-size: 14px;
-  font-weight: 600;
-  color: #000000;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 5px;
-  min-width: 150px;
-  white-space: nowrap;
-  transition: all 0.3s ease;
-}
-
-body[lang="zh"] .listings-dropdown-btn {
-  font-family: 'Noto Serif SC', serif;
-}
-
-.listings-dropdown-btn:hover {
-  background-color: #F0F0F0;
-}
-
-.listings-dropdown-content {
-  display: none;
-  position: absolute;
-  top: 100%;
-  left: 0;
-  background-color: #fff;
-  border: 1px solid #E5E5E5;
-  border-radius: 8px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-  z-index: 1000;
-  width: 100%;
-  box-sizing: border-box;
-}
-
-.listings-dropdown-content.open {
-  display: block;
-}
-
-.listings-dropdown-item {
-  padding: 10px 15px;
-  font-size: 14px;
-  color: #000000;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 5px;
-  white-space: nowrap;
-}
-
-body[lang="zh"] .listings-dropdown-item {
-  font-family: 'Noto Serif SC', serif;
-}
-
-.listings-dropdown-item:hover {
-  background-color: #F0F0F0;
-}
-
-/* Filter and offer section for desktop */
-.filter-section {
-  width: 100%;
-  padding: 0;
-  box-sizing: border-box;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: stretch;
-  margin: 20px 0;
-}
-
-.offer .search-bar {
-  background-color: transparent;
-  padding: 15px 0 5px 0;
-  margin: 0;
-  width: 100%;
-  box-sizing: border-box;
-}
-
-.offer .search-bar-container {
-  width: 100%;
-  padding: 0;
-  box-sizing: border-box;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  margin: 0;
-}
-
-.offer .filter-wrapper {
-  width: 100%;
-  display: flex;
-  flex-direction: column;
-  align-items: stretch;
-}
-
-.offer .filter-container {
-  display: flex;
-  align-items: center;
-  gap: 0;
-  background-color: #FFFFFF;
-  border: 1px solid #D0D0D0;
-  border-radius: 8px;
-  padding: 1px;
-  flex-grow: 1;
-  flex-wrap: nowrap;
-  justify-content: space-between;
-  box-sizing: border-box;
-  position: relative;
-  width: 100%;
-}
-
-.offer .filter-container > *:not(:last-child)::after {
-  content: '';
-  position: absolute;
-  top: 50%;
-  transform: translateY(-50%);
-  right: 0;
-  width: 1px;
-  height: 24px;
-  background-color: #D0D0D0;
-  z-index: 1;
-}
-
-.offer .offer-title.centered {
-  flex: 0 0 auto;
-  text-align: center;
-  padding: 10px 0;
-  font-size: 32px;
-  font-weight: 700;
-  color: #000000;
-  margin: 0;
-  width: 100%;
-}
-
-body[lang="zh"] .offer .offer-title.centered {
-  font-family: 'Noto Serif SC', serif;
-}
-
-.offer .location-selector {
-  position: relative;
-  display: flex;
-  align-items: center;
-  padding: 0;
-  font-size: 14px;
-  font-weight: 400;
-  color: #222;
-  cursor: pointer;
-  flex: 1 1 auto;
-  min-width: 120px;
-  height: 40px;
-  box-sizing: border-box;
-  line-height: 1;
-  border: none;
-  border-radius: 8px 0 0 8px;
-}
-
-body[lang="zh"] .offer .location-selector {
-  font-family: 'Noto Serif SC', serif;
-}
-
-.offer .location-part {
-  flex: 1;
-  padding: 0;
-  justify-content: center;
-  position: relative;
-  display: flex;
-  align-items: center;
-  min-width: 0;
-  gap: 4px;
-  height: 100%;
-  transition: background-color 0.3s ease;
-}
-
-.offer .location-part.country {
-  padding-left: 8px;
-}
-
-.offer .location-part.city {
-  padding-right: 8px;
-}
-
-.offer .location-part:hover {
-  background-color: #F0F0F0;
-}
-
-.offer .location-text {
-  color: #222;
-  white-space: nowrap;
-  font-size: 14px;
-  font-weight: 400;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 4px;
-  flex-shrink: 0;
-  width: 100%;
-  height: 100%;
-  position: relative;
-  z-index: 1;
-}
-
-body[lang="zh"] .offer .location-text {
-  font-family: 'Noto Serif SC', serif;
-}
-
-.offer .deal-type-selector, .offer .property-type-selector {
-  position: relative;
-  display: flex;
-  align-items: center;
-  padding: 0;
-  font-size: 14px;
-  font-weight: 400;
-  color: #222;
-  cursor: pointer;
-  flex: 1 1 auto;
-  min-width: 120px;
-  height: 40px;
-  box-sizing: border-box;
-  line-height: 1;
-  border: none;
-}
-
-body[lang="zh"] .offer .deal-type-selector, body[lang="zh"] .offer .property-type-selector {
-  font-family: 'Noto Serif SC', serif;
-}
-
-.offer .deal-type-part, .offer .property-type-part {
-  flex: 1;
-  padding: 0 8px;
-  justify-content: center;
-  position: relative;
-  display: flex;
-  align-items: center;
-  min-width: 0;
-  gap: 4px;
-  height: 100%;
-  transition: background-color 0.3s ease;
-}
-
-.offer .deal-type-part:hover, .offer .property-type-part:hover {
-  background-color: #F0F0F0;
-}
-
-.offer .deal-type-text, .offer .property-type-text {
-  color: #222;
-  white-space: nowrap;
-  font-size: 14px;
-  font-weight: 400;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 4px;
-  flex-shrink: 0;
-  width: 100%;
-  height: 100%;
-  position: relative;
-  z-index: 1;
-}
-
-body[lang="zh"] .offer .deal-type-text, body[lang="zh"] .offer .property-type-text {
-  font-family: 'Noto Serif SC', serif;
-}
-
-.offer .deal-type-dropdown, .offer .property-type-dropdown {
-  display: none;
-  position: absolute;
-  top: calc(100% + 4px);
-  left: -1px;
-  right: -1px;
-  background-color: #fff;
-  border: 1px solid #D0D0D0;
-  border-radius: 8px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-  z-index: 1000;
-  box-sizing: border-box;
-}
-
-.offer .deal-type-dropdown.open, .offer .property-type-dropdown.open {
-  display: block;
-}
-
-.offer .deal-type-option, .offer .property-type-option {
-  padding: 8px 16px;
-  font-size: 14px;
-  font-weight: 400;
-  color: #222;
-  cursor: pointer;
-  text-align: left;
-  white-space: nowrap;
-  width: 100%;
-  box-sizing: border-box;
-  transition: background-color 0.3s ease;
-}
-
-body[lang="zh"] .offer .deal-type-option, body[lang="zh"] .offer .property-type-option {
-  font-family: 'Noto Serif SC', serif;
-}
-
-.offer .deal-type-option:hover, .offer .property-type-option:hover {
-  background-color: #F0F0F0;
-}
-
-.offer .search-btn {
-  padding: 0 12px;
-  background-color: #6B2D5C;
-  color: #FFFFFF;
-  border: 1px solid #D0D0D0;
-  border-radius: 0 8px 8px 0;
- First, the user says "стили не дописал" which means "styles not finished" in Russian. From the previous messages, they are referring to styles.css, and I cut off the response.
-
-I need to complete the styles.css code.
-
-The user also says "давай на гит заливать чтоб смотреть что там" meaning "let's upload to git to see what's there".
-
-So, I need to provide the full styles.css and then guide on uploading to GitHub.
-
-The current date is August 03, 2025, but that's not relevant.
-
-Tools: I can use tools like web_search or browse_page if needed, but for uploading to GitHub, I can just give instructions.
-
-For the response, I need to complete the code.
-
-The user is asking to finish the styles and upload to git.
-
-Since I can't actually upload to git, I can give the full code and instructions.
-
-Finally, the response should not have function calls unless needed, and use render components if applicable, but here it's not.
-
-So, plan:
-- Provide the full styles.css code.
-- Give step-by-step instructions for uploading to GitHub.```css
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=Noto+Serif+SC:wght@400;700&display=swap');
-
-/* Base styles for desktop (default) */
-body {
-  font-family: 'Inter', sans-serif;
-  margin: 0;
-  padding: 0;
-  background-color: #FFFFFF;
-  color: #000000;
+  overscroll-behavior: none; /* Prevent pull-to-refresh on mobile */
 }
 
 body[lang="zh"] {
@@ -1078,9 +657,9 @@ body[lang="zh"] .offer .modal-btn {
   transition: border-color 0.3s ease, box-shadow 0.3s ease;
   gap: 20px;
   min-height: 316px;
-  height: auto; /* Убрали фиксированную высоту */
+  height: auto;
   background-color: #FFFFFF;
-  padding: 0 20px; /* Добавили внутренние отступы */
+  padding: 0; /* Убрали внутренние отступы */
 }
 
 .listing-card:hover {
@@ -1106,6 +685,8 @@ body[lang="zh"] .offer .modal-btn {
   max-width: 474px; /* Ограничение ширины */
   flex-shrink: 0;
   gap: 10px;
+  margin-left: 0; /* Убрали отступ слева */
+  padding-left: 0; /* Убрали отступ слева */
 }
 
 /* Image container for desktop */
@@ -1113,7 +694,7 @@ body[lang="zh"] .offer .modal-btn {
   position: relative;
   width: 100%;
   aspect-ratio: 3 / 2;
-  border-radius: 16px;
+  border-radius: 16px 0 0 16px; /* Скругление только слева */
   overflow: hidden;
 }
 
@@ -1258,7 +839,7 @@ body[lang="zh"] .listing-title {
   font-size: 18px;
 }
 
-.listing-details .price {
+.price {
   font-size: 18px;
   font-weight: 600;
   color: #6B2D5C;
@@ -1266,22 +847,22 @@ body[lang="zh"] .listing-title {
   line-height: 1.4;
 }
 
-body[lang="zh"] .listing-details .price {
+body[lang="zh"] .price {
   font-family: 'Noto Serif SC', serif;
 }
 
-.listing-details .location {
+.location {
   font-size: 14px;
   color: #666;
   margin: 0 0 10px;
   line-height: 1.4;
 }
 
-body[lang="zh"] .listing-details .location {
+body[lang="zh"] .location {
   font-family: 'Noto Serif SC', serif;
 }
 
-.listing-details .description {
+.description {
   font-size: 13px;
   color: #333;
   margin: 0 0 8px;
@@ -1295,7 +876,7 @@ body[lang="zh"] .listing-details .location {
   padding-right: 10px;
 }
 
-body[lang="zh"] .listing-details .description {
+body[lang="zh"] .description {
   font-family: 'Noto Serif SC', serif;
 }
 
