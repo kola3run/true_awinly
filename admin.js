@@ -1,34 +1,39 @@
 'use strict';
-
 console.log('admin.js starting at', new Date().toISOString());
-
 if (typeof window === 'undefined') {
   console.error('Window object not available!');
 } else {
   console.log('Window object available');
 }
-
 if (typeof React === 'undefined') {
   console.error('React not loaded!');
 } else {
   console.log('React loaded:', React.version);
 }
-
 if (typeof ReactDOM === 'undefined') {
   console.error('ReactDOM not loaded!');
 } else {
   console.log('ReactDOM loaded');
 }
-
+if (typeof ReactDnD === 'undefined') {
+  console.error('ReactDnD not loaded!');
+} else {
+  console.log('ReactDnD loaded');
+}
+if (typeof ReactDnDHTML5Backend === 'undefined') {
+  console.error('ReactDnDHTML5Backend not loaded!');
+} else {
+  console.log('ReactDnDHTML5Backend loaded');
+}
 const { useState, useEffect } = React || {};
 const h = React.createElement;
-
-if (!useState || !useEffect || !h) {
-  console.error('Required React components missing:', { useState, useEffect, h });
+const { DndProvider, useDrag, useDrop } = ReactDnD || {};
+const { HTML5Backend } = ReactDnDHTML5Backend || {};
+if (!useState || !useEffect || !h || !DndProvider || !useDrag || !useDrop || !HTML5Backend) {
+  console.error('Required React components missing:', { useState, useEffect, h, DndProvider, useDrag, useDrop, HTML5Backend });
 } else {
   console.log('React components available');
 }
-
 // Translations
 const translations = {
   EN: {
@@ -43,6 +48,7 @@ const translations = {
     properties_list: "Properties List",
     image_url: "Image URL",
     add_image: "Add Image",
+    remove_image: "Remove Image",
     realtor_name: "Realtor Name",
     realtor_email: "Realtor Email",
     realtor_phone: "Realtor Phone",
@@ -76,6 +82,7 @@ const translations = {
     properties_list: "物业列表",
     image_url: "图片链接",
     add_image: "添加图片",
+    remove_image: "删除图片",
     realtor_name: "经纪人姓名",
     realtor_email: "经纪人邮箱",
     realtor_phone: "经纪人电话",
@@ -97,10 +104,8 @@ const translations = {
     Shenzhen: "深圳",
   },
 };
-
 // Mock data
 const initialProperties = [];
-
 // Full cities list for admin select
 const adminCities = [
   'Beijing', 'Shanghai', 'Guangzhou', 'Shenzhen', 'Chengdu', 'Chongqing', 'Tianjin', 'Wuhan',
@@ -109,13 +114,44 @@ const adminCities = [
   'Nanchang', 'Urumqi', 'Shijiazhuang', 'Taiyuan', 'Nanning', 'Guiyang', 'Lanzhou',
   'Haikou', 'Yinchuan', 'Xining', 'Hohhot', 'Lhasa', 'Changzhou', 'Wuxi', 'Ningbo',
   'Wenzhou', 'Jiaxing', 'Huzhou', 'Shaoxing', 'Zhoushan', 'Taizhou', 'Lianyungang',
-  'Yancheng', 'Yangzhou', 'Zhenjiang', 'Taizhou', 'HuaiAn', 'Suqian', 'LuAn', 'Huaibei',
-  'Bengbu', 'Fuyang', 'Huainan', 'Chuzhou', 'MaAnshan', 'Tongling', 'AnQing', 'Huangshan',
-  'Chizhou', 'Xuancheng', 'Jinhua', 'Quzhou', 'Lishui', 'Zaozhuang', 'Weifang', 'Yantai',
-  'Weihai', 'Rizhao', 'Laiwu', 'Linyi', 'Dezhou', 'Liaocheng', 'Binzhou', 'Heze', 'Zibo',
-  'Dongying', 'Zhengding', 'Baoding', 'Langfang', 'Tangshan', 'Qinhuangdao', 'Handan',
-  'Xingtai', 'Zhangjiakou', 'Chengde', 'Cangzhou', 'Hengshui'
+  'Yancheng', 'Yangzhou', 'Zhenjiang', 'Taizhou', 'HuaiAn', 'Suqian', 'Tongling', 'Tongling',
+  'Urumqi', 'Weifang', 'Weihai', 'Wenzhou', 'Wuhan', 'Wuxi', 'XiAn', 'Xiamen', 'Xingtai',
+  'Xining', 'Xuancheng', 'Yancheng', 'Yangzhou', 'Yantai', 'Yinchuan', 'Zaozhuang', 'Zhangjiakou',
+  'Zhengding', 'Zhengzhou', 'Zhenjiang', 'Zhoushan', 'Zibo'
 ];
+
+function ImageItem({ image, index, moveImage, removeImage }) {
+  const [{ isDragging }, drag] = useDrag({
+    type: 'image',
+    item: { index },
+    collect: (monitor) => ({
+      isDragging: monitor.isDragging(),
+    }),
+  });
+
+  const [, drop] = useDrop({
+    accept: 'image',
+    hover(item) {
+      if (item.index !== index) {
+        moveImage(item.index, index);
+        item.index = index;
+      }
+    },
+  });
+
+  return h('div', {
+    ref: (node) => drag(drop(node)),
+    className: `flex items-center space-x-2 p-2 bg-gray-100 rounded ${isDragging ? 'opacity-50' : 'opacity-100'} cursor-move`,
+  }, [
+    h('img', { src: image, alt: `Image ${index + 1}`, className: 'w-16 h-12 object-cover rounded border' }),
+    h('span', { className: 'text-gray-600 flex-1 truncate' }, image),
+    h('button', {
+      type: 'button',
+      onClick: () => removeImage(index),
+      className: 'bg-red-500 text-white px-2 py-1 rounded hover:bg-red-600'
+    }, translations.EN.remove_image),
+  ]);
+}
 
 function Admin() {
   const [lang, setLang] = useState('EN');
@@ -123,21 +159,22 @@ function Admin() {
   const [properties, setProperties] = useState([]);
   const [form, setForm] = useState({
     id: null,
-    title: '',
+    titleEN: '',
+    titleZH: '',
     city: '',
     priceCNY: '',
     priceUSD: '',
     propertyType: 'Apartment',
     dealType: 'buy',
-    description: '',
+    descriptionEN: '',
+    descriptionZH: '',
     area: '',
     rooms: '',
     yearBuilt: '',
-    images: [''],
+    images: [],
     realtor: { name: '', email: '', phone: '' },
   });
   const [isEditing, setIsEditing] = useState(false);
-
   useEffect(() => {
     console.log('Loading properties for admin...');
     try {
@@ -154,13 +191,11 @@ function Admin() {
       setProperties(initialProperties);
     }
   }, []);
-
   const saveProperties = (updatedProperties) => {
     setProperties(updatedProperties);
     localStorage.setItem('properties', JSON.stringify(updatedProperties));
     console.log('Properties saved:', updatedProperties);
   };
-
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     if (name.includes('realtor.')) {
@@ -173,19 +208,6 @@ function Admin() {
       setForm(prev => ({ ...prev, [name]: value }));
     }
   };
-
-  const handleImageChange = (index, value) => {
-    setForm(prev => {
-      const newImages = [...prev.images];
-      newImages[index] = value;
-      return { ...prev, images: newImages };
-    });
-  };
-
-  const addImageField = () => {
-    setForm(prev => ({ ...prev, images: [...prev.images, ''] }));
-  };
-
   const handleSubmit = (e) => {
     e.preventDefault();
     const newProperty = {
@@ -205,32 +227,55 @@ function Admin() {
     saveProperties(updatedProperties);
     setForm({
       id: null,
-      title: '',
+      titleEN: '',
+      titleZH: '',
       city: '',
       priceCNY: '',
       priceUSD: '',
       propertyType: 'Apartment',
       dealType: 'buy',
-      description: '',
+      descriptionEN: '',
+      descriptionZH: '',
       area: '',
       rooms: '',
       yearBuilt: '',
-      images: [''],
+      images: [],
       realtor: { name: '', email: '', phone: '' },
     });
     setIsEditing(false);
   };
-
   const handleEdit = (property) => {
     setForm(property);
     setIsEditing(true);
   };
-
   const handleDelete = (id) => {
     const updatedProperties = properties.filter(p => p.id !== id);
     saveProperties(updatedProperties);
   };
-
+  const addImageField = () => {
+    setForm(prev => ({ ...prev, images: [...prev.images, ''] }));
+  };
+  const handleImageChange = (index, value) => {
+    setForm(prev => {
+      const newImages = [...prev.images];
+      newImages[index] = value;
+      return { ...prev, images: newImages };
+    });
+  };
+  const removeImage = (index) => {
+    setForm(prev => ({
+      ...prev,
+      images: prev.images.filter((_, i) => i !== index)
+    }));
+  };
+  const moveImage = (fromIndex, toIndex) => {
+    setForm(prev => {
+      const newImages = [...prev.images];
+      const [movedImage] = newImages.splice(fromIndex, 1);
+      newImages.splice(toIndex, 0, movedImage);
+      return { ...prev, images: newImages };
+    });
+  };
   return h('div', { className: 'admin-panel' }, [
     h('h2', null, isEditing ? t('edit_property') : t('add_property')),
     h('form', { className: 'admin-form', onSubmit: handleSubmit }, [
@@ -254,13 +299,15 @@ function Admin() {
       h('input', { name: 'area', type: 'number', value: form.area, onChange: handleInputChange, placeholder: t('area') }),
       h('input', { name: 'rooms', type: 'number', value: form.rooms, onChange: handleInputChange, placeholder: t('rooms') }),
       h('input', { name: 'yearBuilt', type: 'number', value: form.yearBuilt, onChange: handleInputChange, placeholder: t('yearBuilt') }),
-      h('div', null, form.images.map((img, index) => h('input', {
-        key: index,
-        name: 'image',
-        value: img,
-        onChange: (e) => handleImageChange(index, e.target.value),
-        placeholder: t('image_url')
-      }))),
+      h(DndProvider, { backend: HTML5Backend }, [
+        h('div', null, form.images.map((img, index) => h(ImageItem, {
+          key: index,
+          image: img,
+          index,
+          moveImage,
+          removeImage
+        }))),
+      ]),
       h('button', { type: 'button', onClick: addImageField }, t('add_image')),
       h('input', { name: 'realtor.name', value: form.realtor.name, onChange: handleInputChange, placeholder: t('realtor_name') }),
       h('input', { name: 'realtor.email', value: form.realtor.email, onChange: handleInputChange, placeholder: t('realtor_email') }),
@@ -277,7 +324,6 @@ function Admin() {
     ))
   ]);
 }
-
 if (typeof ReactDOM !== 'undefined' && document.getElementById('root')) {
   console.log('Rendering Admin at', new Date().toISOString());
   ReactDOM.render(h(Admin), document.getElementById('root'));
