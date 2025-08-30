@@ -403,40 +403,83 @@
         images: [],
         realtor: { name: '', email: '', phone: '' },
       });
-      const [isEditing, setIsEditing] = useState(false);
+      const [error, setError] = useState('');
       const [properties, setProperties] = useState([]);
-      const t = (key) => translations[lang][key] || key;
+      const [isEditing, setIsEditing] = useState(false);
+      const [isLanguageDropdownOpen, setIsLanguageDropdownOpen] = useState(false);
+      const fileInputRef = useRef(null);
+      const languageTimeoutRef = useRef(null);
+      const getTranslation = (key) => translations[lang][key] || translations.EN[key] || key;
+
       useEffect(() => {
         const savedProperties = JSON.parse(localStorage.getItem('properties')) || [];
-        setProperties(savedProperties);
+        const normalizedProperties = savedProperties.map(p => ({
+          ...p,
+          realtor: p.realtor && typeof p.realtor === 'object' ? p.realtor : { name: '', email: 'N/A', phone: '' },
+          images: Array.isArray(p.images) ? p.images.filter(img => img) : []
+        }));
+        setProperties(normalizedProperties);
+        console.log('Loaded properties:', normalizedProperties);
       }, []);
-      const handleSubmit = (e) => {
-        e.preventDefault();
-        const updatedProperties = isEditing
-          ? properties.map(p => p.id === formData.id ? formData : p)
-          : [...properties, { ...formData, id: properties.length + 1 }];
-        localStorage.setItem('properties', JSON.stringify(updatedProperties));
-        setProperties(updatedProperties);
-        setFormData({ id: null, titleEN: '', titleZH: '', city: '', priceCNY: '', priceUSD: '', propertyType: 'Apartment', dealType: 'buy', descriptionEN: '', descriptionZH: '', area: '', rooms: '', yearBuilt: '', images: [], realtor: { name: '', email: '', phone: '' } });
-        setIsEditing(false);
+
+      useEffect(() => {
+        document.documentElement.lang = lang.toLowerCase();
+      }, [lang]);
+
+      const handleInputChange = (e) => {
+        const { name, value } = e.target;
+        if (name.startsWith('realtor.')) {
+          const field = name.split('.')[1];
+          setFormData(prev => ({
+            ...prev,
+            realtor: { ...prev.realtor, [field]: value }
+          }));
+        } else {
+          setFormData(prev => ({ ...prev, [name]: value }));
+        }
       };
-      const handleEdit = (property) => {
-        setFormData(property);
-        setIsEditing(true);
+
+      const handleFileChange = (e) => {
+        const files = Array.from(e.target.files);
+        uploadFiles(files);
       };
-      const handleDelete = (id) => {
-        const updatedProperties = properties.filter(p => p.id !== id);
-        localStorage.setItem('properties', JSON.stringify(updatedProperties));
-        setProperties(updatedProperties);
+
+      const uploadFiles = async (files) => {
+        const url = `https://api.cloudinary.com/v1_1/${CLOUD_NAME}/image/upload`;
+        for (const file of files) {
+          const formDataToSend = new FormData();
+          const paramsToSign = {};
+          const { signature, timestamp } = generateSignature(paramsToSign);
+          formDataToSend.append('file', file);
+          formDataToSend.append('api_key', API_KEY);
+          formDataToSend.append('timestamp', timestamp);
+          formDataToSend.append('signature', signature);
+          try {
+            const response = await fetch(url, {
+              method: 'POST',
+              body: formDataToSend
+            });
+            const result = await response.json();
+            if (result.error) {
+              throw new Error(result.error.message);
+            }
+            setFormData(prev => ({
+              ...prev,
+              images: [...prev.images, result.secure_url]
+            }));
+            setError('');
+            console.log('Upload successful:', result.secure_url);
+          } catch (error) {
+            console.error('Upload error:', error);
+            setError(getTranslation('cloudinary_error') + ': ' + error.message);
+          }
+        }
       };
-      const addImage = () => {
-        setFormData(prev => ({ ...prev, images: [...prev.images, ''] }));
+
+      const handleUploadClick = () => {
+        fileInputRef.current.click();
       };
-      const handleImageChange = (index, value) => {
-        const newImages = [...formData.images];
-        newImages[index] = value;
-        setFormData(prev => ({ ...prev, images: newImages }));
-      };
+
       const removeImage = async (index) => {
         const imageUrl = formData.images[index];
         console.log('Before remove, images:', formData.images);
@@ -452,60 +495,465 @@
           } else {
             console.error('Could not extract public_id from', imageUrl);
           }
+        } else {
+          console.log('Non-Cloudinary image, only link removed:', imageUrl);
         }
       };
+
       const moveImage = (fromIndex, toIndex) => {
-        const newImages = [...formData.images];
-        const [movedImage] = newImages.splice(fromIndex, 1);
-        newImages.splice(toIndex, 0, movedImage);
-        setFormData(prev => ({ ...prev, images: newImages }));
+        setFormData(prev => {
+          const newImages = [...prev.images];
+          const [movedImage] = newImages.splice(fromIndex, 1);
+          newImages.splice(toIndex, 0, movedImage);
+          console.log('Moved image from', fromIndex, 'to', toIndex, 'new order:', newImages);
+          return { ...prev, images: newImages };
+        });
       };
-      return h('div', { className: 'admin-panel' }, [
-        h('h2', null, isEditing ? t('edit_property') : t('add_property')),
-        h('form', { onSubmit: handleSubmit }, [
-          h('input', { name: 'titleEN', value: formData.titleEN, onChange: handleInputChange, placeholder: t('title_en'), required: true }),
-          h('input', { name: 'titleZH', value: formData.titleZH, onChange: handleInputChange, placeholder: t('title_zh'), required: true }),
-          h('select', { name: 'city', value: formData.city, onChange: handleInputChange, required: true }, [
-            h('option', { value: '' }, t('select_city')),
-            ...adminCities.map(city => h('option', { key: city, value: city }, t(city) || city))
-          ]),
-          h('input', { name: 'priceCNY', type: 'number', value: formData.priceCNY, onChange: handleInputChange, placeholder: t('price_cny'), required: true }),
-          h('input', { name: 'priceUSD', type: 'number', value: formData.priceUSD, onChange: handleInputChange, placeholder: t('price_usd') }),
-          h('select', { name: 'propertyType', value: formData.propertyType, onChange: handleInputChange }, propertyTypes.map(type => h('option', { value: type }, t(type)))),
-          h('select', { name: 'dealType', value: formData.dealType, onChange: handleInputChange }, dealTypes.map(type => h('option', { value: type }, t(type)))),
-          h('textarea', { name: 'descriptionEN', value: formData.descriptionEN, onChange: handleInputChange, placeholder: t('description_en') }),
-          h('textarea', { name: 'descriptionZH', value: formData.descriptionZH, onChange: handleInputChange, placeholder: t('description_zh') }),
-          h('input', { name: 'area', type: 'number', value: formData.area, onChange: handleInputChange, placeholder: t('area') }),
-          h('input', { name: 'rooms', type: 'number', value: formData.rooms, onChange: handleInputChange, placeholder: t('rooms') }),
-          h('input', { name: 'yearBuilt', type: 'number', value: formData.yearBuilt, onChange: handleInputChange, placeholder: t('year_built') }),
-          h('div', null, [
-            h('button', { type: 'button', onClick: addImage }, t('add_image')),
-            h(DndProvider, { backend: HTML5Backend }, [
-              h('div', null, formData.images.map((img, index) => h(ImageItem, {
-                key: index,
-                image: img,
-                index,
-                moveImage,
-                removeImage
-              }))),
+
+      const handleSubmit = (e) => {
+        e.preventDefault();
+        if (!formData.titleEN || !formData.titleZH || !formData.city || !formData.priceCNY || !formData.priceUSD) {
+          setError(getTranslation('required_fields'));
+          return;
+        }
+        if (!formData.realtor.email.includes('@') && formData.realtor.email !== 'N/A') {
+          setError(getTranslation('invalid_email'));
+          return;
+        }
+        const newProperty = {
+          id: formData.id || `A${Date.now()}`,
+          country: 'China',
+          titleEN: formData.titleEN,
+          titleZH: formData.titleZH,
+          city: formData.city,
+          dealType: formData.dealType,
+          propertyType: formData.propertyType,
+          priceCNY: parseFloat(formData.priceCNY) || 0,
+          priceUSD: parseFloat(formData.priceUSD) || 0,
+          area: parseFloat(formData.area) || null,
+          floor: parseInt(formData.floor) || null,
+          rooms: parseInt(formData.rooms) || null,
+          yearBuilt: parseInt(formData.yearBuilt) || null,
+          realtor: formData.realtor,
+          descriptionEN: formData.descriptionEN,
+          descriptionZH: formData.descriptionZH,
+          images: formData.images.filter(img => img)
+        };
+        let updatedProperties;
+        if (isEditing) {
+          updatedProperties = properties.map(p => p.id === newProperty.id ? newProperty : p);
+          alert(getTranslation('property_updated'));
+        } else {
+          updatedProperties = [...properties, newProperty];
+          alert(getTranslation('property_added'));
+        }
+        localStorage.setItem('properties', JSON.stringify(updatedProperties));
+        setProperties(updatedProperties);
+        resetForm();
+      };
+
+      const handleEdit = (property) => {
+        setFormData({
+          id: property.id,
+          titleEN: property.titleEN || '',
+          titleZH: property.titleZH || '',
+          city: property.city || '',
+          dealType: property.dealType || 'buy',
+          propertyType: property.propertyType || 'Apartment',
+          priceCNY: property.priceCNY?.toString() || '',
+          priceUSD: property.priceUSD?.toString() || '',
+          area: property.area?.toString() || '',
+          floor: property.floor?.toString() || '',
+          rooms: property.rooms?.toString() || '',
+          yearBuilt: property.yearBuilt?.toString() || '',
+          realtor: property.realtor || { name: '', email: 'N/A', phone: '' },
+          descriptionEN: property.descriptionEN || '',
+          descriptionZH: property.descriptionZH || '',
+          images: Array.isArray(property.images) ? property.images.filter(img => img) : []
+        });
+        setIsEditing(true);
+        setError('');
+      };
+
+      const handleDelete = (id) => {
+        if (window.confirm(getTranslation('confirm_delete'))) {
+          const updatedProperties = properties.filter(p => p.id !== id);
+          localStorage.setItem('properties', JSON.stringify(updatedProperties));
+          setProperties(updatedProperties);
+          alert(getTranslation('property_deleted'));
+        }
+      };
+
+      const resetForm = () => {
+        setFormData({
+          id: null,
+          titleEN: '',
+          titleZH: '',
+          city: '',
+          dealType: 'buy',
+          propertyType: 'Apartment',
+          priceCNY: '',
+          priceUSD: '',
+          area: '',
+          floor: '',
+          rooms: '',
+          yearBuilt: '',
+          realtor: { name: '', email: 'N/A', phone: '' },
+          descriptionEN: '',
+          descriptionZH: '',
+          images: []
+        });
+        setIsEditing(false);
+        setError('');
+      };
+
+      const handleLanguageChange = (langCode) => {
+        setLang(langCode);
+        setIsLanguageDropdownOpen(false);
+      };
+
+      const handleLanguageMouseEnter = () => {
+        clearTimeout(languageTimeoutRef.current);
+        languageTimeoutRef.current = setTimeout(() => {
+          setIsLanguageDropdownOpen(true);
+        }, 100);
+      };
+
+      const handleLanguageMouseLeave = () => {
+        clearTimeout(languageTimeoutRef.current);
+        languageTimeoutRef.current = setTimeout(() => {
+          setIsLanguageDropdownOpen(false);
+        }, 200);
+      };
+
+      return h('div', { className: 'container mx-auto p-4 max-w-4xl' }, [
+        h('div', { className: 'relative mb-8' }, [
+          h('div', {
+            className: 'absolute top-0 right-0',
+            onMouseEnter: handleLanguageMouseEnter,
+            onMouseLeave: handleLanguageMouseLeave
+          }, [
+            h('button', { className: 'bg-purple-600 text-white px-4 py-2 rounded hover:bg-purple-700 flex items-center gap-2' }, [
+              languages.find(l => l.code === lang)?.flag || '🌐',
+              languages.find(l => l.code === lang)?.name || getTranslation('language')
             ]),
-          ]),
-          h('input', { name: 'realtor.name', value: formData.realtor.name, onChange: handleInputChange, placeholder: t('realtor_name') }),
-          h('input', { name: 'realtor.email', value: formData.realtor.email, onChange: handleInputChange, placeholder: t('realtor_email') }),
-          h('input', { name: 'realtor.phone', value: formData.realtor.phone, onChange: handleInputChange, placeholder: t('realtor_phone') }),
-          h('button', { type: 'submit' }, isEditing ? t('update') : t('add'))
+            h('div', { className: `absolute bg-white shadow-lg rounded mt-1 ${isLanguageDropdownOpen ? 'block' : 'hidden'}` },
+              languages.map(langOption => h('div', {
+                key: langOption.code,
+                className: 'px-4 py-2 hover:bg-gray-100 cursor-pointer flex items-center gap-2',
+                onClick: () => handleLanguageChange(langOption.code)
+              }, [
+                langOption.flag,
+                langOption.name
+              ]))
+            )
+          ])
         ]),
-        h('h3', null, t('existing_properties')),
-        h('ul', null, properties.map(property => h('li', { key: property.id }, [
-          h('span', null, property.titleEN),
-          h('button', { onClick: () => handleEdit(property) }, t('edit')),
-          h('button', { onClick: () => handleDelete(property.id) }, t('delete'))
-        ])))
+        h('h1', { className: 'text-3xl font-bold mb-6' }, getTranslation('admin_title')),
+        h('form', { onSubmit: handleSubmit, className: 'space-y-4 mb-8' }, [
+          h('div', { className: 'grid grid-cols-1 md:grid-cols-2 gap-4' }, [
+            h('div', { className: 'form-group' }, [
+              h('label', { htmlFor: 'titleEN', className: 'block font-semibold mb-1' }, getTranslation('title_en') + ' *'),
+              h('input', {
+                type: 'text',
+                id: 'titleEN',
+                name: 'titleEN',
+                value: formData.titleEN,
+                onChange: handleInputChange,
+                className: 'w-full p-2 border rounded',
+                required: true
+              })
+            ]),
+            h('div', { className: 'form-group' }, [
+              h('label', { htmlFor: 'titleZH', className: 'block font-semibold mb-1' }, getTranslation('title_zh') + ' *'),
+              h('input', {
+                type: 'text',
+                id: 'titleZH',
+                name: 'titleZH',
+                value: formData.titleZH,
+                onChange: handleInputChange,
+                className: 'w-full p-2 border rounded',
+                required: true
+              })
+            ])
+          ]),
+          h('div', { className: 'form-group' }, [
+            h('label', { htmlFor: 'city', className: 'block font-semibold mb-1' }, getTranslation('city') + ' *'),
+            h('select', {
+              id: 'city',
+              name: 'city',
+              value: formData.city,
+              onChange: handleInputChange,
+              className: 'w-full p-2 border rounded',
+              required: true
+            }, [
+              h('option', { value: '' }, getTranslation('select_city')),
+              ...adminCities.map(city => h('option', { key: city, value: city }, getTranslation(city)))
+            ])
+          ]),
+          h('div', { className: 'grid grid-cols-1 md:grid-cols-2 gap-4' }, [
+            h('div', { className: 'form-group' }, [
+              h('label', { htmlFor: 'dealType', className: 'block font-semibold mb-1' }, getTranslation('deal_type')),
+              h('select', {
+                id: 'dealType',
+                name: 'dealType',
+                value: formData.dealType,
+                onChange: handleInputChange,
+                className: 'w-full p-2 border rounded'
+              }, dealTypes.map(type => h('option', { key: type, value: type }, getTranslation(type)))
+              )
+            ]),
+            h('div', { className: 'form-group' }, [
+              h('label', { htmlFor: 'propertyType', className: 'block font-semibold mb-1' }, getTranslation('property_type')),
+              h('select', {
+                id: 'propertyType',
+                name: 'propertyType',
+                value: formData.propertyType,
+                onChange: handleInputChange,
+                className: 'w-full p-2 border rounded'
+              }, propertyTypes.map(type => h('option', { key: type, value: type }, getTranslation(type)))
+              )
+            ])
+          ]),
+          h('div', { className: 'grid grid-cols-1 md:grid-cols-2 gap-4' }, [
+            h('div', { className: 'form-group' }, [
+              h('label', { htmlFor: 'priceCNY', className: 'block font-semibold mb-1' }, getTranslation('price_cny') + ' *'),
+              h('input', {
+                type: 'number',
+                id: 'priceCNY',
+                name: 'priceCNY',
+                value: formData.priceCNY,
+                onChange: handleInputChange,
+                className: 'w-full p-2 border rounded',
+                required: true
+              })
+            ]),
+            h('div', { className: 'form-group' }, [
+              h('label', { htmlFor: 'priceUSD', className: 'block font-semibold mb-1' }, getTranslation('price_usd') + ' *'),
+              h('input', {
+                type: 'number',
+                id: 'priceUSD',
+                name: 'priceUSD',
+                value: formData.priceUSD,
+                onChange: handleInputChange,
+                className: 'w-full p-2 border rounded',
+                required: true
+              })
+            ])
+          ]),
+          h('div', { className: 'grid grid-cols-1 md:grid-cols-2 gap-4' }, [
+            h('div', { className: 'form-group' }, [
+              h('label', { htmlFor: 'area', className: 'block font-semibold mb-1' }, getTranslation('area')),
+              h('input', {
+                type: 'number',
+                id: 'area',
+                name: 'area',
+                value: formData.area,
+                onChange: handleInputChange,
+                className: 'w-full p-2 border rounded'
+              })
+            ]),
+            h('div', { className: 'form-group' }, [
+              h('label', { htmlFor: 'floor', className: 'block font-semibold mb-1' }, getTranslation('floor')),
+              h('input', {
+                type: 'number',
+                id: 'floor',
+                name: 'floor',
+                value: formData.floor,
+                onChange: handleInputChange,
+                className: 'w-full p-2 border rounded'
+              })
+            ])
+          ]),
+          h('div', { className: 'grid grid-cols-1 md:grid-cols-2 gap-4' }, [
+            h('div', { className: 'form-group' }, [
+              h('label', { htmlFor: 'rooms', className: 'block font-semibold mb-1' }, getTranslation('rooms')),
+              h('input', {
+                type: 'number',
+                id: 'rooms',
+                name: 'rooms',
+                value: formData.rooms,
+                onChange: handleInputChange,
+                className: 'w-full p-2 border rounded'
+              })
+            ]),
+            h('div', { className: 'form-group' }, [
+              h('label', { htmlFor: 'yearBuilt', className: 'block font-semibold mb-1' }, getTranslation('year_built')),
+              h('input', {
+                type: 'number',
+                id: 'yearBuilt',
+                name: 'yearBuilt',
+                value: formData.yearBuilt,
+                onChange: handleInputChange,
+                className: 'w-full p-2 border rounded'
+              })
+            ])
+          ]),
+          h('div', { className: 'form-group' }, [
+            h('label', { htmlFor: 'realtor.name', className: 'block font-semibold mb-1' }, getTranslation('realtor_name')),
+            h('input', {
+              type: 'text',
+              id: 'realtor.name',
+              name: 'realtor.name',
+              value: formData.realtor.name,
+              onChange: handleInputChange,
+              className: 'w-full p-2 border rounded'
+            })
+          ]),
+          h('div', { className: 'form-group' }, [
+            h('label', { htmlFor: 'realtor.email', className: 'block font-semibold mb-1' }, getTranslation('realtor_email')),
+            h('input', {
+              type: 'email',
+              id: 'realtor.email',
+              name: 'realtor.email',
+              value: formData.realtor.email,
+              onChange: handleInputChange,
+              className: 'w-full p-2 border rounded',
+              placeholder: 'N/A or email'
+            })
+          ]),
+          h('div', { className: 'form-group' }, [
+            h('label', { htmlFor: 'realtor.phone', className: 'block font-semibold mb-1' }, getTranslation('realtor_phone')),
+            h('input', {
+              type: 'text',
+              id: 'realtor.phone',
+              name: 'realtor.phone',
+              value: formData.realtor.phone,
+              onChange: handleInputChange,
+              placeholder: 'Phone or URL',
+              className: 'w-full p-2 border rounded'
+            })
+          ]),
+          h('div', { className: 'form-group' }, [
+            h('label', { htmlFor: 'descriptionEN', className: 'block font-semibold mb-1' }, getTranslation('description_en')),
+            h('textarea', {
+              id: 'descriptionEN',
+              name: 'descriptionEN',
+              value: formData.descriptionEN,
+              onChange: handleInputChange,
+              className: 'w-full p-2 border rounded h-24'
+            })
+          ]),
+          h('div', { className: 'form-group' }, [
+            h('label', { htmlFor: 'descriptionZH', className: 'block font-semibold mb-1' }, getTranslation('description_zh')),
+            h('textarea', {
+              id: 'descriptionZH',
+              name: 'descriptionZH',
+              value: formData.descriptionZH,
+              onChange: handleInputChange,
+              className: 'w-full p-2 border rounded h-24'
+            })
+          ]),
+          h('div', { className: 'form-group' }, [
+            h('label', { className: 'block font-semibold mb-1' }, getTranslation('upload_images')),
+            h('input', {
+              type: 'file',
+              id: 'file-input',
+              ref: fileInputRef,
+              multiple: true,
+              accept: 'image/*',
+              style: { display: 'none' },
+              onChange: handleFileChange
+            }),
+            h('button', {
+              type: 'button',
+              onClick: handleUploadClick,
+              className: 'bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 mb-4'
+            }, getTranslation('upload_images')),
+            h('div', { className: 'flex flex-wrap gap-4' }, formData.images.length > 0
+              ? formData.images.map((url, index) => h('div', { key: `image-${index}-${url}`, className: 'relative' }, [
+                  h('img', { 
+                    src: url, 
+                    alt: `Image ${index + 1}`, 
+                    className: 'w-32 h-24 object-cover rounded border'
+                  }),
+                  h('button', {
+                    type: 'button',
+                    onClick: () => removeImage(index),
+                    className: 'absolute top-0 right-0 bg-red-500 text-white p-1 rounded-full hover:bg-red-600'
+                  }, 'X')
+                ]))
+              : h('p', { className: 'text-gray-500' }, 'No images uploaded')
+            )
+          ]),
+          error && h('div', { className: 'text-red-500 text-sm mt-2' }, error),
+          h('button', {
+            type: 'submit',
+            className: 'bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600'
+          }, getTranslation(isEditing ? 'update_property' : 'add_property'))
+        ]),
+        h('div', { className: 'properties-list mt-8' }, [
+          h('h2', { className: 'text-2xl font-bold mb-4' }, getTranslation('existing_properties')),
+          properties.length === 0
+            ? h('p', { className: 'text-gray-600' }, getTranslation('no_properties'))
+            : properties.map(property => h('div', {
+                key: property.id,
+                className: 'p-4 bg-gray-50 rounded-lg mb-4 border'
+              }, [
+                h('p', { className: 'font-semibold' }, `${getTranslation('title_en')}: ${property.titleEN || ''}`),
+                h('p', null, `${getTranslation('title_zh')}: ${property.titleZH || ''}`),
+                h('p', null, `${getTranslation('city')}: ${getTranslation(property.city) || ''}`),
+                h('p', null, `${getTranslation('deal_type')}: ${getTranslation(property.dealType) || ''}`),
+                h('p', null, `${getTranslation('property_type')}: ${getTranslation(property.propertyType) || ''}`),
+                h('p', null, `${getTranslation('price_cny')}: ¥${(property.priceCNY || 0).toLocaleString()}`),
+                h('p', null, `${getTranslation('price_usd')}: $${(property.priceUSD || 0).toLocaleString()}`),
+                property.area && h('p', null, `${getTranslation('area')}: ${property.area} m²`),
+                property.floor && h('p', null, `${getTranslation('floor')}: ${property.floor}`),
+                property.rooms && h('p', null, `${getTranslation('rooms')}: ${property.rooms}`),
+                property.yearBuilt && h('p', null, `${getTranslation('year_built')}: ${property.yearBuilt}`),
+                (property.realtor && property.realtor.name) && h('p', null, `${getTranslation('realtor_name')}: ${property.realtor.name}`),
+                (property.realtor && property.realtor.email) && h('p', null, `${getTranslation('realtor_email')}: ${property.realtor.email}`),
+                (property.realtor && property.realtor.phone) && h('p', null, `${getTranslation('realtor_phone')}: ${property.realtor.phone}`),
+                property.descriptionEN && h('p', null, `${getTranslation('description_en')}: ${property.descriptionEN}`),
+                property.descriptionZH && h('p', null, `${getTranslation('description_zh')}: ${property.descriptionZH}`),
+                property.images.length > 0 && h('div', { className: 'flex flex-wrap gap-2 mt-2' },
+                  property.images.map((url, index) =>
+                    h('img', { 
+                      key: `prop-image-${index}-${url}`, 
+                      src: url, 
+                      alt: `Property image ${index + 1}`, 
+                      className: 'w-24 h-16 object-cover rounded border',
+                      onError: (e) => { e.target.src = 'https://via.placeholder.com/96x64?text=Image+Error'; }
+                    })
+                  )
+                ),
+                h('div', { className: 'flex gap-2 mt-2' }, [
+                  h('button', {
+                    onClick: () => handleEdit(property),
+                    className: 'bg-yellow-500 text-white px-3 py-1 rounded hover:bg-yellow-600'
+                  }, getTranslation('edit')),
+                  h('button', {
+                    onClick: () => handleDelete(property.id),
+                    className: 'bg-red-500 text-white px-3 py-1 rounded hover:bg-red-600'
+                  }, getTranslation('delete'))
+                ])
+              ]))
+        ])
       ]);
     }
-    if (document.getElementById('root')) {
+    // Password protection
+    const ADMIN_PASSWORD = 'Awinly-Awinly228';
+    (function() {
+      const storedPassword = localStorage.getItem('adminPassword');
+      if (!storedPassword) {
+        const enteredPassword = prompt('Enter admin password:');
+        if (enteredPassword !== ADMIN_PASSWORD) {
+          alert('Incorrect password. Access denied.');
+          window.location.href = '/';
+          return;
+        }
+        localStorage.setItem('adminPassword', enteredPassword);
+      } else if (storedPassword !== ADMIN_PASSWORD) {
+        const enteredPassword = prompt('Enter admin password:');
+        if (enteredPassword !== ADMIN_PASSWORD) {
+          alert('Incorrect password. Access denied.');
+          window.location.href = '/';
+          return;
+        }
+        localStorage.setItem('adminPassword', enteredPassword);
+      }
       ReactDOM.render(h(AdminPanel), document.getElementById('root'));
-    }
+    })();
   </script>
 </body>
 </html>
