@@ -285,6 +285,7 @@ const translations = {
     Zibo: "淄博"
   }
 };
+
 const adminCities = [
   'Anqing', 'Baoding', 'Beijing', 'Bengbu', 'Binzhou', 'Cangzhou', 'Changchun', 'Changsha',
   'Changzhou', 'Chengde', 'Chengdu', 'Chizhou', 'Chongqing', 'Chuzhou', 'Dalian', 'Dezhou',
@@ -298,12 +299,14 @@ const adminCities = [
   'Xiamen', 'Xingtai', 'Xining', 'Xuancheng', 'Yancheng', 'Yangzhou', 'Yantai', 'Yinchuan',
   'Zaozhuang', 'Zhangjiakou', 'Zhengding', 'Zhengzhou', 'Zhenjiang', 'Zhoushan', 'Zibo'
 ];
+
 const dealTypes = ['buy', 'rent'];
 const propertyTypes = ['Apartment', 'House', 'Land'];
 const languages = [
   { code: 'EN', name: 'English', flag: '🇬🇧' },
   { code: 'zh', name: '中文', flag: '🇨🇳' }
 ];
+
 // Generate Cloudinary signature
 function generateSignature(paramsToSign) {
   const timestamp = Math.floor(Date.now() / 1000);
@@ -312,11 +315,13 @@ function generateSignature(paramsToSign) {
   const stringToSign = sortedKeys.map(key => `${key}=${params[key]}`).join('&') + API_SECRET;
   return { signature: CryptoJS.SHA1(stringToSign).toString(CryptoJS.enc.Hex), timestamp };
 }
+
 // Function to extract public_id from Cloudinary URL
 function getPublicIdFromUrl(url) {
   const match = url.match(/\/upload\/(?:v\d+\/)?(.+)\.\w+$/);
   return match ? match[1] : null;
 }
+
 // Function to delete image from Cloudinary
 async function deleteFromCloudinary(publicId) {
   const timestamp = Math.floor(Date.now() / 1000);
@@ -342,6 +347,7 @@ async function deleteFromCloudinary(publicId) {
     console.error('Error deleting from Cloudinary:', error);
   }
 }
+
 // ImageItem component for drag-and-drop and deletion
 const ImageItem = ({ image, index, moveImage, removeImage }) => {
   const ref = useRef(null);
@@ -363,6 +369,7 @@ const ImageItem = ({ image, index, moveImage, removeImage }) => {
   });
   drag(drop(ref));
   const handleRemove = () => {
+    console.log('Removing image at index:', index, 'URL:', image);
     removeImage(index);
   };
   return h('div', {
@@ -383,6 +390,7 @@ const ImageItem = ({ image, index, moveImage, removeImage }) => {
     }, translations.EN.remove_image)
   ]);
 };
+
 function AdminPanel() {
   const [lang, setLang] = useState('EN');
   const [formData, setFormData] = useState({
@@ -495,6 +503,8 @@ function AdminPanel() {
       } else {
         console.error('Could not extract public_id from', imageUrl);
       }
+    } else {
+      console.log('Non-Cloudinary image, only link removed:', imageUrl);
     }
   };
 
