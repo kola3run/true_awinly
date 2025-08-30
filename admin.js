@@ -866,22 +866,23 @@ function AdminPanel() {
         h('button', {
           type: 'button',
           onClick: handleUploadClick,
-          className: 'bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600'
+          className: 'bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 mb-4'
         }, getTranslation('upload_images')),
-        h(DndProvider, { backend: HTML5Backend }, [
-          h('div', { className: 'space-y-2 mt-2' }, formData.images.length > 0
-            ? formData.images.map((url, index) =>
-                h(ImageItem, {
-                  key: `image-${index}-${url}`,
-                  image: url,
-                  index,
-                  moveImage,
-                  removeImage
-                })
-              )
-            : h('p', { className: 'text-gray-500' }, 'No images uploaded')
-          )
-        ])
+        h('div', { className: 'flex flex-wrap gap-4' }, formData.images.length > 0
+          ? formData.images.map((url, index) => h('div', { key: `image-${index}-${url}`, className: 'relative' }, [
+              h('img', { 
+                src: url, 
+                alt: `Image ${index + 1}`, 
+                className: 'w-32 h-24 object-cover rounded border'
+              }),
+              h('button', {
+                type: 'button',
+                onClick: () => removeImage(index),
+                className: 'absolute top-0 right-0 bg-red-500 text-white p-1 rounded-full hover:bg-red-600'
+              }, 'X')
+            ]))
+          : h('p', { className: 'text-gray-500' }, 'No images uploaded')
+        )
       ]),
       error && h('div', { className: 'text-red-500 text-sm mt-2' }, error),
       h('button', {
