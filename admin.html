@@ -324,7 +324,7 @@
       return { signature: CryptoJS.SHA1(stringToSign).toString(CryptoJS.enc.Hex), timestamp };
     }
 
-    // ImageItem component for drag-and-drop
+    // ImageItem component for drag-and-drop and deletion
     const ImageItem = ({ image, index, moveImage, removeImage }) => {
       const ref = useRef(null);
       const [{ isDragging }, drag] = useDrag({
@@ -344,9 +344,13 @@
         },
       });
       drag(drop(ref));
+      const handleRemove = () => {
+        console.log('Removing image at index:', index, 'URL:', image);
+        removeImage(index);
+      };
       return h('div', {
         ref,
-        className: `flex items-center space-x-2 p-2 bg-gray-100 rounded mb-2 ${isDragging ? 'opacity-50' : 'opacity-100'} cursor-move`,
+        className: `flex items-center space-x-2 p-2 bg-gray-100 rounded mb-2 ${isDragging ? 'opacity-50' : 'opacity-100'} cursor-move`
       }, [
         h('img', { 
           src: image, 
@@ -357,9 +361,9 @@
         h('span', { className: 'text-gray-600 flex-1 truncate' }, image),
         h('button', {
           type: 'button',
-          onClick: () => removeImage(index),
+          onClick: handleRemove,
           className: 'bg-red-500 text-white px-3 py-1 rounded hover:bg-red-600'
-        }, translations.EN.remove_image),
+        }, translations.EN.remove_image)
       ]);
     };
 
@@ -399,6 +403,7 @@
           images: Array.isArray(p.images) ? p.images.filter(img => img) : []
         }));
         setProperties(normalizedProperties);
+        console.log('Loaded properties:', normalizedProperties);
       }, []);
 
       useEffect(() => {
@@ -460,10 +465,12 @@
       };
 
       const removeImage = (index) => {
-        setFormData(prev => ({
-          ...prev,
-          images: prev.images.filter((_, i) => i !== index)
-        }));
+        console.log('Before remove, images:', formData.images);
+        setFormData(prev => {
+          const newImages = prev.images.filter((_, i) => i !== index);
+          console.log('After remove, images:', newImages);
+          return { ...prev, images: newImages };
+        });
       };
 
       const moveImage = (fromIndex, toIndex) => {
@@ -471,6 +478,7 @@
           const newImages = [...prev.images];
           const [movedImage] = newImages.splice(fromIndex, 1);
           newImages.splice(toIndex, 0, movedImage);
+          console.log('Moved image from', fromIndex, 'to', toIndex, 'new order:', newImages);
           return { ...prev, images: newImages };
         });
       };
@@ -829,7 +837,7 @@
               h('div', { className: 'space-y-2 mt-2' }, formData.images.length > 0
                 ? formData.images.map((url, index) =>
                     h(ImageItem, {
-                      key: `image-${index}`,
+                      key: `image-${index}-${url}`,
                       image: url,
                       index,
                       moveImage,
@@ -873,7 +881,7 @@
                 property.images.length > 0 && h('div', { className: 'flex flex-wrap gap-2 mt-2' },
                   property.images.map((url, index) =>
                     h('img', { 
-                      key: `prop-image-${index}`, 
+                      key: `prop-image-${index}-${url}`, 
                       src: url, 
                       alt: `Property image ${index + 1}`, 
                       className: 'w-24 h-16 object-cover rounded border',
