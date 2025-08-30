@@ -16,7 +16,6 @@
   <script type="text/javascript">
     'use strict';
     console.log('admin.js starting at', new Date().toISOString());
-
     const { useState, useEffect, useRef } = React;
     const { DndProvider, useDrag, useDrop } = ReactDnD;
     const { HTML5Backend } = ReactDnDHTML5Backend;
@@ -322,12 +321,12 @@
       const params = { ...paramsToSign, timestamp };
       const sortedKeys = Object.keys(params).sort();
       const stringToSign = sortedKeys.map(key => `${key}=${params[key]}`).join('&') + API_SECRET;
-      const signature = CryptoJS.SHA1(stringToSign).toString(CryptoJS.enc.Hex);
-      return { signature, timestamp };
+      return { signature: CryptoJS.SHA1(stringToSign).toString(CryptoJS.enc.Hex), timestamp };
     }
 
     // ImageItem component for drag-and-drop
     const ImageItem = ({ image, index, moveImage, removeImage }) => {
+      const ref = useRef(null);
       const [{ isDragging }, drag] = useDrag({
         type: 'image',
         item: { index },
@@ -335,7 +334,6 @@
           isDragging: monitor.isDragging(),
         }),
       });
-
       const [, drop] = useDrop({
         accept: 'image',
         hover(item) {
@@ -345,17 +343,22 @@
           }
         },
       });
-
+      drag(drop(ref));
       return h('div', {
-        ref: (node) => drag(drop(node)),
-        className: `flex items-center space-x-2 p-2 bg-gray-100 rounded ${isDragging ? 'opacity-50' : 'opacity-100'} cursor-move`,
+        ref,
+        className: `flex items-center space-x-2 p-2 bg-gray-100 rounded mb-2 ${isDragging ? 'opacity-50' : 'opacity-100'} cursor-move`,
       }, [
-        h('img', { src: image, alt: `Image ${index + 1}`, className: 'w-16 h-12 object-cover rounded border' }),
+        h('img', { 
+          src: image, 
+          alt: `Image ${index + 1}`, 
+          className: 'w-24 h-16 object-cover rounded border',
+          onError: (e) => { e.target.src = 'https://via.placeholder.com/96x64?text=Image+Error'; }
+        }),
         h('span', { className: 'text-gray-600 flex-1 truncate' }, image),
         h('button', {
           type: 'button',
           onClick: () => removeImage(index),
-          className: 'bg-red-500 text-white px-2 py-1 rounded hover:bg-red-600'
+          className: 'bg-red-500 text-white px-3 py-1 rounded hover:bg-red-600'
         }, translations.EN.remove_image),
       ]);
     };
@@ -386,7 +389,6 @@
       const [isLanguageDropdownOpen, setIsLanguageDropdownOpen] = useState(false);
       const fileInputRef = useRef(null);
       const languageTimeoutRef = useRef(null);
-
       const getTranslation = (key) => translations[lang][key] || translations.EN[key] || key;
 
       useEffect(() => {
@@ -394,7 +396,7 @@
         const normalizedProperties = savedProperties.map(p => ({
           ...p,
           realtor: p.realtor && typeof p.realtor === 'object' ? p.realtor : { name: '', email: 'N/A', phone: '' },
-          images: p.images || []
+          images: Array.isArray(p.images) ? p.images.filter(img => img) : []
         }));
         setProperties(normalizedProperties);
       }, []);
@@ -500,7 +502,7 @@
           realtor: formData.realtor,
           descriptionEN: formData.descriptionEN,
           descriptionZH: formData.descriptionZH,
-          images: formData.images
+          images: formData.images.filter(img => img)
         };
         let updatedProperties;
         if (isEditing) {
@@ -532,7 +534,7 @@
           realtor: property.realtor || { name: '', email: 'N/A', phone: '' },
           descriptionEN: property.descriptionEN || '',
           descriptionZH: property.descriptionZH || '',
-          images: property.images || []
+          images: Array.isArray(property.images) ? property.images.filter(img => img) : []
         });
         setIsEditing(true);
         setError('');
@@ -600,7 +602,7 @@
               languages.find(l => l.code === lang)?.flag || '🌐',
               languages.find(l => l.code === lang)?.name || getTranslation('language')
             ]),
-            h('div', { className: `absolute bg-white shadow-lg rounded mt-1 ${isLanguageDropdownOpen ? 'block' : 'hidden'}` }, 
+            h('div', { className: `absolute bg-white shadow-lg rounded mt-1 ${isLanguageDropdownOpen ? 'block' : 'hidden'}` },
               languages.map(langOption => h('div', {
                 key: langOption.code,
                 className: 'px-4 py-2 hover:bg-gray-100 cursor-pointer flex items-center gap-2',
@@ -814,6 +816,7 @@
               id: 'file-input',
               ref: fileInputRef,
               multiple: true,
+              accept: 'image/*',
               style: { display: 'none' },
               onChange: handleFileChange
             }),
@@ -826,7 +829,7 @@
               h('div', { className: 'space-y-2 mt-2' }, formData.images.length > 0
                 ? formData.images.map((url, index) =>
                     h(ImageItem, {
-                      key: index,
+                      key: `image-${index}`,
                       image: url,
                       index,
                       moveImage,
@@ -869,7 +872,13 @@
                 property.descriptionZH && h('p', null, `${getTranslation('description_zh')}: ${property.descriptionZH}`),
                 property.images.length > 0 && h('div', { className: 'flex flex-wrap gap-2 mt-2' },
                   property.images.map((url, index) =>
-                    h('img', { key: index, src: url, alt: `Property image ${index + 1}`, className: 'w-24 h-16 object-cover rounded border' })
+                    h('img', { 
+                      key: `prop-image-${index}`, 
+                      src: url, 
+                      alt: `Property image ${index + 1}`, 
+                      className: 'w-24 h-16 object-cover rounded border',
+                      onError: (e) => { e.target.src = 'https://via.placeholder.com/96x64?text=Image+Error'; }
+                    })
                   )
                 ),
                 h('div', { className: 'flex gap-2 mt-2' }, [
