@@ -25,12 +25,12 @@ if (typeof ReactDnDHTML5Backend === 'undefined') {
 } else {
   console.log('ReactDnDHTML5Backend loaded');
 }
-const { useState, useEffect } = React || {};
+const { useState, useEffect, useRef } = React || {};
 const h = React.createElement;
 const { DndProvider, useDrag, useDrop } = ReactDnD || {};
 const { HTML5Backend } = ReactDnDHTML5Backend || {};
-if (!useState || !useEffect || !h || !DndProvider || !useDrag || !useDrop || !HTML5Backend) {
-  console.error('Required React components missing:', { useState, useEffect, h, DndProvider, useDrag, useDrop, HTML5Backend });
+if (!useState || !useEffect || !useRef || !h || !DndProvider || !useDrag || !useDrop || !HTML5Backend) {
+  console.error('Required React components missing:', { useState, useEffect, useRef, h, DndProvider, useDrag, useDrop, HTML5Backend });
 } else {
   console.log('React components available');
 }
@@ -114,12 +114,13 @@ const adminCities = [
   'Nanchang', 'Urumqi', 'Shijiazhuang', 'Taiyuan', 'Nanning', 'Guiyang', 'Lanzhou',
   'Haikou', 'Yinchuan', 'Xining', 'Hohhot', 'Lhasa', 'Changzhou', 'Wuxi', 'Ningbo',
   'Wenzhou', 'Jiaxing', 'Huzhou', 'Shaoxing', 'Zhoushan', 'Taizhou', 'Lianyungang',
-  'Yancheng', 'Yangzhou', 'Zhenjiang', 'Taizhou', 'HuaiAn', 'Suqian', 'Tongling', 'Tongling',
-  'Urumqi', 'Weifang', 'Weihai', 'Wenzhou', 'Wuhan', 'Wuxi', 'XiAn', 'Xiamen', 'Xingtai',
-  'Xining', 'Xuancheng', 'Yancheng', 'Yangzhou', 'Yantai', 'Yinchuan', 'Zaozhuang', 'Zhangjiakou',
-  'Zhengding', 'Zhengzhou', 'Zhenjiang', 'Zhoushan', 'Zibo'
+  'Yancheng', 'Yangzhou', 'Zhenjiang', 'Taizhou', 'HuaiAn', 'Suqian', 'LuAn', 'Huaibei',
+  'Bengbu', 'Fuyang', 'Huainan', 'Chuzhou', 'MaAnshan', 'Tongling', 'AnQing', 'Huangshan',
+  'Chizhou', 'Xuancheng', 'Jinhua', 'Quzhou', 'Lishui', 'Zaozhuang', 'Weifang', 'Yantai',
+  'Weihai', 'Rizhao', 'Laiwu', 'Linyi', 'Dezhou', 'Liaocheng', 'Binzhou', 'Heze', 'Zibo',
+  'Dongying', 'Zhengding', 'Baoding', 'Langfang', 'Tangshan', 'Qinhuangdao', 'Handan',
+  'Xingtai', 'Zhangjiakou', 'Chengde', 'Cangzhou', 'Hengshui'
 ];
-
 function ImageItem({ image, index, moveImage, removeImage }) {
   const [{ isDragging }, drag] = useDrag({
     type: 'image',
@@ -128,7 +129,6 @@ function ImageItem({ image, index, moveImage, removeImage }) {
       isDragging: monitor.isDragging(),
     }),
   });
-
   const [, drop] = useDrop({
     accept: 'image',
     hover(item) {
@@ -138,7 +138,6 @@ function ImageItem({ image, index, moveImage, removeImage }) {
       }
     },
   });
-
   return h('div', {
     ref: (node) => drag(drop(node)),
     className: `flex items-center space-x-2 p-2 bg-gray-100 rounded ${isDragging ? 'opacity-50' : 'opacity-100'} cursor-move`,
@@ -152,7 +151,6 @@ function ImageItem({ image, index, moveImage, removeImage }) {
     }, translations.EN.remove_image),
   ]);
 }
-
 function Admin() {
   const [lang, setLang] = useState('EN');
   const t = (key) => (translations[lang] && translations[lang][key]) ? translations[lang][key] : key;
