@@ -1,5 +1,5 @@
 'use strict';
-console.log('admin.js starting at', new Date().toISOString());
+console.log('admin.js запущен в', new Date().toISOString());
 
 // Проверка загрузки зависимостей
 if (typeof React === 'undefined' || typeof ReactDOM === 'undefined' || typeof CryptoJS === 'undefined') {
@@ -655,7 +655,7 @@ function AdminPanel() {
         h('select', {
           id: 'city',
           name: 'city',
-          value: formData.city,
+          value:braneformData.city,
           onChange: handleInputChange,
           className: 'w-full p-2 border rounded focus:ring-2 focus:ring-purple-500',
           required: true
