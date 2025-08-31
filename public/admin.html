@@ -6,6 +6,8 @@
   <title>AWINLY Admin Panel</title>
   <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
   <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+  <script src="https://unpkg.com/react-dnd@16/umd/ReactDnD.min.js"></script>
+  <script src="https://unpkg.com/react-dnd-html5-backend@16/umd/ReactDnDHTML5Backend.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
   <script src="https://cdn.tailwindcss.com"></script>
 </head>
@@ -14,22 +16,20 @@
   <script type="text/javascript">
     'use strict';
     console.log('admin.js starting at', new Date().toISOString());
-
     // Ensure dependencies are loaded
-    if (typeof React === 'undefined' || typeof ReactDOM === 'undefined') {
-      console.error('Required dependencies missing:', { React: !!React, ReactDOM: !!ReactDOM });
+    if (typeof React === 'undefined' || typeof ReactDOM === 'undefined' || typeof ReactDnD === 'undefined' || typeof ReactDnDHTML5Backend === 'undefined') {
+      console.error('Required dependencies missing:', { React: !!React, ReactDOM: !!ReactDOM, ReactDnD: !!ReactDnD, ReactDnDHTML5Backend: !!ReactDnDHTML5Backend });
     } else {
-      console.log('Dependencies loaded:', { React: React.version, ReactDOM: true });
+      console.log('Dependencies loaded:', { React: React.version, ReactDOM: true, ReactDnD: true, ReactDnDHTML5Backend: true });
     }
-
     const { useState, useEffect, useRef } = React;
+    const { DndProvider, useDrag, useDrop } = ReactDnD;
+    const { HTML5Backend } = ReactDnDHTML5Backend;
     const h = React.createElement;
-
     // Cloudinary configuration
     const CLOUD_NAME = 'dkjakynhh';
     const API_KEY = '724711754654635';
     const API_SECRET = 'v4vizym6WCttYT-13k5XXw7yps8';
-
     // Translations
     const translations = {
       EN: {
@@ -48,7 +48,7 @@
         property_type: "Property Type",
         price_cny: "Price CNY",
         price_usd: "Price USD",
-        area: "Area (m^2)",
+        area: "Area (m²)",
         floor: "Floor",
         rooms: "Rooms",
         year_built: "Year Built",
@@ -180,7 +180,7 @@
         property_type: "物业类型",
         price_cny: "人民币价格",
         price_usd: "美元价格",
-        area: "面积 (m^2)",
+        area: "面积（平方米）",
         floor: "楼层",
         rooms: "房间",
         year_built: "建造年份",
@@ -297,7 +297,6 @@
         Zibo: "淄博"
       }
     };
-
     const adminCities = [
       'Anqing', 'Baoding', 'Beijing', 'Bengbu', 'Binzhou', 'Cangzhou', 'Changchun', 'Changsha',
       'Changzhou', 'Chengde', 'Chengdu', 'Chizhou', 'Chongqing', 'Chuzhou', 'Dalian', 'Dezhou',
@@ -311,14 +310,12 @@
       'Xiamen', 'Xingtai', 'Xining', 'Xuancheng', 'Yancheng', 'Yangzhou', 'Yantai', 'Yinchuan',
       'Zaozhuang', 'Zhangjiakou', 'Zhengding', 'Zhengzhou', 'Zhenjiang', 'Zhoushan', 'Zibo'
     ];
-
     const dealTypes = ['buy', 'rent'];
     const propertyTypes = ['Apartment', 'House', 'Land'];
     const languages = [
       { code: 'EN', name: 'English', flag: '🇬🇧' },
       { code: 'zh', name: '中文', flag: '🇨🇳' }
     ];
-
     // Generate Cloudinary signature
     function generateSignature(paramsToSign) {
       const timestamp = Math.floor(Date.now() / 1000);
@@ -327,39 +324,41 @@
       const stringToSign = sortedKeys.map(key => `${key}=${params[key]}`).join('&') + API_SECRET;
       return { signature: CryptoJS.SHA1(stringToSign).toString(CryptoJS.enc.Hex), timestamp };
     }
-
-    // ImageItem component for deletion and order change with buttons
+    // ImageItem component for drag-and-drop and deletion
     const ImageItem = ({ image, index, moveImage, removeImage }) => {
-      const handleMoveUp = () => {
-        moveImage(index, index - 1);
-      };
-      const handleMoveDown = () => {
-        moveImage(index, index + 1);
-      };
+      const ref = useRef(null);
+      const [{ isDragging }, drag] = useDrag({
+        type: 'image',
+        item: { index },
+        collect: (monitor) => ({
+          isDragging: monitor.isDragging(),
+        }),
+      });
+      const [, drop] = useDrop({
+        accept: 'image',
+        hover(item) {
+          if (item.index !== index) {
+            moveImage(item.index, index);
+            item.index = index;
+          }
+        },
+      });
+      drag(drop(ref));
       const handleRemove = () => {
         console.log('Removing image at index:', index, 'URL:', image);
         removeImage(index);
       };
       return h('div', {
-        className: 'flex items-center space-x-2 p-2 bg-gray-100 rounded mb-2'
+        ref,
+        className: `flex items-center space-x-2 p-2 bg-gray-100 rounded mb-2 ${isDragging ? 'opacity-50' : 'opacity-100'} cursor-move`
       }, [
-        h('img', { 
-          src: image, 
-          alt: `Image ${index + 1}`, 
+        h('img', {
+          src: image,
+          alt: `Image ${index + 1}`,
           className: 'w-24 h-16 object-cover rounded border',
           onError: (e) => { e.target.src = 'https://via.placeholder.com/96x64?text=Image+Error'; }
         }),
         h('span', { className: 'text-gray-600 flex-1 truncate' }, image),
-        h('button', {
-          type: 'button',
-          onClick: handleMoveUp,
-          className: 'bg-blue-500 text-white px-2 py-1 rounded hover:bg-blue-600'
-        }, 'Up'),
-        h('button', {
-          type: 'button',
-          onClick: handleMoveDown,
-          className: 'bg-blue-500 text-white px-2 py-1 rounded hover:bg-blue-600'
-        }, 'Down'),
         h('button', {
           type: 'button',
           onClick: handleRemove,
@@ -367,7 +366,6 @@
         }, translations.EN.remove_image)
       ]);
     };
-
     function AdminPanel() {
       const [lang, setLang] = useState('EN');
       const [formData, setFormData] = useState({
@@ -395,43 +393,41 @@
       const fileInputRef = useRef(null);
       const languageTimeoutRef = useRef(null);
       const getTranslation = (key) => translations[lang][key] || translations.EN[key] || key;
-
       useEffect(() => {
-        const savedProperties = JSON.parse(localStorage.getItem('properties')) || [];
-        const normalizedProperties = savedProperties.map(p => ({
-          ...p,
-          realtor: p.realtor && typeof p.realtor === 'object' ? p.realtor : { name: '', email: 'N/A', phone: '' },
-          images: Array.isArray(p.images) ? p.images.filter(img => img) : []
-        }));
-        setProperties(normalizedProperties);
-        console.log('Loaded properties:', normalizedProperties);
+        try {
+          const savedProperties = JSON.parse(localStorage.getItem('properties')) || [];
+          const normalizedProperties = savedProperties.map(p => ({
+            ...p,
+            realtor: p.realtor && typeof p.realtor === 'object' ? p.realtor : { name: '', email: 'N/A', phone: '' },
+            images: Array.isArray(p.images) ? p.images.filter(img => img && typeof img === 'string') : []
+          }));
+          setProperties(normalizedProperties);
+          console.log('Loaded properties:', normalizedProperties);
+        } catch (err) {
+          console.error('Error loading properties from localStorage:', err);
+          setProperties([]);
+          localStorage.removeItem('properties'); // Clear invalid data
+        }
       }, []);
-
       useEffect(() => {
         document.documentElement.lang = lang.toLowerCase();
       }, [lang]);
-
       const handleInputChange = (e) => {
         const { name, value } = e.target;
         if (name.startsWith('realtor.')) {
           const field = name.split('.')[1];
           setFormData(prev => ({
             ...prev,
-            realtor: Object.assign({}, prev.realtor, {[field]: value})
+            realtor: { ...prev.realtor, [field]: value }
           }));
         } else {
-          setFormData(prev => ({
-            ...prev,
-            [name]: value
-          }));
+          setFormData(prev => ({ ...prev, [name]: value }));
         }
       };
-
       const handleFileChange = (e) => {
         const files = Array.from(e.target.files);
         uploadFiles(files);
       };
-
       const uploadFiles = async (files) => {
         const url = `https://api.cloudinary.com/v1_1/${CLOUD_NAME}/image/upload`;
         for (const file of files) {
@@ -447,13 +443,16 @@
               method: 'POST',
               body: formDataToSend
             });
+            if (!response.ok) {
+              throw new Error(`HTTP error! status: ${response.status}`);
+            }
             const result = await response.json();
             if (result.error) {
               throw new Error(result.error.message);
             }
             setFormData(prev => ({
               ...prev,
-              images: prev.images.concat(result.secure_url)
+              images: [...prev.images, result.secure_url]
             }));
             setError('');
             console.log('Upload successful:', result.secure_url);
@@ -463,11 +462,9 @@
           }
         }
       };
-
       const handleUploadClick = () => {
         fileInputRef.current.click();
       };
-
       const removeImage = (index) => {
         console.log('Before remove, images:', formData.images);
         setFormData(prev => {
@@ -476,25 +473,22 @@
           return { ...prev, images: newImages };
         });
       };
-
       const moveImage = (fromIndex, toIndex) => {
         setFormData(prev => {
           const newImages = [...prev.images];
-          if (toIndex < 0 || toIndex >= newImages.length) return prev;
-          const movedImage = newImages.splice(fromIndex, 1)[0];
+          const [movedImage] = newImages.splice(fromIndex, 1);
           newImages.splice(toIndex, 0, movedImage);
           console.log('Moved image from', fromIndex, 'to', toIndex, 'new order:', newImages);
           return { ...prev, images: newImages };
         });
       };
-
       const handleSubmit = (e) => {
         e.preventDefault();
         if (!formData.titleEN || !formData.titleZH || !formData.city || !formData.priceCNY || !formData.priceUSD) {
           setError(getTranslation('required_fields'));
           return;
         }
-        if (!formData.realtor.email.includes('@') && formData.realtor.email !== 'N/A') {
+        if (formData.realtor.email !== 'N/A' && !/\S+@\S+\.\S+/.test(formData.realtor.email)) {
           setError(getTranslation('invalid_email'));
           return;
         }
@@ -515,21 +509,25 @@
           realtor: formData.realtor,
           descriptionEN: formData.descriptionEN,
           descriptionZH: formData.descriptionZH,
-          images: formData.images.filter(img => img)
+          images: formData.images.filter(img => img && typeof img === 'string')
         };
         let updatedProperties;
         if (isEditing) {
           updatedProperties = properties.map(p => p.id === newProperty.id ? newProperty : p);
           alert(getTranslation('property_updated'));
         } else {
-          updatedProperties = properties.concat(newProperty);
+          updatedProperties = [...properties, newProperty];
           alert(getTranslation('property_added'));
         }
-        localStorage.setItem('properties', JSON.stringify(updatedProperties));
-        setProperties(updatedProperties);
-        resetForm();
+        try {
+          localStorage.setItem('properties', JSON.stringify(updatedProperties));
+          setProperties(updatedProperties);
+          resetForm();
+        } catch (err) {
+          console.error('Error saving to localStorage:', err);
+          setError('Error saving property. Check console for details.');
+        }
       };
-
       const handleEdit = (property) => {
         setFormData({
           id: property.id,
@@ -538,30 +536,33 @@
           city: property.city || '',
           dealType: property.dealType || 'buy',
           propertyType: property.propertyType || 'Apartment',
-          priceCNY: property.priceCNY ? property.priceCNY.toString() : '',
-          priceUSD: property.priceUSD ? property.priceUSD.toString() : '',
-          area: property.area ? property.area.toString() : '',
-          floor: property.floor ? property.floor.toString() : '',
-          rooms: property.rooms ? property.rooms.toString() : '',
-          yearBuilt: property.yearBuilt ? property.yearBuilt.toString() : '',
+          priceCNY: property.priceCNY?.toString() || '',
+          priceUSD: property.priceUSD?.toString() || '',
+          area: property.area?.toString() || '',
+          floor: property.floor?.toString() || '',
+          rooms: property.rooms?.toString() || '',
+          yearBuilt: property.yearBuilt?.toString() || '',
           realtor: property.realtor || { name: '', email: 'N/A', phone: '' },
           descriptionEN: property.descriptionEN || '',
           descriptionZH: property.descriptionZH || '',
-          images: Array.isArray(property.images) ? property.images.filter(img => img) : []
+          images: Array.isArray(property.images) ? property.images.filter(img => img && typeof img === 'string') : []
         });
         setIsEditing(true);
         setError('');
       };
-
       const handleDelete = (id) => {
         if (window.confirm(getTranslation('confirm_delete'))) {
           const updatedProperties = properties.filter(p => p.id !== id);
-          localStorage.setItem('properties', JSON.stringify(updatedProperties));
-          setProperties(updatedProperties);
-          alert(getTranslation('property_deleted'));
+          try {
+            localStorage.setItem('properties', JSON.stringify(updatedProperties));
+            setProperties(updatedProperties);
+            alert(getTranslation('property_deleted'));
+          } catch (err) {
+            console.error('Error deleting from localStorage:', err);
+            setError('Error deleting property. Check console for details.');
+          }
         }
       };
-
       const resetForm = () => {
         setFormData({
           id: null,
@@ -584,26 +585,22 @@
         setIsEditing(false);
         setError('');
       };
-
       const handleLanguageChange = (langCode) => {
         setLang(langCode);
         setIsLanguageDropdownOpen(false);
       };
-
       const handleLanguageMouseEnter = () => {
         clearTimeout(languageTimeoutRef.current);
         languageTimeoutRef.current = setTimeout(() => {
           setIsLanguageDropdownOpen(true);
         }, 100);
       };
-
       const handleLanguageMouseLeave = () => {
         clearTimeout(languageTimeoutRef.current);
         languageTimeoutRef.current = setTimeout(() => {
           setIsLanguageDropdownOpen(false);
         }, 200);
       };
-
       return h('div', { className: 'container mx-auto p-4 max-w-4xl' }, [
         h('div', { className: 'relative mb-8' }, [
           h('div', {
@@ -666,7 +663,7 @@
               required: true
             }, [
               h('option', { value: '' }, getTranslation('select_city')),
-              adminCities.map(city => h('option', { key: city, value: city }, getTranslation(city)))
+              ...adminCities.map(city => h('option', { key: city, value: city }, getTranslation(city)))
             ])
           ]),
           h('div', { className: 'grid grid-cols-1 md:grid-cols-2 gap-4' }, [
@@ -703,7 +700,8 @@
                 value: formData.priceCNY,
                 onChange: handleInputChange,
                 className: 'w-full p-2 border rounded',
-                required: true
+                required: true,
+                min: 0
               })
             ]),
             h('div', { className: 'form-group' }, [
@@ -715,7 +713,8 @@
                 value: formData.priceUSD,
                 onChange: handleInputChange,
                 className: 'w-full p-2 border rounded',
-                required: true
+                required: true,
+                min: 0
               })
             ])
           ]),
@@ -728,7 +727,8 @@
                 name: 'area',
                 value: formData.area,
                 onChange: handleInputChange,
-                className: 'w-full p-2 border rounded'
+                className: 'w-full p-2 border rounded',
+                min: 0
               })
             ]),
             h('div', { className: 'form-group' }, [
@@ -739,7 +739,8 @@
                 name: 'floor',
                 value: formData.floor,
                 onChange: handleInputChange,
-                className: 'w-full p-2 border rounded'
+                className: 'w-full p-2 border rounded',
+                min: 0
               })
             ])
           ]),
@@ -752,7 +753,8 @@
                 name: 'rooms',
                 value: formData.rooms,
                 onChange: handleInputChange,
-                className: 'w-full p-2 border rounded'
+                className: 'w-full p-2 border rounded',
+                min: 0
               })
             ]),
             h('div', { className: 'form-group' }, [
@@ -763,7 +765,9 @@
                 name: 'yearBuilt',
                 value: formData.yearBuilt,
                 onChange: handleInputChange,
-                className: 'w-full p-2 border rounded'
+                className: 'w-full p-2 border rounded',
+                min: 0,
+                max: new Date().getFullYear()
               })
             ])
           ]),
@@ -781,7 +785,7 @@
           h('div', { className: 'form-group' }, [
             h('label', { htmlFor: 'realtor.email', className: 'block font-semibold mb-1' }, getTranslation('realtor_email')),
             h('input', {
-              type: 'email',
+              type: 'text',
               id: 'realtor.email',
               name: 'realtor.email',
               value: formData.realtor.email,
@@ -838,18 +842,20 @@
               onClick: handleUploadClick,
               className: 'bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600'
             }, getTranslation('upload_images')),
-            h('div', { className: 'space-y-2 mt-2' }, formData.images.length > 0
-              ? formData.images.map((url, index) =>
-                  h(ImageItem, {
-                    key: `image-${index}-${url}`,
-                    image: url,
-                    index: index,
-                    moveImage: moveImage,
-                    removeImage: removeImage
-                  })
-                )
-              : h('p', { className: 'text-gray-500' }, 'No images uploaded')
-            )
+            h(DndProvider, { backend: HTML5Backend }, [
+              h('div', { className: 'space-y-2 mt-2' }, formData.images.length > 0
+                ? formData.images.map((url, index) =>
+                    h(ImageItem, {
+                      key: `image-${index}-${url}`,
+                      image: url,
+                      index,
+                      moveImage,
+                      removeImage
+                    })
+                  )
+                : h('p', { className: 'text-gray-500' }, 'No images uploaded')
+              )
+            ])
           ]),
           error && h('div', { className: 'text-red-500 text-sm mt-2' }, error),
           h('button', {
@@ -872,7 +878,7 @@
                 h('p', null, `${getTranslation('property_type')}: ${getTranslation(property.propertyType) || ''}`),
                 h('p', null, `${getTranslation('price_cny')}: ¥${(property.priceCNY || 0).toLocaleString()}`),
                 h('p', null, `${getTranslation('price_usd')}: $${(property.priceUSD || 0).toLocaleString()}`),
-                property.area && h('p', null, `${getTranslation('area')}: ${property.area} m^2`),
+                property.area && h('p', null, `${getTranslation('area')}: ${property.area} m²`),
                 property.floor && h('p', null, `${getTranslation('floor')}: ${property.floor}`),
                 property.rooms && h('p', null, `${getTranslation('rooms')}: ${property.rooms}`),
                 property.yearBuilt && h('p', null, `${getTranslation('year_built')}: ${property.yearBuilt}`),
@@ -883,10 +889,10 @@
                 property.descriptionZH && h('p', null, `${getTranslation('description_zh')}: ${property.descriptionZH}`),
                 property.images.length > 0 && h('div', { className: 'flex flex-wrap gap-2 mt-2' },
                   property.images.map((url, index) =>
-                    h('img', { 
-                      key: `prop-image-${index}-${url}`, 
-                      src: url, 
-                      alt: `Property image ${index + 1}`, 
+                    h('img', {
+                      key: `prop-image-${index}-${url}`,
+                      src: url,
+                      alt: `Property image ${index + 1}`,
                       className: 'w-24 h-16 object-cover rounded border',
                       onError: (e) => { e.target.src = 'https://via.placeholder.com/96x64?text=Image+Error'; }
                     })
@@ -906,20 +912,11 @@
         ])
       ]);
     }
-
     // Password protection
     const ADMIN_PASSWORD = 'Awinly-Awinly228';
     (function() {
-      const storedPassword = localStorage.getItem('adminPassword');
-      if (!storedPassword) {
-        const enteredPassword = prompt('Enter admin password:');
-        if (enteredPassword !== ADMIN_PASSWORD) {
-          alert('Incorrect password. Access denied.');
-          window.location.href = '/';
-          return;
-        }
-        localStorage.setItem('adminPassword', enteredPassword);
-      } else if (storedPassword !== ADMIN_PASSWORD) {
+      let storedPassword = localStorage.getItem('adminPassword');
+      if (!storedPassword || storedPassword !== ADMIN_PASSWORD) {
         const enteredPassword = prompt('Enter admin password:');
         if (enteredPassword !== ADMIN_PASSWORD) {
           alert('Incorrect password. Access denied.');
