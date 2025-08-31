@@ -48,7 +48,7 @@
         property_type: "Property Type",
         price_cny: "Price CNY",
         price_usd: "Price USD",
-        area: "Area (m²)",
+        area: "Area (m^2)",
         floor: "Floor",
         rooms: "Rooms",
         year_built: "Year Built",
@@ -180,7 +180,7 @@
         property_type: "物业类型",
         price_cny: "人民币价格",
         price_usd: "美元价格",
-        area: "面积（平方米）",
+        area: "面积 (m^2)",
         floor: "楼层",
         rooms: "房间",
         year_built: "建造年份",
@@ -417,10 +417,13 @@
           const field = name.split('.')[1];
           setFormData(prev => ({
             ...prev,
-            realtor: { ...prev.realtor, [field]: value }
+            realtor: Object.assign({}, prev.realtor, {[field]: value})
           }));
         } else {
-          setFormData(prev => ({ ...prev, [name]: value }));
+          setFormData(prev => ({
+            ...prev,
+            [name]: value
+          }));
         }
       };
 
@@ -450,7 +453,7 @@
             }
             setFormData(prev => ({
               ...prev,
-              images: [...prev.images, result.secure_url]
+              images: prev.images.concat(result.secure_url)
             }));
             setError('');
             console.log('Upload successful:', result.secure_url);
@@ -478,7 +481,7 @@
         setFormData(prev => {
           const newImages = [...prev.images];
           if (toIndex < 0 || toIndex >= newImages.length) return prev;
-          const [movedImage] = newImages.splice(fromIndex, 1);
+          const movedImage = newImages.splice(fromIndex, 1)[0];
           newImages.splice(toIndex, 0, movedImage);
           console.log('Moved image from', fromIndex, 'to', toIndex, 'new order:', newImages);
           return { ...prev, images: newImages };
@@ -519,7 +522,7 @@
           updatedProperties = properties.map(p => p.id === newProperty.id ? newProperty : p);
           alert(getTranslation('property_updated'));
         } else {
-          updatedProperties = [...properties, newProperty];
+          updatedProperties = properties.concat(newProperty);
           alert(getTranslation('property_added'));
         }
         localStorage.setItem('properties', JSON.stringify(updatedProperties));
@@ -535,12 +538,12 @@
           city: property.city || '',
           dealType: property.dealType || 'buy',
           propertyType: property.propertyType || 'Apartment',
-          priceCNY: property.priceCNY?.toString() || '',
-          priceUSD: property.priceUSD?.toString() || '',
-          area: property.area?.toString() || '',
-          floor: property.floor?.toString() || '',
-          rooms: property.rooms?.toString() || '',
-          yearBuilt: property.yearBuilt?.toString() || '',
+          priceCNY: property.priceCNY ? property.priceCNY.toString() : '',
+          priceUSD: property.priceUSD ? property.priceUSD.toString() : '',
+          area: property.area ? property.area.toString() : '',
+          floor: property.floor ? property.floor.toString() : '',
+          rooms: property.rooms ? property.rooms.toString() : '',
+          yearBuilt: property.yearBuilt ? property.yearBuilt.toString() : '',
           realtor: property.realtor || { name: '', email: 'N/A', phone: '' },
           descriptionEN: property.descriptionEN || '',
           descriptionZH: property.descriptionZH || '',
@@ -663,7 +666,7 @@
               required: true
             }, [
               h('option', { value: '' }, getTranslation('select_city')),
-              ...adminCities.map(city => h('option', { key: city, value: city }, getTranslation(city)))
+              adminCities.map(city => h('option', { key: city, value: city }, getTranslation(city)))
             ])
           ]),
           h('div', { className: 'grid grid-cols-1 md:grid-cols-2 gap-4' }, [
@@ -840,9 +843,9 @@
                   h(ImageItem, {
                     key: `image-${index}-${url}`,
                     image: url,
-                    index,
-                    moveImage,
-                    removeImage
+                    index: index,
+                    moveImage: moveImage,
+                    removeImage: removeImage
                   })
                 )
               : h('p', { className: 'text-gray-500' }, 'No images uploaded')
@@ -869,7 +872,7 @@
                 h('p', null, `${getTranslation('property_type')}: ${getTranslation(property.propertyType) || ''}`),
                 h('p', null, `${getTranslation('price_cny')}: ¥${(property.priceCNY || 0).toLocaleString()}`),
                 h('p', null, `${getTranslation('price_usd')}: $${(property.priceUSD || 0).toLocaleString()}`),
-                property.area && h('p', null, `${getTranslation('area')}: ${property.area} m²`),
+                property.area && h('p', null, `${getTranslation('area')}: ${property.area} m^2`),
                 property.floor && h('p', null, `${getTranslation('floor')}: ${property.floor}`),
                 property.rooms && h('p', null, `${getTranslation('rooms')}: ${property.rooms}`),
                 property.yearBuilt && h('p', null, `${getTranslation('year_built')}: ${property.yearBuilt}`),
