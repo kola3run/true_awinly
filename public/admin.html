@@ -6,8 +6,8 @@
   <title>AWINLY Admin Panel</title>
   <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
   <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
-  <script src="https://unpkg.com/react-dnd@16/umd/ReactDnD.min.js"></script>
-  <script src="https://unpkg.com/react-dnd-html5-backend@16/umd/ReactDnDHTML5Backend.min.js"></script>
+  <script src="https://unpkg.com/react-dnd@16/umd/ReactDnD.production.min.js"></script>
+  <script src="https://unpkg.com/react-dnd-html5-backend@16/umd/ReactDnDHTML5Backend.production.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
   <script src="https://cdn.tailwindcss.com"></script>
 </head>
@@ -394,20 +394,14 @@
       const languageTimeoutRef = useRef(null);
       const getTranslation = (key) => translations[lang][key] || translations.EN[key] || key;
       useEffect(() => {
-        try {
-          const savedProperties = JSON.parse(localStorage.getItem('properties')) || [];
-          const normalizedProperties = savedProperties.map(p => ({
-            ...p,
-            realtor: p.realtor && typeof p.realtor === 'object' ? p.realtor : { name: '', email: 'N/A', phone: '' },
-            images: Array.isArray(p.images) ? p.images.filter(img => img && typeof img === 'string') : []
-          }));
-          setProperties(normalizedProperties);
-          console.log('Loaded properties:', normalizedProperties);
-        } catch (err) {
-          console.error('Error loading properties from localStorage:', err);
-          setProperties([]);
-          localStorage.removeItem('properties'); // Clear invalid data
-        }
+        const savedProperties = JSON.parse(localStorage.getItem('properties')) || [];
+        const normalizedProperties = savedProperties.map(p => ({
+          ...p,
+          realtor: p.realtor && typeof p.realtor === 'object' ? p.realtor : { name: '', email: 'N/A', phone: '' },
+          images: Array.isArray(p.images) ? p.images.filter(img => img) : []
+        }));
+        setProperties(normalizedProperties);
+        console.log('Loaded properties:', normalizedProperties);
       }, []);
       useEffect(() => {
         document.documentElement.lang = lang.toLowerCase();
@@ -443,9 +437,6 @@
               method: 'POST',
               body: formDataToSend
             });
-            if (!response.ok) {
-              throw new Error(`HTTP error! status: ${response.status}`);
-            }
             const result = await response.json();
             if (result.error) {
               throw new Error(result.error.message);
@@ -488,7 +479,7 @@
           setError(getTranslation('required_fields'));
           return;
         }
-        if (formData.realtor.email !== 'N/A' && !/\S+@\S+\.\S+/.test(formData.realtor.email)) {
+        if (!formData.realtor.email.includes('@') && formData.realtor.email !== 'N/A') {
           setError(getTranslation('invalid_email'));
           return;
         }
@@ -509,7 +500,7 @@
           realtor: formData.realtor,
           descriptionEN: formData.descriptionEN,
           descriptionZH: formData.descriptionZH,
-          images: formData.images.filter(img => img && typeof img === 'string')
+          images: formData.images.filter(img => img)
         };
         let updatedProperties;
         if (isEditing) {
@@ -519,14 +510,9 @@
           updatedProperties = [...properties, newProperty];
           alert(getTranslation('property_added'));
         }
-        try {
-          localStorage.setItem('properties', JSON.stringify(updatedProperties));
-          setProperties(updatedProperties);
-          resetForm();
-        } catch (err) {
-          console.error('Error saving to localStorage:', err);
-          setError('Error saving property. Check console for details.');
-        }
+        localStorage.setItem('properties', JSON.stringify(updatedProperties));
+        setProperties(updatedProperties);
+        resetForm();
       };
       const handleEdit = (property) => {
         setFormData({
@@ -545,7 +531,7 @@
           realtor: property.realtor || { name: '', email: 'N/A', phone: '' },
           descriptionEN: property.descriptionEN || '',
           descriptionZH: property.descriptionZH || '',
-          images: Array.isArray(property.images) ? property.images.filter(img => img && typeof img === 'string') : []
+          images: Array.isArray(property.images) ? property.images.filter(img => img) : []
         });
         setIsEditing(true);
         setError('');
@@ -553,14 +539,9 @@
       const handleDelete = (id) => {
         if (window.confirm(getTranslation('confirm_delete'))) {
           const updatedProperties = properties.filter(p => p.id !== id);
-          try {
-            localStorage.setItem('properties', JSON.stringify(updatedProperties));
-            setProperties(updatedProperties);
-            alert(getTranslation('property_deleted'));
-          } catch (err) {
-            console.error('Error deleting from localStorage:', err);
-            setError('Error deleting property. Check console for details.');
-          }
+          localStorage.setItem('properties', JSON.stringify(updatedProperties));
+          setProperties(updatedProperties);
+          alert(getTranslation('property_deleted'));
         }
       };
       const resetForm = () => {
@@ -700,8 +681,7 @@
                 value: formData.priceCNY,
                 onChange: handleInputChange,
                 className: 'w-full p-2 border rounded',
-                required: true,
-                min: 0
+                required: true
               })
             ]),
             h('div', { className: 'form-group' }, [
@@ -713,8 +693,7 @@
                 value: formData.priceUSD,
                 onChange: handleInputChange,
                 className: 'w-full p-2 border rounded',
-                required: true,
-                min: 0
+                required: true
               })
             ])
           ]),
@@ -727,8 +706,7 @@
                 name: 'area',
                 value: formData.area,
                 onChange: handleInputChange,
-                className: 'w-full p-2 border rounded',
-                min: 0
+                className: 'w-full p-2 border rounded'
               })
             ]),
             h('div', { className: 'form-group' }, [
@@ -739,8 +717,7 @@
                 name: 'floor',
                 value: formData.floor,
                 onChange: handleInputChange,
-                className: 'w-full p-2 border rounded',
-                min: 0
+                className: 'w-full p-2 border rounded'
               })
             ])
           ]),
@@ -753,8 +730,7 @@
                 name: 'rooms',
                 value: formData.rooms,
                 onChange: handleInputChange,
-                className: 'w-full p-2 border rounded',
-                min: 0
+                className: 'w-full p-2 border rounded'
               })
             ]),
             h('div', { className: 'form-group' }, [
@@ -765,9 +741,7 @@
                 name: 'yearBuilt',
                 value: formData.yearBuilt,
                 onChange: handleInputChange,
-                className: 'w-full p-2 border rounded',
-                min: 0,
-                max: new Date().getFullYear()
+                className: 'w-full p-2 border rounded'
               })
             ])
           ]),
@@ -785,7 +759,7 @@
           h('div', { className: 'form-group' }, [
             h('label', { htmlFor: 'realtor.email', className: 'block font-semibold mb-1' }, getTranslation('realtor_email')),
             h('input', {
-              type: 'text',
+              type: 'email',
               id: 'realtor.email',
               name: 'realtor.email',
               value: formData.realtor.email,
@@ -915,8 +889,16 @@
     // Password protection
     const ADMIN_PASSWORD = 'Awinly-Awinly228';
     (function() {
-      let storedPassword = localStorage.getItem('adminPassword');
-      if (!storedPassword || storedPassword !== ADMIN_PASSWORD) {
+      const storedPassword = localStorage.getItem('adminPassword');
+      if (!storedPassword) {
+        const enteredPassword = prompt('Enter admin password:');
+        if (enteredPassword !== ADMIN_PASSWORD) {
+          alert('Incorrect password. Access denied.');
+          window.location.href = '/';
+          return;
+        }
+        localStorage.setItem('adminPassword', enteredPassword);
+      } else if (storedPassword !== ADMIN_PASSWORD) {
         const enteredPassword = prompt('Enter admin password:');
         if (enteredPassword !== ADMIN_PASSWORD) {
           alert('Incorrect password. Access denied.');
