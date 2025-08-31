@@ -293,12 +293,10 @@ let formData = {
   descriptionZH: '',
   images: []
 };
-
 let properties = JSON.parse(localStorage.getItem('properties')) || [];
 let isEditing = false;
 let error = '';
-
-const getTranslation = (key) => translations[EN][key] || translations.EN[key] || key;
+const getTranslation = (key) => translations['EN'][key] || translations.EN[key] || key; // Исправлено EN в кавычках
 
 // DOM elements
 const form = document.createElement('form');
@@ -369,7 +367,8 @@ fileInput.multiple = true;
 fileInput.accept = 'image/*';
 fileInput.style.display = 'none';
 
-async function uploadFiles(files) {
+async function uploadFiles(event) {
+  const files = event.target.files;
   const url = `https://api.cloudinary.com/v1_1/${CLOUD_NAME}/image/upload`;
   for (const file of files) {
     const formDataToSend = new FormData();
@@ -617,7 +616,7 @@ function renderForm() {
     </div>
     <div class="form-group">
       <label class="block font-semibold mb-1">${getTranslation('upload_images')}</label>
-      <input type="file" id="file-input" multiple accept="image/*" style="display: none" onchange="handleFileChange(event)">
+      <input type="file" id="file-input" multiple accept="image/*" style="display: none" onchange="uploadFiles(event)">
       <button type="button" onclick="handleUploadClick()" class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 mb-4">${getTranslation('upload_images')}</button>
       <div id="image-container" class="flex flex-wrap gap-4"></div>
     </div>
@@ -631,7 +630,7 @@ function renderImages() {
   const imageContainer = document.getElementById('image-container');
   imageContainer.innerHTML = formData.images.map((url, index) => `
     <div class="relative" draggable="true" ondragstart="dragStart(event, ${index})" ondragover="dragOver(event)" ondrop="drop(event, ${index})">
-      <img src="${url}" alt="Image ${index + 1}" class="w-32 h-24 object-cover rounded border">
+      <img src="${url}" alt="Image ${index + 1}" class="w-32 h-24 object-cover rounded border" onError="this.src='https://via.placeholder.com/96x64?text=Image+Error';">
       <button type="button" onclick="removeImage(${index})" class="absolute top-0 right-0 bg-red-500 text-white p-1 rounded-full hover:bg-red-600">X</button>
     </div>
   `).join('');
@@ -679,18 +678,22 @@ function renderError() {
 }
 
 // Drag-and-drop handlers
+let draggedIndex = null;
+
 function dragStart(event, index) {
+  draggedIndex = index;
   event.dataTransfer.setData('text/plain', index);
 }
 
 function dragOver(event) {
-  event.preventDefault();
+  event.preventDefault(); // Allow drop
 }
 
 function drop(event, toIndex) {
   event.preventDefault();
-  const fromIndex = event.dataTransfer.getData('text/plain');
-  moveImage(fromIndex, toIndex);
+  if (draggedIndex === null) return;
+  moveImage(draggedIndex, toIndex);
+  draggedIndex = null;
 }
 
 // Set up the page
@@ -710,16 +713,15 @@ document.addEventListener('DOMContentLoaded', () => {
   langWrapper.appendChild(langSelect);
   langDiv.appendChild(langWrapper);
   container.appendChild(langDiv);
+  const h1 = document.createElement('h1');
+  h1.className = 'text-3xl font-bold mb-6';
+  h1.textContent = getTranslation('admin_title');
   container.appendChild(h1);
   container.appendChild(form);
   container.appendChild(propertiesList);
   document.body.appendChild(container);
 
-  const h1 = document.createElement('h1');
-  h1.className = 'text-3xl font-bold mb-6';
-  h1.textContent = getTranslation('admin_title');
-
-  fileInput.onchange = handleFileChange;
+  fileInput.onchange = uploadFiles;
   form.onsubmit = handleSubmit;
 
   renderForm();
