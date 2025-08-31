@@ -7,8 +7,6 @@
   <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
   <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
-  <script src="https://unpkg.com/react-dnd@14.0.5/dist/umd/ReactDnD.min.js"></script>
-  <script src="https://unpkg.com/react-dnd-html5-backend@14.0.2/dist/umd/ReactDnDHTML5Backend.min.js"></script>
   <script src="https://cdn.tailwindcss.com"></script>
 </head>
 <body>
@@ -18,15 +16,13 @@
     console.log('admin.js starting at', new Date().toISOString());
 
     // Ensure dependencies are loaded
-    if (typeof React === 'undefined' || typeof ReactDOM === 'undefined' || typeof ReactDnD === 'undefined' || typeof ReactDnDHTML5Backend === 'undefined') {
-      console.error('Required dependencies missing:', { React: !!React, ReactDOM: !!ReactDOM, ReactDnD: !!ReactDnD, ReactDnDHTML5Backend: !!ReactDnDHTML5Backend });
+    if (typeof React === 'undefined' || typeof ReactDOM === 'undefined') {
+      console.error('Required dependencies missing:', { React: !!React, ReactDOM: !!ReactDOM });
     } else {
-      console.log('Dependencies loaded:', { React: React.version, ReactDOM: true, ReactDnD: true, ReactDnDHTML5Backend: true });
+      console.log('Dependencies loaded:', { React: React.version, ReactDOM: true });
     }
 
     const { useState, useEffect, useRef } = React;
-    const { DndProvider, useDrag, useDrop } = ReactDnD;
-    const { HTML5Backend } = ReactDnDHTML5Backend;
     const h = React.createElement;
 
     // Cloudinary configuration
@@ -332,33 +328,20 @@
       return { signature: CryptoJS.SHA1(stringToSign).toString(CryptoJS.enc.Hex), timestamp };
     }
 
-    // ImageItem component for drag-and-drop and deletion
+    // ImageItem component for deletion and order change with buttons
     const ImageItem = ({ image, index, moveImage, removeImage }) => {
-      const ref = useRef(null);
-      const [{ isDragging }, drag] = useDrag({
-        type: 'image',
-        item: { index },
-        collect: (monitor) => ({
-          isDragging: monitor.isDragging(),
-        }),
-      });
-      const [, drop] = useDrop({
-        accept: 'image',
-        hover(item) {
-          if (item.index !== index) {
-            moveImage(item.index, index);
-            item.index = index;
-          }
-        },
-      });
-      drag(drop(ref));
+      const handleMoveUp = () => {
+        moveImage(index, index - 1);
+      };
+      const handleMoveDown = () => {
+        moveImage(index, index + 1);
+      };
       const handleRemove = () => {
         console.log('Removing image at index:', index, 'URL:', image);
         removeImage(index);
       };
       return h('div', {
-        ref,
-        className: `flex items-center space-x-2 p-2 bg-gray-100 rounded mb-2 ${isDragging ? 'opacity-50' : 'opacity-100'} cursor-move`
+        className: 'flex items-center space-x-2 p-2 bg-gray-100 rounded mb-2'
       }, [
         h('img', { 
           src: image, 
@@ -367,6 +350,16 @@
           onError: (e) => { e.target.src = 'https://via.placeholder.com/96x64?text=Image+Error'; }
         }),
         h('span', { className: 'text-gray-600 flex-1 truncate' }, image),
+        h('button', {
+          type: 'button',
+          onClick: handleMoveUp,
+          className: 'bg-blue-500 text-white px-2 py-1 rounded hover:bg-blue-600'
+        }, 'Up'),
+        h('button', {
+          type: 'button',
+          onClick: handleMoveDown,
+          className: 'bg-blue-500 text-white px-2 py-1 rounded hover:bg-blue-600'
+        }, 'Down'),
         h('button', {
           type: 'button',
           onClick: handleRemove,
@@ -427,7 +420,7 @@
             realtor: { ...prev.realtor, [field]: value }
           }));
         } else {
-          setFormData(prev => ({ ...prev, [name]: value });
+          setFormData(prev => ({ ...prev, [name]: value }));
         }
       };
 
@@ -484,6 +477,7 @@
       const moveImage = (fromIndex, toIndex) => {
         setFormData(prev => {
           const newImages = [...prev.images];
+          if (toIndex < 0 || toIndex >= newImages.length) return prev;
           const [movedImage] = newImages.splice(fromIndex, 1);
           newImages.splice(toIndex, 0, movedImage);
           console.log('Moved image from', fromIndex, 'to', toIndex, 'new order:', newImages);
@@ -841,20 +835,18 @@
               onClick: handleUploadClick,
               className: 'bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600'
             }, getTranslation('upload_images')),
-            h(DndProvider, { backend: HTML5Backend }, [
-              h('div', { className: 'space-y-2 mt-2' }, formData.images.length > 0
-                ? formData.images.map((url, index) =>
-                    h(ImageItem, {
-                      key: `image-${index}-${url}`,
-                      image: url,
-                      index,
-                      moveImage,
-                      removeImage
-                    })
-                  )
-                : h('p', { className: 'text-gray-500' }, 'No images uploaded')
-              )
-            ])
+            h('div', { className: 'space-y-2 mt-2' }, formData.images.length > 0
+              ? formData.images.map((url, index) =>
+                  h(ImageItem, {
+                    key: `image-${index}-${url}`,
+                    image: url,
+                    index,
+                    moveImage,
+                    removeImage
+                  })
+                )
+              : h('p', { className: 'text-gray-500' }, 'No images uploaded')
+            )
           ]),
           error && h('div', { className: 'text-red-500 text-sm mt-2' }, error),
           h('button', {
