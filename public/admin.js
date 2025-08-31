@@ -489,7 +489,7 @@ function AdminPanel() {
       console.log('After remove, images:', newImages);
       return { ...prev, images: newImages };
     });
-    if (imageUrl.includes('cloudinary.com')) {
+    if (imageUrl && imageUrl.includes('cloudinary.com')) {
       const publicId = getPublicIdFromUrl(imageUrl);
       if (publicId) {
         await deleteFromCloudinary(publicId);
@@ -497,7 +497,7 @@ function AdminPanel() {
         console.error('Could not extract public_id from', imageUrl);
       }
     } else {
-      console.log('Non-Cloudinary image, only link removed:', imageUrl);
+      console.log('Non-Cloudinary image or invalid URL, only link removed:', imageUrl);
     }
   };
 
