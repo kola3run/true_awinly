@@ -371,7 +371,7 @@ function ImageItem({ image, index, moveImage, removeImage }) {
       type: 'button',
       onClick: handleRemove,
       className: 'bg-red-500 text-white px-3 py-1 rounded hover:bg-red-600 focus:ring-2 focus:ring-red-500'
-    }, translations[lang].remove_image || 'Remove Image')
+    }, translations.EN.remove_image)
   ]);
 }
 
@@ -887,7 +887,7 @@ function AdminPanel() {
           )
         ])
       ]),
-      error && h('div', { className: 'text-red-500 text-sm mt-2' }, error),
+      error && h('div', { className: 'error-message' }, error),
       h('div', { className: 'flex gap-2' }, [
         h('button', {
           type: 'submit',
