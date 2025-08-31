@@ -4,10 +4,12 @@ console.log('admin.js starting at', new Date().toISOString());
 const { useState, useEffect, useRef } = React;
 const h = React.createElement;
 
+// Cloudinary configuration
 const CLOUD_NAME = 'dkjakynhh';
 const API_KEY = '724711754654635';
 const API_SECRET = 'v4vizym6WCttYT-13k5XXw7yps8';
 
+// Translations
 const translations = {
   EN: {
     admin_title: "AWINLY Admin Panel",
