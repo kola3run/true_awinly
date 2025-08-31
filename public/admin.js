@@ -296,7 +296,7 @@ const languages = [
   { code: 'zh', name: '中文', flag: '🇨🇳' }
 ];
 
-// Генерация подписи Cloudinary
+// Generate Cloudinary signature
 function generateSignature(paramsToSign) {
   const timestamp = Math.floor(Date.now() / 1000);
   const params = { ...paramsToSign, timestamp };
@@ -305,18 +305,19 @@ function generateSignature(paramsToSign) {
   return { signature: CryptoJS.SHA1(stringToSign).toString(CryptoJS.enc.Hex), timestamp };
 }
 
-// Компонент ImageItem для отображения и удаления изображений
-const ImageItem = ({ image, index, removeImage }) => {
+// ImageItem component for deletion
+const ImageItem = ({ image, index, removeImage, lang }) => {
   const handleRemove = () => {
-    console.log('Удаление изображения:', index, 'URL:', image);
+    console.log('Removing image at index:', index, 'URL:', image);
     removeImage(index);
   };
+  const getTranslation = (key) => translations[lang][key] || translations.EN[key] || key;
   return h('div', {
     className: 'flex items-center space-x-2 p-2 bg-gray-100 rounded mb-2'
   }, [
     h('img', {
       src: image,
-      alt: `Изображение ${index + 1}`,
+      alt: `Image ${index + 1}`,
       className: 'w-24 h-16 object-cover rounded border',
       onError: (e) => { e.target.src = 'https://placehold.co/96x64?text=Image+Error'; }
     }),
@@ -325,7 +326,7 @@ const ImageItem = ({ image, index, removeImage }) => {
       type: 'button',
       onClick: handleRemove,
       className: 'bg-red-500 text-white px-3 py-1 rounded hover:bg-red-600'
-    }, 'Remove Image')
+    }, getTranslation('remove_image'))
   ]);
 };
 
@@ -776,7 +777,8 @@ function AdminPanel() {
                 key: `image-${index}-${url}`,
                 image: url,
                 index,
-                removeImage
+                removeImage,
+                lang
               })
             )
           : h('p', { className: 'text-gray-500' }, 'No images uploaded')
