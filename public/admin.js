@@ -261,7 +261,7 @@ const translations = {
     Tangshan: "唐山",
     Tianjin: "天津",
     Tongling: "铜陵",
-    Urumqi: "乌鲁木qi",
+    Urumqi: "乌鲁木齐",
     Weifang: "潍坊",
     Weihai: "威海",
     Wenzhou: "温州",
@@ -299,6 +299,7 @@ const adminCities = [
   'Xiamen', 'Xingtai', 'Xining', 'Xuancheng', 'Yancheng', 'Yangzhou', 'Yantai', 'Yinchuan',
   'Zaozhuang', 'Zhangjiakou', 'Zhengding', 'Zhengzhou', 'Zhenjiang', 'Zhoushan', 'Zibo'
 ];
+
 const dealTypes = ['buy', 'rent'];
 const propertyTypes = ['Apartment', 'House', 'Land'];
 const languages = [
@@ -306,7 +307,58 @@ const languages = [
   { code: 'zh', name: '中文', flag: '🇨🇳' }
 ];
 
-// AdminPanel Component
+// Generate Cloudinary signature
+function generateSignature(paramsToSign) {
+  const timestamp = Math.floor(Date.now() / 1000);
+  const params = { ...paramsToSign, timestamp };
+  const sortedKeys = Object.keys(params).sort();
+  const stringToSign = sortedKeys.map(key => `${key}=${params[key]}`).join('&') + API_SECRET;
+  return { signature: CryptoJS.SHA1(stringToSign).toString(CryptoJS.enc.Hex), timestamp };
+}
+
+// ImageItem component for drag-and-drop and deletion
+const ImageItem = ({ image, index, moveImage, removeImage }) => {
+  const ref = useRef(null);
+  const [{ isDragging }, drag] = useDrag({
+    type: 'image',
+    item: { index },
+    collect: (monitor) => ({
+      isDragging: monitor.isDragging(),
+    }),
+  });
+  const [, drop] = useDrop({
+    accept: 'image',
+    hover(item) {
+      if (item.index !== index) {
+        moveImage(item.index, index);
+        item.index = index;
+      }
+    },
+  });
+  drag(drop(ref));
+  const handleRemove = () => {
+    console.log('Removing image at index:', index, 'URL:', image);
+    removeImage(index);
+  };
+  return h('div', {
+    ref,
+    className: `flex items-center space-x-2 p-2 bg-gray-100 rounded mb-2 ${isDragging ? 'opacity-50' : 'opacity-100'} cursor-move`
+  }, [
+    h('img', { 
+      src: image, 
+      alt: `Image ${index + 1}`, 
+      className: 'w-24 h-16 object-cover rounded border',
+      onError: (e) => { e.target.src = 'https://via.placeholder.com/96x64?text=Image+Error'; }
+    }),
+    h('span', { className: 'text-gray-600 flex-1 truncate' }, image),
+    h('button', {
+      type: 'button',
+      onClick: handleRemove,
+      className: 'bg-red-500 text-white px-3 py-1 rounded hover:bg-red-600'
+    }, translations.EN.remove_image)
+  ]);
+};
+
 function AdminPanel() {
   const [lang, setLang] = useState('EN');
   const [formData, setFormData] = useState({
@@ -328,13 +380,23 @@ function AdminPanel() {
     images: []
   });
   const [error, setError] = useState('');
-  const [properties, setProperties] = useState(JSON.parse(localStorage.getItem('properties')) || []);
+  const [properties, setProperties] = useState([]);
   const [isEditing, setIsEditing] = useState(false);
   const [isLanguageDropdownOpen, setIsLanguageDropdownOpen] = useState(false);
   const fileInputRef = useRef(null);
   const languageTimeoutRef = useRef(null);
-
   const getTranslation = (key) => translations[lang][key] || translations.EN[key] || key;
+
+  useEffect(() => {
+    const savedProperties = JSON.parse(localStorage.getItem('properties')) || [];
+    const normalizedProperties = savedProperties.map(p => ({
+      ...p,
+      realtor: p.realtor && typeof p.realtor === 'object' ? p.realtor : { name: '', email: 'N/A', phone: '' },
+      images: Array.isArray(p.images) ? p.images.filter(img => img) : []
+    }));
+    setProperties(normalizedProperties);
+    console.log('Loaded properties:', normalizedProperties);
+  }, []);
 
   useEffect(() => {
     document.documentElement.lang = lang.toLowerCase();
@@ -394,22 +456,13 @@ function AdminPanel() {
     fileInputRef.current.click();
   };
 
-  const removeImage = async (index) => {
-    const imageUrl = formData.images[index];
-    setFormData(prev => ({
-      ...prev,
-      images: prev.images.filter((_, i) => i !== index)
-    }));
-    if (imageUrl && imageUrl.includes('cloudinary.com')) {
-      const publicId = getPublicIdFromUrl(imageUrl);
-      if (publicId) {
-        await deleteFromCloudinary(publicId);
-      } else {
-        console.error('Could not extract public_id from', imageUrl);
-      }
-    } else {
-      console.log('Non-Cloudinary image or invalid URL, only link removed:', imageUrl);
-    }
+  const removeImage = (index) => {
+    console.log('Before remove, images:', formData.images);
+    setFormData(prev => {
+      const newImages = prev.images.filter((_, i) => i !== index);
+      console.log('After remove, images:', newImages);
+      return { ...prev, images: newImages };
+    });
   };
 
   const moveImage = (fromIndex, toIndex) => {
@@ -417,6 +470,7 @@ function AdminPanel() {
       const newImages = [...prev.images];
       const [movedImage] = newImages.splice(fromIndex, 1);
       newImages.splice(toIndex, 0, movedImage);
+      console.log('Moved image from', fromIndex, 'to', toIndex, 'new order:', newImages);
       return { ...prev, images: newImages };
     });
   };
@@ -448,7 +502,7 @@ function AdminPanel() {
       realtor: formData.realtor,
       descriptionEN: formData.descriptionEN,
       descriptionZH: formData.descriptionZH,
-      images: formData.images
+      images: formData.images.filter(img => img)
     };
     let updatedProperties;
     if (isEditing) {
@@ -480,7 +534,7 @@ function AdminPanel() {
       realtor: property.realtor || { name: '', email: 'N/A', phone: '' },
       descriptionEN: property.descriptionEN || '',
       descriptionZH: property.descriptionZH || '',
-      images: Array.isArray(property.images) ? property.images : []
+      images: Array.isArray(property.images) ? property.images.filter(img => img) : []
     });
     setIsEditing(true);
     setError('');
@@ -537,69 +591,27 @@ function AdminPanel() {
     }, 200);
   };
 
-  // ImageItem Component for drag-and-drop
-  const ImageItem = ({ image, index, moveImage, removeImage }) => {
-    const ref = useRef(null);
-    const [{ isDragging }, drag] = useDrag({
-      type: 'image',
-      item: { index },
-      collect: (monitor) => ({
-        isDragging: monitor.isDragging(),
-      }),
-    });
-    const [, drop] = useDrop({
-      accept: 'image',
-      hover(item) {
-        if (item.index !== index) {
-          moveImage(item.index, index);
-          item.index = index;
-        }
-      },
-    });
-    drag(drop(ref));
-    const handleRemove = () => removeImage(index);
-    return h('div', {
-      ref,
-      className: `relative flex items-center space-x-2 p-2 bg-gray-100 rounded mb-2 ${isDragging ? 'opacity-50' : 'opacity-100'} cursor-move`
-    }, [
-      h('img', {
-        src: image,
-        alt: `Image ${index + 1}`,
-        className: 'w-24 h-16 object-cover rounded border',
-        // Убрал onError, чтобы избежать спама ошибок, если изображения не загружаются
-      }),
-      h('button', {
-        type: 'button',
-        onClick: handleRemove,
-        className: 'absolute top-0 right-0 bg-red-500 text-white p-1 rounded-full hover:bg-red-600'
-      }, 'X')
-    ]);
-  };
-
-  return h('div', { className: 'admin-container' }, [
+  return h('div', { className: 'container mx-auto p-4 max-w-4xl' }, [
     h('div', { className: 'relative mb-8' }, [
       h('div', {
-        className: 'language-selector',
+        className: 'absolute top-0 right-0',
         onMouseEnter: handleLanguageMouseEnter,
         onMouseLeave: handleLanguageMouseLeave
       }, [
-        h('button', {
-          className: 'listings-dropdown-btn',
-          onClick: () => setIsLanguageDropdownOpen(!isLanguageDropdownOpen)
-        }, [
+        h('button', { className: 'bg-purple-600 text-white px-4 py-2 rounded hover:bg-purple-700 flex items-center gap-2' }, [
           languages.find(l => l.code === lang)?.flag || '🌐',
           languages.find(l => l.code === lang)?.name || getTranslation('language')
         ]),
-        h('div', {
-          className: `listings-dropdown-content ${isLanguageDropdownOpen ? 'open' : ''}`
-        }, languages.map(langOption => h('div', {
-          key: langOption.code,
-          className: 'listings-dropdown-item',
-          onClick: () => handleLanguageChange(langOption.code)
-        }, [
-          langOption.flag,
-          langOption.name
-        ])))
+        h('div', { className: `absolute bg-white shadow-lg rounded mt-1 ${isLanguageDropdownOpen ? 'block' : 'hidden'}` },
+          languages.map(langOption => h('div', {
+            key: langOption.code,
+            className: 'px-4 py-2 hover:bg-gray-100 cursor-pointer flex items-center gap-2',
+            onClick: () => handleLanguageChange(langOption.code)
+          }, [
+            langOption.flag,
+            langOption.name
+          ]))
+        )
       ])
     ]),
     h('h1', { className: 'text-3xl font-bold mb-6' }, getTranslation('admin_title')),
@@ -653,7 +665,8 @@ function AdminPanel() {
             value: formData.dealType,
             onChange: handleInputChange,
             className: 'w-full p-2 border rounded'
-          }, dealTypes.map(type => h('option', { key: type, value: type }, getTranslation(type))))
+          }, dealTypes.map(type => h('option', { key: type, value: type }, getTranslation(type)))
+          )
         ]),
         h('div', { className: 'form-group' }, [
           h('label', { htmlFor: 'propertyType', className: 'block font-semibold mb-1' }, getTranslation('property_type')),
@@ -663,7 +676,8 @@ function AdminPanel() {
             value: formData.propertyType,
             onChange: handleInputChange,
             className: 'w-full p-2 border rounded'
-          }, propertyTypes.map(type => h('option', { key: type, value: type }, getTranslation(type))))
+          }, propertyTypes.map(type => h('option', { key: type, value: type }, getTranslation(type)))
+          )
         ])
       ]),
       h('div', { className: 'grid grid-cols-1 md:grid-cols-2 gap-4' }, [
@@ -771,8 +785,8 @@ function AdminPanel() {
           name: 'realtor.phone',
           value: formData.realtor.phone,
           onChange: handleInputChange,
-          className: 'w-full p-2 border rounded',
-          placeholder: 'Phone or URL'
+          placeholder: 'Phone or URL',
+          className: 'w-full p-2 border rounded'
         })
       ]),
       h('div', { className: 'form-group' }, [
@@ -782,7 +796,7 @@ function AdminPanel() {
           name: 'descriptionEN',
           value: formData.descriptionEN,
           onChange: handleInputChange,
-          className: 'w-full p-2 border rounded h-100'
+          className: 'w-full p-2 border rounded h-24'
         })
       ]),
       h('div', { className: 'form-group' }, [
@@ -792,7 +806,7 @@ function AdminPanel() {
           name: 'descriptionZH',
           value: formData.descriptionZH,
           onChange: handleInputChange,
-          className: 'w-full p-2 border rounded h-100'
+          className: 'w-full p-2 border rounded h-24'
         })
       ]),
       h('div', { className: 'form-group' }, [
@@ -809,70 +823,75 @@ function AdminPanel() {
         h('button', {
           type: 'button',
           onClick: handleUploadClick,
-          className: 'bg-purple-600 text-white px-4 py-2 rounded hover:bg-purple-700 mb-4'
+          className: 'bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600'
         }, getTranslation('upload_images')),
         h(DndProvider, { backend: HTML5Backend }, [
-          h('div', { className: 'image-preview' }, formData.images.length > 0
-            ? formData.images.map((url, index) => h(ImageItem, {
-              key: `image-${index}-${url}`,
-              image: url,
-              index,
-              moveImage,
-              removeImage
-            }))
-            : h('p', { className: 'text-gray-600' }, 'No images uploaded')
+          h('div', { className: 'space-y-2 mt-2' }, formData.images.length > 0
+            ? formData.images.map((url, index) =>
+                h(ImageItem, {
+                  key: `image-${index}-${url}`,
+                  image: url,
+                  index,
+                  moveImage,
+                  removeImage
+                })
+              )
+            : h('p', { className: 'text-gray-500' }, 'No images uploaded')
           )
         ])
       ]),
-      error && h('div', { className: 'error' }, error),
+      error && h('div', { className: 'text-red-500 text-sm mt-2' }, error),
       h('button', {
         type: 'submit',
-        className: 'bg-purple-600 text-white px-4 py-2 rounded hover:bg-purple-700'
+        className: 'bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600'
       }, getTranslation(isEditing ? 'update_property' : 'add_property'))
     ]),
-    h('div', { className: 'properties-list' }, [
+    h('div', { className: 'properties-list mt-8' }, [
       h('h2', { className: 'text-2xl font-bold mb-4' }, getTranslation('existing_properties')),
       properties.length === 0
         ? h('p', { className: 'text-gray-600' }, getTranslation('no_properties'))
         : properties.map(property => h('div', {
-          key: property.id,
-          className: 'property-item'
-        }, [
-          h('p', { className: 'font-semibold' }, `${getTranslation('title_en')}: ${property.titleEN || ''}`),
-          h('p', null, `${getTranslation('title_zh')}: ${property.titleZH || ''}`),
-          h('p', null, `${getTranslation('city')}: ${getTranslation(property.city) || ''}`),
-          h('p', null, `${getTranslation('deal_type')}: ${getTranslation(property.dealType) || ''}`),
-          h('p', null, `${getTranslation('property_type')}: ${getTranslation(property.propertyType) || ''}`),
-          h('p', null, `${getTranslation('price_cny')}: ¥${(property.priceCNY || 0).toLocaleString()}`),
-          h('p', null, `${getTranslation('price_usd')}: $${(property.priceUSD || 0).toLocaleString()}`),
-          property.area && h('p', null, `${getTranslation('area')}: ${property.area} m²`),
-          property.floor && h('p', null, `${getTranslation('floor')}: ${property.floor}`),
-          property.rooms && h('p', null, `${getTranslation('rooms')}: ${property.rooms}`),
-          property.yearBuilt && h('p', null, `${getTranslation('year_built')}: ${property.yearBuilt}`),
-          (property.realtor && property.realtor.name) && h('p', null, `${getTranslation('realtor_name')}: ${property.realtor.name}`),
-          (property.realtor && property.realtor.email) && h('p', null, `${getTranslation('realtor_email')}: ${property.realtor.email}`),
-          (property.realtor && property.realtor.phone) && h('p', null, `${getTranslation('realtor_phone')}: ${property.realtor.phone}`),
-          property.descriptionEN && h('p', null, `${getTranslation('description_en')}: ${property.descriptionEN}`),
-          property.descriptionZH && h('p', null, `${getTranslation('description_zh')}: ${property.descriptionZH}`),
-          property.images.length > 0 && h('div', { className: 'property-images' },
-            property.images.map((url, index) => h('img', {
-              key: `prop-image-${index}-${url}`,
-              src: url,
-              alt: `Property image ${index + 1}`,
-              className: 'w-24 h-16 object-cover rounded border'
-            }))
-          ),
-          h('div', { className: 'property-actions' }, [
-            h('button', {
-              onClick: () => handleEdit(property),
-              className: 'bg-yellow-500 text-white px-3 py-1 rounded hover:bg-yellow-600'
-            }, getTranslation('edit')),
-            h('button', {
-              onClick: () => handleDelete(property.id),
-              className: 'bg-red-500 text-white px-3 py-1 rounded hover:bg-red-600'
-            }, getTranslation('delete'))
-          ])
-        ]))
+            key: property.id,
+            className: 'p-4 bg-gray-50 rounded-lg mb-4 border'
+          }, [
+            h('p', { className: 'font-semibold' }, `${getTranslation('title_en')}: ${property.titleEN || ''}`),
+            h('p', null, `${getTranslation('title_zh')}: ${property.titleZH || ''}`),
+            h('p', null, `${getTranslation('city')}: ${getTranslation(property.city) || ''}`),
+            h('p', null, `${getTranslation('deal_type')}: ${getTranslation(property.dealType) || ''}`),
+            h('p', null, `${getTranslation('property_type')}: ${getTranslation(property.propertyType) || ''}`),
+            h('p', null, `${getTranslation('price_cny')}: ¥${(property.priceCNY || 0).toLocaleString()}`),
+            h('p', null, `${getTranslation('price_usd')}: $${(property.priceUSD || 0).toLocaleString()}`),
+            property.area && h('p', null, `${getTranslation('area')}: ${property.area} m²`),
+            property.floor && h('p', null, `${getTranslation('floor')}: ${property.floor}`),
+            property.rooms && h('p', null, `${getTranslation('rooms')}: ${property.rooms}`),
+            property.yearBuilt && h('p', null, `${getTranslation('year_built')}: ${property.yearBuilt}`),
+            (property.realtor && property.realtor.name) && h('p', null, `${getTranslation('realtor_name')}: ${property.realtor.name}`),
+            (property.realtor && property.realtor.email) && h('p', null, `${getTranslation('realtor_email')}: ${property.realtor.email}`),
+            (property.realtor && property.realtor.phone) && h('p', null, `${getTranslation('realtor_phone')}: ${property.realtor.phone}`),
+            property.descriptionEN && h('p', null, `${getTranslation('description_en')}: ${property.descriptionEN}`),
+            property.descriptionZH && h('p', null, `${getTranslation('description_zh')}: ${property.descriptionZH}`),
+            property.images.length > 0 && h('div', { className: 'flex flex-wrap gap-2 mt-2' },
+              property.images.map((url, index) =>
+                h('img', { 
+                  key: `prop-image-${index}-${url}`, 
+                  src: url, 
+                  alt: `Property image ${index + 1}`, 
+                  className: 'w-24 h-16 object-cover rounded border',
+                  onError: (e) => { e.target.src = 'https://via.placeholder.com/96x64?text=Image+Error'; }
+                })
+              )
+            ),
+            h('div', { className: 'flex gap-2 mt-2' }, [
+              h('button', {
+                onClick: () => handleEdit(property),
+                className: 'bg-yellow-500 text-white px-3 py-1 rounded hover:bg-yellow-600'
+              }, getTranslation('edit')),
+              h('button', {
+                onClick: () => handleDelete(property.id),
+                className: 'bg-red-500 text-white px-3 py-1 rounded hover:bg-red-600'
+              }, getTranslation('delete'))
+            ])
+          ]))
     ])
   ]);
 }
