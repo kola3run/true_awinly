@@ -1,11 +1,25 @@
 'use strict';
 console.log('admin.js starting at', new Date().toISOString());
 
-// Ensure dependencies are loaded
-if (typeof React === 'undefined' || typeof ReactDOM === 'undefined' || typeof ReactDnD === 'undefined' || typeof ReactDnDHTML5Backend === 'undefined') {
-  console.error('Required dependencies missing:', { React: !!React, ReactDOM: !!ReactDOM, ReactDnD: !!ReactDnD, ReactDnDHTML5Backend: !!ReactDnDHTML5Backend });
+// Проверка загрузки зависимостей
+if (typeof React === 'undefined' || typeof ReactDOM === 'undefined' || typeof ReactDnD === 'undefined' || typeof ReactDnDHTML5Backend === 'undefined' || typeof CryptoJS === 'undefined') {
+  console.error('Не загружены необходимые зависимости:', {
+    React: !!React,
+    ReactDOM: !!ReactDOM,
+    ReactDnD: !!ReactDnD,
+    ReactDnDHTML5Backend: !!ReactDnDHTML5Backend,
+    CryptoJS: !!CryptoJS
+  });
+  alert('Ошибка загрузки зависимостей. Проверьте консоль для деталей.');
+  throw new Error('Не загружены необходимые зависимости');
 } else {
-  console.log('Dependencies loaded:', { React: React.version, ReactDOM: true, ReactDnD: true, ReactDnDHTML5Backend: true });
+  console.log('Зависимости загружены:', {
+    React: React.version,
+    ReactDOM: true,
+    ReactDnD: true,
+    ReactDnDHTML5Backend: true,
+    CryptoJS: true
+  });
 }
 
 const { useState, useEffect, useRef } = React;
@@ -13,12 +27,12 @@ const { DndProvider, useDrag, useDrop } = ReactDnD;
 const { HTML5Backend } = ReactDnDHTML5Backend;
 const h = React.createElement;
 
-// Cloudinary configuration
+// Конфигурация Cloudinary
 const CLOUD_NAME = 'dkjakynhh';
 const API_KEY = '724711754654635';
 const API_SECRET = 'v4vizym6WCttYT-13k5XXw7yps8';
 
-// Translations
+// Переводы
 const translations = {
   EN: {
     admin_title: "AWINLY Admin Panel",
@@ -61,6 +75,7 @@ const translations = {
     Apartment: "Apartment",
     House: "House",
     Land: "Land",
+    cancel: "Cancel",
     Anqing: "Anqing",
     Baoding: "Baoding",
     Beijing: "Beijing",
@@ -193,6 +208,7 @@ const translations = {
     Apartment: "公寓",
     House: "别墅",
     Land: "土地",
+    cancel: "取消",
     Anqing: "安庆",
     Baoding: "保定",
     Beijing: "北京",
@@ -307,7 +323,7 @@ const languages = [
   { code: 'zh', name: '中文', flag: '🇨🇳' }
 ];
 
-// Generate Cloudinary signature
+// Генерация подписи Cloudinary
 function generateSignature(paramsToSign) {
   const timestamp = Math.floor(Date.now() / 1000);
   const params = { ...paramsToSign, timestamp };
@@ -316,8 +332,8 @@ function generateSignature(paramsToSign) {
   return { signature: CryptoJS.SHA1(stringToSign).toString(CryptoJS.enc.Hex), timestamp };
 }
 
-// ImageItem component for drag-and-drop and deletion
-const ImageItem = ({ image, index, moveImage, removeImage }) => {
+// Компонент ImageItem для drag-and-drop и удаления
+function ImageItem({ image, index, moveImage, removeImage }) {
   const ref = useRef(null);
   const [{ isDragging }, drag] = useDrag({
     type: 'image',
@@ -337,27 +353,27 @@ const ImageItem = ({ image, index, moveImage, removeImage }) => {
   });
   drag(drop(ref));
   const handleRemove = () => {
-    console.log('Removing image at index:', index, 'URL:', image);
+    console.log('Удаление изображения:', index, 'URL:', image);
     removeImage(index);
   };
   return h('div', {
     ref,
     className: `flex items-center space-x-2 p-2 bg-gray-100 rounded mb-2 ${isDragging ? 'opacity-50' : 'opacity-100'} cursor-move`
   }, [
-    h('img', { 
-      src: image, 
-      alt: `Image ${index + 1}`, 
+    h('img', {
+      src: image,
+      alt: `Изображение ${index + 1}`,
       className: 'w-24 h-16 object-cover rounded border',
-      onError: (e) => { e.target.src = 'https://via.placeholder.com/96x64?text=Image+Error'; }
+      onError: (e) => { e.target.src = 'https://via.placeholder.com/96x64?text=Ошибка+изображения'; }
     }),
     h('span', { className: 'text-gray-600 flex-1 truncate' }, image),
     h('button', {
       type: 'button',
       onClick: handleRemove,
-      className: 'bg-red-500 text-white px-3 py-1 rounded hover:bg-red-600'
-    }, translations.EN.remove_image)
+      className: 'bg-red-500 text-white px-3 py-1 rounded hover:bg-red-600 focus:ring-2 focus:ring-red-500'
+    }, translations[lang].remove_image || 'Remove Image')
   ]);
-};
+}
 
 function AdminPanel() {
   const [lang, setLang] = useState('EN');
@@ -385,17 +401,25 @@ function AdminPanel() {
   const [isLanguageDropdownOpen, setIsLanguageDropdownOpen] = useState(false);
   const fileInputRef = useRef(null);
   const languageTimeoutRef = useRef(null);
+
   const getTranslation = (key) => translations[lang][key] || translations.EN[key] || key;
 
   useEffect(() => {
-    const savedProperties = JSON.parse(localStorage.getItem('properties')) || [];
-    const normalizedProperties = savedProperties.map(p => ({
-      ...p,
-      realtor: p.realtor && typeof p.realtor === 'object' ? p.realtor : { name: '', email: 'N/A', phone: '' },
-      images: Array.isArray(p.images) ? p.images.filter(img => img) : []
-    }));
-    setProperties(normalizedProperties);
-    console.log('Loaded properties:', normalizedProperties);
+    try {
+      const savedProperties = JSON.parse(localStorage.getItem('properties')) || [];
+      const normalizedProperties = savedProperties.map(p => ({
+        ...p,
+        realtor: p.realtor && typeof p.realtor === 'object' ? p.realtor : { name: '', email: 'N/A', phone: '' },
+        images: Array.isArray(p.images) ? p.images.filter(img => img) : []
+      }));
+      setProperties(normalizedProperties);
+      console.log('Загруженные объявления:', normalizedProperties);
+    } catch (e) {
+      console.error('Ошибка загрузки объявлений из localStorage:', e);
+      setProperties([]);
+      localStorage.removeItem('properties');
+      setError('Не удалось загрузить объявления. Локальное хранилище очищено.');
+    }
   }, []);
 
   useEffect(() => {
@@ -415,9 +439,11 @@ function AdminPanel() {
     }
   };
 
-  const handleFileChange = (e) => {
+  const handleFileChange = async (e) => {
     const files = Array.from(e.target.files);
-    uploadFiles(files);
+    if (files.length > 0) {
+      await uploadFiles(files);
+    }
   };
 
   const uploadFiles = async (files) => {
@@ -435,6 +461,9 @@ function AdminPanel() {
           method: 'POST',
           body: formDataToSend
         });
+        if (!response.ok) {
+          throw new Error(`Ошибка HTTP: ${response.status}`);
+        }
         const result = await response.json();
         if (result.error) {
           throw new Error(result.error.message);
@@ -444,23 +473,25 @@ function AdminPanel() {
           images: [...prev.images, result.secure_url]
         }));
         setError('');
-        console.log('Upload successful:', result.secure_url);
+        console.log('Успешная загрузка изображения:', result.secure_url);
       } catch (error) {
-        console.error('Upload error:', error);
+        console.error('Ошибка загрузки:', error);
         setError(getTranslation('cloudinary_error') + ': ' + error.message);
       }
     }
   };
 
   const handleUploadClick = () => {
-    fileInputRef.current.click();
+    if (fileInputRef.current) {
+      fileInputRef.current.click();
+    }
   };
 
   const removeImage = (index) => {
-    console.log('Before remove, images:', formData.images);
+    console.log('До удаления, изображения:', formData.images);
     setFormData(prev => {
       const newImages = prev.images.filter((_, i) => i !== index);
-      console.log('After remove, images:', newImages);
+      console.log('После удаления, изображения:', newImages);
       return { ...prev, images: newImages };
     });
   };
@@ -470,7 +501,7 @@ function AdminPanel() {
       const newImages = [...prev.images];
       const [movedImage] = newImages.splice(fromIndex, 1);
       newImages.splice(toIndex, 0, movedImage);
-      console.log('Moved image from', fromIndex, 'to', toIndex, 'new order:', newImages);
+      console.log('Перемещено изображение с', fromIndex, 'на', toIndex, 'новый порядок:', newImages);
       return { ...prev, images: newImages };
     });
   };
@@ -481,7 +512,7 @@ function AdminPanel() {
       setError(getTranslation('required_fields'));
       return;
     }
-    if (!formData.realtor.email.includes('@') && formData.realtor.email !== 'N/A') {
+    if (formData.realtor.email !== 'N/A' && !/\S+@\S+\.\S+/.test(formData.realtor.email)) {
       setError(getTranslation('invalid_email'));
       return;
     }
@@ -512,9 +543,14 @@ function AdminPanel() {
       updatedProperties = [...properties, newProperty];
       alert(getTranslation('property_added'));
     }
-    localStorage.setItem('properties', JSON.stringify(updatedProperties));
-    setProperties(updatedProperties);
-    resetForm();
+    try {
+      localStorage.setItem('properties', JSON.stringify(updatedProperties));
+      setProperties(updatedProperties);
+      resetForm();
+    } catch (e) {
+      console.error('Ошибка сохранения в localStorage:', e);
+      setError('Не удалось сохранить объявление. Попробуйте снова.');
+    }
   };
 
   const handleEdit = (property) => {
@@ -543,9 +579,14 @@ function AdminPanel() {
   const handleDelete = (id) => {
     if (window.confirm(getTranslation('confirm_delete'))) {
       const updatedProperties = properties.filter(p => p.id !== id);
-      localStorage.setItem('properties', JSON.stringify(updatedProperties));
-      setProperties(updatedProperties);
-      alert(getTranslation('property_deleted'));
+      try {
+        localStorage.setItem('properties', JSON.stringify(updatedProperties));
+        setProperties(updatedProperties);
+        alert(getTranslation('property_deleted'));
+      } catch (e) {
+        console.error('Ошибка удаления из localStorage:', e);
+        setError('Не удалось удалить объявление. Попробуйте снова.');
+      }
     }
   };
 
@@ -598,24 +639,26 @@ function AdminPanel() {
         onMouseEnter: handleLanguageMouseEnter,
         onMouseLeave: handleLanguageMouseLeave
       }, [
-        h('button', { className: 'bg-purple-600 text-white px-4 py-2 rounded hover:bg-purple-700 flex items-center gap-2' }, [
+        h('button', {
+          className: 'bg-purple-600 text-white px-4 py-2 rounded hover:bg-purple-700 focus:ring-2 focus:ring-purple-500 flex items-center gap-2'
+        }, [
           languages.find(l => l.code === lang)?.flag || '🌐',
           languages.find(l => l.code === lang)?.name || getTranslation('language')
         ]),
-        h('div', { className: `absolute bg-white shadow-lg rounded mt-1 ${isLanguageDropdownOpen ? 'block' : 'hidden'}` },
-          languages.map(langOption => h('div', {
-            key: langOption.code,
-            className: 'px-4 py-2 hover:bg-gray-100 cursor-pointer flex items-center gap-2',
-            onClick: () => handleLanguageChange(langOption.code)
-          }, [
-            langOption.flag,
-            langOption.name
-          ]))
-        )
+        h('div', {
+          className: `dropdown-menu absolute bg-white shadow-lg rounded mt-1 ${isLanguageDropdownOpen ? 'block' : 'hidden'}`
+        }, languages.map(langOption => h('div', {
+          key: langOption.code,
+          className: 'px-4 py-2 hover:bg-gray-100 cursor-pointer flex items-center gap-2',
+          onClick: () => handleLanguageChange(langOption.code)
+        }, [
+          langOption.flag,
+          langOption.name
+        ])))
       ])
     ]),
     h('h1', { className: 'text-3xl font-bold mb-6' }, getTranslation('admin_title')),
-    h('form', { onSubmit: handleSubmit, className: 'space-y-4 mb-8' }, [
+    h('form', { onSubmit: handleSubmit, className: 'space-y-4 mb-8 bg-white p-6 rounded-lg shadow' }, [
       h('div', { className: 'grid grid-cols-1 md:grid-cols-2 gap-4' }, [
         h('div', { className: 'form-group' }, [
           h('label', { htmlFor: 'titleEN', className: 'block font-semibold mb-1' }, getTranslation('title_en') + ' *'),
@@ -625,7 +668,7 @@ function AdminPanel() {
             name: 'titleEN',
             value: formData.titleEN,
             onChange: handleInputChange,
-            className: 'w-full p-2 border rounded',
+            className: 'w-full p-2 border rounded focus:ring-2 focus:ring-purple-500',
             required: true
           })
         ]),
@@ -637,7 +680,7 @@ function AdminPanel() {
             name: 'titleZH',
             value: formData.titleZH,
             onChange: handleInputChange,
-            className: 'w-full p-2 border rounded',
+            className: 'w-full p-2 border rounded focus:ring-2 focus:ring-purple-500',
             required: true
           })
         ])
@@ -649,7 +692,7 @@ function AdminPanel() {
           name: 'city',
           value: formData.city,
           onChange: handleInputChange,
-          className: 'w-full p-2 border rounded',
+          className: 'w-full p-2 border rounded focus:ring-2 focus:ring-purple-500',
           required: true
         }, [
           h('option', { value: '' }, getTranslation('select_city')),
@@ -664,7 +707,7 @@ function AdminPanel() {
             name: 'dealType',
             value: formData.dealType,
             onChange: handleInputChange,
-            className: 'w-full p-2 border rounded'
+            className: 'w-full p-2 border rounded focus:ring-2 focus:ring-purple-500'
           }, dealTypes.map(type => h('option', { key: type, value: type }, getTranslation(type)))
           )
         ]),
@@ -675,7 +718,7 @@ function AdminPanel() {
             name: 'propertyType',
             value: formData.propertyType,
             onChange: handleInputChange,
-            className: 'w-full p-2 border rounded'
+            className: 'w-full p-2 border rounded focus:ring-2 focus:ring-purple-500'
           }, propertyTypes.map(type => h('option', { key: type, value: type }, getTranslation(type)))
           )
         ])
@@ -689,8 +732,9 @@ function AdminPanel() {
             name: 'priceCNY',
             value: formData.priceCNY,
             onChange: handleInputChange,
-            className: 'w-full p-2 border rounded',
-            required: true
+            className: 'w-full p-2 border rounded focus:ring-2 focus:ring-purple-500',
+            required: true,
+            min: 0
           })
         ]),
         h('div', { className: 'form-group' }, [
@@ -701,8 +745,9 @@ function AdminPanel() {
             name: 'priceUSD',
             value: formData.priceUSD,
             onChange: handleInputChange,
-            className: 'w-full p-2 border rounded',
-            required: true
+            className: 'w-full p-2 border rounded focus:ring-2 focus:ring-purple-500',
+            required: true,
+            min: 0
           })
         ])
       ]),
@@ -715,7 +760,8 @@ function AdminPanel() {
             name: 'area',
             value: formData.area,
             onChange: handleInputChange,
-            className: 'w-full p-2 border rounded'
+            className: 'w-full p-2 border rounded focus:ring-2 focus:ring-purple-500',
+            min: 0
           })
         ]),
         h('div', { className: 'form-group' }, [
@@ -726,7 +772,7 @@ function AdminPanel() {
             name: 'floor',
             value: formData.floor,
             onChange: handleInputChange,
-            className: 'w-full p-2 border rounded'
+            className: 'w-full p-2 border rounded focus:ring-2 focus:ring-purple-500'
           })
         ])
       ]),
@@ -739,7 +785,8 @@ function AdminPanel() {
             name: 'rooms',
             value: formData.rooms,
             onChange: handleInputChange,
-            className: 'w-full p-2 border rounded'
+            className: 'w-full p-2 border rounded focus:ring-2 focus:ring-purple-500',
+            min: 0
           })
         ]),
         h('div', { className: 'form-group' }, [
@@ -750,7 +797,9 @@ function AdminPanel() {
             name: 'yearBuilt',
             value: formData.yearBuilt,
             onChange: handleInputChange,
-            className: 'w-full p-2 border rounded'
+            className: 'w-full p-2 border rounded focus:ring-2 focus:ring-purple-500',
+            min: 1800,
+            max: new Date().getFullYear()
           })
         ])
       ]),
@@ -762,18 +811,18 @@ function AdminPanel() {
           name: 'realtor.name',
           value: formData.realtor.name,
           onChange: handleInputChange,
-          className: 'w-full p-2 border rounded'
+          className: 'w-full p-2 border rounded focus:ring-2 focus:ring-purple-500'
         })
       ]),
       h('div', { className: 'form-group' }, [
         h('label', { htmlFor: 'realtor.email', className: 'block font-semibold mb-1' }, getTranslation('realtor_email')),
         h('input', {
-          type: 'email',
+          type: 'text',
           id: 'realtor.email',
           name: 'realtor.email',
           value: formData.realtor.email,
           onChange: handleInputChange,
-          className: 'w-full p-2 border rounded',
+          className: 'w-full p-2 border rounded focus:ring-2 focus:ring-purple-500',
           placeholder: 'N/A or email'
         })
       ]),
@@ -786,7 +835,7 @@ function AdminPanel() {
           value: formData.realtor.phone,
           onChange: handleInputChange,
           placeholder: 'Phone or URL',
-          className: 'w-full p-2 border rounded'
+          className: 'w-full p-2 border rounded focus:ring-2 focus:ring-purple-500'
         })
       ]),
       h('div', { className: 'form-group' }, [
@@ -796,7 +845,7 @@ function AdminPanel() {
           name: 'descriptionEN',
           value: formData.descriptionEN,
           onChange: handleInputChange,
-          className: 'w-full p-2 border rounded h-24'
+          className: 'w-full p-2 border rounded h-24 focus:ring-2 focus:ring-purple-500'
         })
       ]),
       h('div', { className: 'form-group' }, [
@@ -806,7 +855,7 @@ function AdminPanel() {
           name: 'descriptionZH',
           value: formData.descriptionZH,
           onChange: handleInputChange,
-          className: 'w-full p-2 border rounded h-24'
+          className: 'w-full p-2 border rounded h-24 focus:ring-2 focus:ring-purple-500'
         })
       ]),
       h('div', { className: 'form-group' }, [
@@ -823,28 +872,33 @@ function AdminPanel() {
         h('button', {
           type: 'button',
           onClick: handleUploadClick,
-          className: 'bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600'
+          className: 'bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 focus:ring-2 focus:ring-blue-500'
         }, getTranslation('upload_images')),
         h(DndProvider, { backend: HTML5Backend }, [
           h('div', { className: 'space-y-2 mt-2' }, formData.images.length > 0
-            ? formData.images.map((url, index) =>
-                h(ImageItem, {
-                  key: `image-${index}-${url}`,
-                  image: url,
-                  index,
-                  moveImage,
-                  removeImage
-                })
-              )
-            : h('p', { className: 'text-gray-500' }, 'No images uploaded')
+            ? formData.images.map((url, index) => h(ImageItem, {
+                key: `image-${index}-${url}`,
+                image: url,
+                index,
+                moveImage,
+                removeImage
+              }))
+            : h('p', { className: 'text-gray-500' }, 'Изображения не загружены')
           )
         ])
       ]),
       error && h('div', { className: 'text-red-500 text-sm mt-2' }, error),
-      h('button', {
-        type: 'submit',
-        className: 'bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600'
-      }, getTranslation(isEditing ? 'update_property' : 'add_property'))
+      h('div', { className: 'flex gap-2' }, [
+        h('button', {
+          type: 'submit',
+          className: 'bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600 focus:ring-2 focus:ring-green-500'
+        }, getTranslation(isEditing ? 'update_property' : 'add_property')),
+        isEditing && h('button', {
+          type: 'button',
+          onClick: resetForm,
+          className: 'bg-gray-500 text-white px-4 py-2 rounded hover:bg-gray-600 focus:ring-2 focus:ring-gray-500'
+        }, getTranslation('cancel'))
+      ])
     ]),
     h('div', { className: 'properties-list mt-8' }, [
       h('h2', { className: 'text-2xl font-bold mb-4' }, getTranslation('existing_properties')),
@@ -854,6 +908,7 @@ function AdminPanel() {
             key: property.id,
             className: 'p-4 bg-gray-50 rounded-lg mb-4 border'
           }, [
+            h('p', { className: 'font-semibold' }, `ID: ${property.id}`),
             h('p', { className: 'font-semibold' }, `${getTranslation('title_en')}: ${property.titleEN || ''}`),
             h('p', null, `${getTranslation('title_zh')}: ${property.titleZH || ''}`),
             h('p', null, `${getTranslation('city')}: ${getTranslation(property.city) || ''}`),
@@ -871,24 +926,22 @@ function AdminPanel() {
             property.descriptionEN && h('p', null, `${getTranslation('description_en')}: ${property.descriptionEN}`),
             property.descriptionZH && h('p', null, `${getTranslation('description_zh')}: ${property.descriptionZH}`),
             property.images.length > 0 && h('div', { className: 'flex flex-wrap gap-2 mt-2' },
-              property.images.map((url, index) =>
-                h('img', { 
-                  key: `prop-image-${index}-${url}`, 
-                  src: url, 
-                  alt: `Property image ${index + 1}`, 
-                  className: 'w-24 h-16 object-cover rounded border',
-                  onError: (e) => { e.target.src = 'https://via.placeholder.com/96x64?text=Image+Error'; }
-                })
-              )
+              property.images.map((url, index) => h('img', {
+                key: `prop-image-${index}-${url}`,
+                src: url,
+                alt: `Изображение объекта ${index + 1}`,
+                className: 'w-24 h-16 object-cover rounded border',
+                onError: (e) => { e.target.src = 'https://via.placeholder.com/96x64?text=Ошибка+изображения'; }
+              }))
             ),
             h('div', { className: 'flex gap-2 mt-2' }, [
               h('button', {
                 onClick: () => handleEdit(property),
-                className: 'bg-yellow-500 text-white px-3 py-1 rounded hover:bg-yellow-600'
+                className: 'bg-yellow-500 text-white px-3 py-1 rounded hover:bg-yellow-600 focus:ring-2 focus:ring-yellow-500'
               }, getTranslation('edit')),
               h('button', {
                 onClick: () => handleDelete(property.id),
-                className: 'bg-red-500 text-white px-3 py-1 rounded hover:bg-red-600'
+                className: 'bg-red-500 text-white px-3 py-1 rounded hover:bg-red-600 focus:ring-2 focus:ring-red-500'
               }, getTranslation('delete'))
             ])
           ]))
@@ -896,31 +949,24 @@ function AdminPanel() {
   ]);
 }
 
-// Password protection
+// Защита паролем
 const ADMIN_PASSWORD = 'Awinly-Awinly228';
 (function() {
-  const storedPassword = localStorage.getItem('adminPassword');
-  if (!storedPassword) {
-    const enteredPassword = prompt('Enter admin password:');
+  let storedPassword = localStorage.getItem('adminPassword');
+  if (storedPassword !== ADMIN_PASSWORD) {
+    const enteredPassword = prompt('Введите пароль администратора:');
     if (enteredPassword !== ADMIN_PASSWORD) {
-      alert('Incorrect password. Access denied.');
-      window.location.href = '/';
-      return;
-    }
-    localStorage.setItem('adminPassword', enteredPassword);
-  } else if (storedPassword !== ADMIN_PASSWORD) {
-    const enteredPassword = prompt('Enter admin password:');
-    if (enteredPassword !== ADMIN_PASSWORD) {
-      alert('Incorrect password. Access denied.');
+      alert('Неверный пароль. Доступ запрещен.');
       window.location.href = '/';
       return;
     }
     localStorage.setItem('adminPassword', enteredPassword);
   }
   if (document.getElementById('root')) {
-    console.log('Rendering AdminPanel at', new Date().toISOString());
+    console.log('Рендеринг AdminPanel:', new Date().toISOString());
     ReactDOM.render(h(AdminPanel), document.getElementById('root'));
   } else {
-    console.error('Root element not found');
+    console.error('Элемент root не найден');
+    alert('Элемент root не найден. Проверьте структуру HTML.');
   }
 })();
