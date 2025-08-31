@@ -4,16 +4,47 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>AWINLY Admin Panel</title>
-  <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
-  <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+  <script src="https://unpkg.com/react@18/umd/react.development.js"></script>
+  <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
   <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    /* Custom styles to enhance UI and fix potential style issues */
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #f9fafb;
+    }
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 1rem;
+    }
+    .form-group input, .form-group select, .form-group textarea {
+      border: 1px solid #d1d5db;
+      border-radius: 0.375rem;
+      padding: 0.5rem;
+      width: 100%;
+    }
+    .form-group label {
+      font-weight: 600;
+      margin-bottom: 0.25rem;
+      display: block;
+    }
+    .properties-list .border {
+      border: 1px solid #e5e7eb;
+    }
+    .dropdown-menu {
+      z-index: 1000;
+      min-width: 120px;
+    }
+  </style>
 </head>
 <body>
   <div id="root"></div>
   <script type="module">
     'use strict';
     console.log('admin.js starting at', new Date().toISOString());
+
     // Ensure dependencies are loaded
     if (typeof React === 'undefined' || typeof ReactDOM === 'undefined') {
       console.error('Required dependencies missing:', { React: !!React, ReactDOM: !!ReactDOM });
@@ -21,16 +52,21 @@
     } else {
       console.log('Dependencies loaded:', { React: React.version, ReactDOM: true });
     }
+
+    // Import dnd-kit for drag-and-drop functionality
     import { DndContext, closestCenter, KeyboardSensor, PointerSensor, useSensor, useSensors } from 'https://unpkg.com/@dnd-kit/core@6.1.0?module';
     import { arrayMove, SortableContext, sortableKeyboardCoordinates, verticalListSortingStrategy } from 'https://unpkg.com/@dnd-kit/sortable@8.0.0?module';
     import { useSortable } from 'https://unpkg.com/@dnd-kit/sortable@8.0.0?module';
     import { CSS } from 'https://unpkg.com/@dnd-kit/utilities@3.2.2?module';
+
     const { useState, useEffect, useRef } = React;
     const h = React.createElement;
+
     // Cloudinary configuration
     const CLOUD_NAME = 'dkjakynhh';
     const API_KEY = '724711754654635';
     const API_SECRET = 'v4vizym6WCttYT-13k5XXw7yps8';
+
     // Translations
     const translations = {
       EN: {
@@ -300,6 +336,7 @@
         Zibo: "淄博"
       }
     };
+
     const adminCities = [
       'Anqing', 'Baoding', 'Beijing', 'Bengbu', 'Binzhou', 'Cangzhou', 'Changchun', 'Changsha',
       'Changzhou', 'Chengde', 'Chengdu', 'Chizhou', 'Chongqing', 'Chuzhou', 'Dalian', 'Dezhou',
@@ -313,12 +350,14 @@
       'Xiamen', 'Xingtai', 'Xining', 'Xuancheng', 'Yancheng', 'Yangzhou', 'Yantai', 'Yinchuan',
       'Zaozhuang', 'Zhangjiakou', 'Zhengding', 'Zhengzhou', 'Zhenjiang', 'Zhoushan', 'Zibo'
     ];
+
     const dealTypes = ['buy', 'rent'];
     const propertyTypes = ['Apartment', 'House', 'Land'];
     const languages = [
       { code: 'EN', name: 'English', flag: '🇬🇧' },
       { code: 'zh', name: '中文', flag: '🇨🇳' }
     ];
+
     // Generate Cloudinary signature
     function generateSignature(paramsToSign) {
       const timestamp = Math.floor(Date.now() / 1000);
@@ -327,9 +366,10 @@
       const stringToSign = sortedKeys.map(key => `${key}=${params[key]}`).join('&') + API_SECRET;
       return { signature: CryptoJS.SHA1(stringToSign).toString(CryptoJS.enc.Hex), timestamp };
     }
+
     function AdminPanel() {
       const [lang, setLang] = useState('EN');
-      const [formData, setFormData ] = useState({
+      const [formData, setFormData] = useState({
         id: null,
         titleEN: '',
         titleZH: '',
@@ -353,7 +393,9 @@
       const [isLanguageDropdownOpen, setIsLanguageDropdownOpen] = useState(false);
       const fileInputRef = useRef(null);
       const languageTimeoutRef = useRef(null);
+
       const getTranslation = (key) => translations[lang][key] || translations.EN[key] || key;
+
       useEffect(() => {
         try {
           const savedProperties = JSON.parse(localStorage.getItem('properties')) || [];
@@ -368,11 +410,14 @@
           console.error('Error loading properties from localStorage:', e);
           setProperties([]);
           localStorage.removeItem('properties');
+          setError('Failed to load properties. Local storage cleared.');
         }
       }, []);
+
       useEffect(() => {
         document.documentElement.lang = lang.toLowerCase();
       }, [lang]);
+
       const handleInputChange = (e) => {
         const { name, value } = e.target;
         if (name.startsWith('realtor.')) {
@@ -385,10 +430,14 @@
           setFormData(prev => ({ ...prev, [name]: value }));
         }
       };
-      const handleFileChange = (e) => {
+
+      const handleFileChange = async (e) => {
         const files = Array.from(e.target.files);
-        uploadFiles(files);
+        if (files.length > 0) {
+          await uploadFiles(files);
+        }
       };
+
       const uploadFiles = async (files) => {
         const url = `https://api.cloudinary.com/v1_1/${CLOUD_NAME}/image/upload`;
         for (const file of files) {
@@ -423,9 +472,13 @@
           }
         }
       };
+
       const handleUploadClick = () => {
-        fileInputRef.current.click();
+        if (fileInputRef.current) {
+          fileInputRef.current.click();
+        }
       };
+
       const removeImage = (image) => {
         console.log('Removing image:', image);
         setFormData(prev => ({
@@ -433,6 +486,14 @@
           images: prev.images.filter(i => i !== image)
         }));
       };
+
+      const sensors = useSensors(
+        useSensor(PointerSensor),
+        useSensor(KeyboardSensor, {
+          coordinateGetter: sortableKeyboardCoordinates,
+        })
+      );
+
       const handleDragEnd = (event) => {
         const { active, over } = event;
         if (active.id !== over.id) {
@@ -443,6 +504,7 @@
           });
         }
       };
+
       const handleSubmit = (e) => {
         e.preventDefault();
         if (!formData.titleEN || !formData.titleZH || !formData.city || !formData.priceCNY || !formData.priceUSD) {
@@ -480,10 +542,16 @@
           updatedProperties = [...properties, newProperty];
           alert(getTranslation('property_added'));
         }
-        localStorage.setItem('properties', JSON.stringify(updatedProperties));
-        setProperties(updatedProperties);
-        resetForm();
+        try {
+          localStorage.setItem('properties', JSON.stringify(updatedProperties));
+          setProperties(updatedProperties);
+          resetForm();
+        } catch (e) {
+          console.error('Error saving properties to localStorage:', e);
+          setError('Failed to save property. Please try again.');
+        }
       };
+
       const handleEdit = (property) => {
         setFormData({
           id: property.id,
@@ -506,14 +574,21 @@
         setIsEditing(true);
         setError('');
       };
+
       const handleDelete = (id) => {
         if (window.confirm(getTranslation('confirm_delete'))) {
           const updatedProperties = properties.filter(p => p.id !== id);
-          localStorage.setItem('properties', JSON.stringify(updatedProperties));
-          setProperties(updatedProperties);
-          alert(getTranslation('property_deleted'));
+          try {
+            localStorage.setItem('properties', JSON.stringify(updatedProperties));
+            setProperties(updatedProperties);
+            alert(getTranslation('property_deleted'));
+          } catch (e) {
+            console.error('Error deleting property from localStorage:', e);
+            setError('Failed to delete property. Please try again.');
+          }
         }
       };
+
       const resetForm = () => {
         setFormData({
           id: null,
@@ -536,28 +611,26 @@
         setIsEditing(false);
         setError('');
       };
+
       const handleLanguageChange = (langCode) => {
         setLang(langCode);
         setIsLanguageDropdownOpen(false);
       };
+
       const handleLanguageMouseEnter = () => {
         clearTimeout(languageTimeoutRef.current);
         languageTimeoutRef.current = setTimeout(() => {
           setIsLanguageDropdownOpen(true);
         }, 100);
       };
+
       const handleLanguageMouseLeave = () => {
         clearTimeout(languageTimeoutRef.current);
         languageTimeoutRef.current = setTimeout(() => {
           setIsLanguageDropdownOpen(false);
         }, 200);
       };
-      const sensors = useSensors(
-        useSensor(PointerSensor),
-        useSensor(KeyboardSensor, {
-          coordinateGetter: sortableKeyboardCoordinates,
-        })
-      );
+
       const ImageItem = ({ image, removeImage }) => {
         const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id: image });
         const style = {
@@ -586,6 +659,7 @@
           }, getTranslation('remove_image'))
         ]);
       };
+
       return h('div', { className: 'container mx-auto p-4 max-w-4xl' }, [
         h('div', { className: 'relative mb-8' }, [
           h('div', {
@@ -597,7 +671,7 @@
               languages.find(l => l.code === lang)?.flag || '🌐',
               languages.find(l => l.code === lang)?.name || getTranslation('language')
             ]),
-            h('div', { className: `absolute bg-white shadow-lg rounded mt-1 ${isLanguageDropdownOpen ? 'block' : 'hidden'}` },
+            h('div', { className: `dropdown-menu absolute bg-white shadow-lg rounded mt-1 ${isLanguageDropdownOpen ? 'block' : 'hidden'}` },
               languages.map(langOption => h('div', {
                 key: langOption.code,
                 className: 'px-4 py-2 hover:bg-gray-100 cursor-pointer flex items-center gap-2',
@@ -610,7 +684,7 @@
           ])
         ]),
         h('h1', { className: 'text-3xl font-bold mb-6' }, getTranslation('admin_title')),
-        h('form', { onSubmit: handleSubmit, className: 'space-y-4 mb-8' }, [
+        h('form', { onSubmit: handleSubmit, className: 'space-y-4 mb-8 bg-white p-6 rounded-lg shadow' }, [
           h('div', { className: 'grid grid-cols-1 md:grid-cols-2 gap-4' }, [
             h('div', { className: 'form-group' }, [
               h('label', { htmlFor: 'titleEN', className: 'block font-semibold mb-1' }, getTranslation('title_en') + ' *'),
@@ -620,7 +694,7 @@
                 name: 'titleEN',
                 value: formData.titleEN,
                 onChange: handleInputChange,
-                className: 'w-full p-2 border rounded',
+                className: 'w-full p-2 border rounded focus:ring-2 focus:ring-purple-500',
                 required: true
               })
             ]),
@@ -632,7 +706,7 @@
                 name: 'titleZH',
                 value: formData.titleZH,
                 onChange: handleInputChange,
-                className: 'w-full p-2 border rounded',
+                className: 'w-full p-2 border rounded focus:ring-2 focus:ring-purple-500',
                 required: true
               })
             ])
@@ -644,7 +718,7 @@
               name: 'city',
               value: formData.city,
               onChange: handleInputChange,
-              className: 'w-full p-2 border rounded',
+              className: 'w-full p-2 border rounded focus:ring-2 focus:ring-purple-500',
               required: true
             }, [
               h('option', { value: '' }, getTranslation('select_city')),
@@ -659,7 +733,7 @@
                 name: 'dealType',
                 value: formData.dealType,
                 onChange: handleInputChange,
-                className: 'w-full p-2 border rounded'
+                className: 'w-full p-2 border rounded focus:ring-2 focus:ring-purple-500'
               }, dealTypes.map(type => h('option', { key: type, value: type }, getTranslation(type)))
               )
             ]),
@@ -670,7 +744,7 @@
                 name: 'propertyType',
                 value: formData.propertyType,
                 onChange: handleInputChange,
-                className: 'w-full p-2 border rounded'
+                className: 'w-full p-2 border rounded focus:ring-2 focus:ring-purple-500'
               }, propertyTypes.map(type => h('option', { key: type, value: type }, getTranslation(type)))
               )
             ])
@@ -684,8 +758,9 @@
                 name: 'priceCNY',
                 value: formData.priceCNY,
                 onChange: handleInputChange,
-                className: 'w-full p-2 border rounded',
-                required: true
+                className: 'w-full p-2 border rounded focus:ring-2 focus:ring-purple-500',
+                required: true,
+                min: 0
               })
             ]),
             h('div', { className: 'form-group' }, [
@@ -696,8 +771,9 @@
                 name: 'priceUSD',
                 value: formData.priceUSD,
                 onChange: handleInputChange,
-                className: 'w-full p-2 border rounded',
-                required: true
+                className: 'w-full p-2 border rounded focus:ring-2 focus:ring-purple-500',
+                required: true,
+                min: 0
               })
             ])
           ]),
@@ -710,7 +786,8 @@
                 name: 'area',
                 value: formData.area,
                 onChange: handleInputChange,
-                className: 'w-full p-2 border rounded'
+                className: 'w-full p-2 border rounded focus:ring-2 focus:ring-purple-500',
+                min: 0
               })
             ]),
             h('div', { className: 'form-group' }, [
@@ -721,7 +798,7 @@
                 name: 'floor',
                 value: formData.floor,
                 onChange: handleInputChange,
-                className: 'w-full p-2 border rounded'
+                className: 'w-full p-2 border rounded focus:ring-2 focus:ring-purple-500'
               })
             ])
           ]),
@@ -734,7 +811,8 @@
                 name: 'rooms',
                 value: formData.rooms,
                 onChange: handleInputChange,
-                className: 'w-full p-2 border rounded'
+                className: 'w-full p-2 border rounded focus:ring-2 focus:ring-purple-500',
+                min: 0
               })
             ]),
             h('div', { className: 'form-group' }, [
@@ -745,7 +823,9 @@
                 name: 'yearBuilt',
                 value: formData.yearBuilt,
                 onChange: handleInputChange,
-                className: 'w-full p-2 border rounded'
+                className: 'w-full p-2 border rounded focus:ring-2 focus:ring-purple-500',
+                min: 1800,
+                max: new Date().getFullYear()
               })
             ])
           ]),
@@ -757,7 +837,7 @@
               name: 'realtor.name',
               value: formData.realtor.name,
               onChange: handleInputChange,
-              className: 'w-full p-2 border rounded'
+              className: 'w-full p-2 border rounded focus:ring-2 focus:ring-purple-500'
             })
           ]),
           h('div', { className: 'form-group' }, [
@@ -768,7 +848,7 @@
               name: 'realtor.email',
               value: formData.realtor.email,
               onChange: handleInputChange,
-              className: 'w-full p-2 border rounded',
+              className: 'w-full p-2 border rounded focus:ring-2 focus:ring-purple-500',
               placeholder: 'N/A or email'
             })
           ]),
@@ -781,7 +861,7 @@
               value: formData.realtor.phone,
               onChange: handleInputChange,
               placeholder: 'Phone or URL',
-              className: 'w-full p-2 border rounded'
+              className: 'w-full p-2 border rounded focus:ring-2 focus:ring-purple-500'
             })
           ]),
           h('div', { className: 'form-group' }, [
@@ -791,7 +871,7 @@
               name: 'descriptionEN',
               value: formData.descriptionEN,
               onChange: handleInputChange,
-              className: 'w-full p-2 border rounded h-24'
+              className: 'w-full p-2 border rounded h-24 focus:ring-2 focus:ring-purple-500'
             })
           ]),
           h('div', { className: 'form-group' }, [
@@ -801,7 +881,7 @@
               name: 'descriptionZH',
               value: formData.descriptionZH,
               onChange: handleInputChange,
-              className: 'w-full p-2 border rounded h-24'
+              className: 'w-full p-2 border rounded h-24 focus:ring-2 focus:ring-purple-500'
             })
           ]),
           h('div', { className: 'form-group' }, [
@@ -818,7 +898,7 @@
             h('button', {
               type: 'button',
               onClick: handleUploadClick,
-              className: 'bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600'
+              className: 'bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 focus:ring-2 focus:ring-blue-500'
             }, getTranslation('upload_images')),
             h(DndContext, {
               sensors,
@@ -844,12 +924,12 @@
           h('div', { className: 'flex gap-2' }, [
             h('button', {
               type: 'submit',
-              className: 'bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600'
+              className: 'bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600 focus:ring-2 focus:ring-green-500'
             }, getTranslation(isEditing ? 'update_property' : 'add_property')),
             isEditing && h('button', {
               type: 'button',
               onClick: resetForm,
-              className: 'bg-gray-500 text-white px-4 py-2 rounded hover:bg-gray-600'
+              className: 'bg-gray-500 text-white px-4 py-2 rounded hover:bg-gray-600 focus:ring-2 focus:ring-gray-500'
             }, getTranslation('cancel'))
           ])
         ]),
@@ -892,17 +972,18 @@
                 h('div', { className: 'flex gap-2 mt-2' }, [
                   h('button', {
                     onClick: () => handleEdit(property),
-                    className: 'bg-yellow-500 text-white px-3 py-1 rounded hover:bg-yellow-600'
+                    className: 'bg-yellow-500 text-white px-3 py-1 rounded hover:bg-yellow-600 focus:ring-2 focus:ring-yellow-500'
                   }, getTranslation('edit')),
                   h('button', {
                     onClick: () => handleDelete(property.id),
-                    className: 'bg-red-500 text-white px-3 py-1 rounded hover:bg-red-600'
+                    className: 'bg-red-500 text-white px-3 py-1 rounded hover:bg-red-600 focus:ring-2 focus:ring-red-500'
                   }, getTranslation('delete'))
                 ])
               ]))
         ])
       ]);
     }
+
     // Password protection
     const ADMIN_PASSWORD = 'Awinly-Awinly228';
     (function() {
@@ -921,6 +1002,7 @@
         ReactDOM.render(h(AdminPanel), document.getElementById('root'));
       } else {
         console.error('Root element not found');
+        alert('Root element not found. Please check the HTML structure.');
       }
     })();
   </script>
