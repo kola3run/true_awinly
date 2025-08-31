@@ -176,7 +176,7 @@ const translations = {
     property_updated: "物业更新成功！",
     property_deleted: "物业删除成功！",
     upload_error: "图片上传失败",
-    cloudinary_error: "Cloudinary 上传失败。请检查控制台详情。",
+    cloudinary_error: "Cloudinary上传失败。请检查控制台详情。",
     language: "语言",
     buy: "购买",
     rent: "租赁",
@@ -365,15 +365,27 @@ function AdminPanel() {
   };
 
   useEffect(function() {
-    const savedProperties = JSON.parse(localStorage.getItem('properties')) || [];
-    const normalizedProperties = savedProperties.map(function(p) {
-      return Object.assign({}, p, {
-        realtor: p.realtor && typeof p.realtor === 'object' ? p.realtor : { name: '', email: 'N/A', phone: '' },
-        images: Array.isArray(p.images) ? p.images.filter(function(img) { return img; }) : []
-      });
-    });
-    setProperties(normalizedProperties);
-    console.log('Loaded properties:', normalizedProperties);
+    async function fetchProperties() {
+      try {
+        const response = await fetch('/.netlify/functions/properties', { method: 'GET' });
+        const data = await response.json();
+        if (data.error) {
+          throw new Error(data.error);
+        }
+        const normalizedProperties = data.map(function(p) {
+          return Object.assign({}, p, {
+            realtor: p.realtor && typeof p.realtor === 'object' ? p.realtor : { name: '', email: 'N/A', phone: '' },
+            images: Array.isArray(p.images) ? p.images.filter(function(img) { return img; }) : []
+          });
+        });
+        setProperties(normalizedProperties);
+        console.log('Loaded properties:', normalizedProperties);
+      } catch (error) {
+        console.error('Error fetching properties:', error);
+        setError('Failed to load properties: ' + error.message);
+      }
+    }
+    fetchProperties();
   }, []);
 
   useEffect(function() {
@@ -406,18 +418,20 @@ function AdminPanel() {
     const url = `https://api.cloudinary.com/v1_1/${CLOUD_NAME}/image/upload`;
     for (const file of files) {
       const formDataToSend = new FormData();
-      const paramsToSign = {};
+      const paramsToSign = { timestamp: Math.floor(Date.now() / 1000) };
       const signatureObj = generateSignature(paramsToSign);
       formDataToSend.append('file', file);
       formDataToSend.append('api_key', API_KEY);
       formDataToSend.append('timestamp', signatureObj.timestamp);
       formDataToSend.append('signature', signatureObj.signature);
       try {
+        console.log('Uploading file:', file.name, 'Timestamp:', signatureObj.timestamp, 'Signature:', signatureObj.signature);
         const response = await fetch(url, {
           method: 'POST',
           body: formDataToSend
         });
         const result = await response.json();
+        console.log('Cloudinary response:', result);
         if (result.error) {
           throw new Error(result.error.message);
         }
@@ -429,7 +443,7 @@ function AdminPanel() {
         setError('');
         console.log('Upload successful:', result.secure_url);
       } catch (error) {
-        console.error('Upload error:', error);
+        console.error('Upload error:', error.message);
         setError(getTranslation('cloudinary_error') + ': ' + error.message);
       }
     }
@@ -448,7 +462,7 @@ function AdminPanel() {
     });
   };
 
-  const handleSubmit = function(e) {
+  const handleSubmit = async function(e) {
     e.preventDefault();
     if (!formData.titleEN || !formData.titleZH || !formData.city || !formData.priceCNY || !formData.priceUSD) {
       setError(getTranslation('required_fields'));
@@ -477,17 +491,25 @@ function AdminPanel() {
       descriptionZH: formData.descriptionZH,
       images: formData.images.filter(function(img) { return img; })
     };
-    let updatedProperties;
-    if (isEditing) {
-      updatedProperties = properties.map(function(p) { return p.id === newProperty.id ? newProperty : p; });
-      alert(getTranslation('property_updated'));
-    } else {
-      updatedProperties = properties.concat([newProperty]);
-      alert(getTranslation('property_added'));
+    try {
+      const response = await fetch('/.netlify/functions/properties', {
+        method: isEditing ? 'PUT' : 'POST',
+        body: JSON.stringify(newProperty)
+      });
+      const result = await response.json();
+      if (result.error) {
+        throw new Error(result.error);
+      }
+      const updatedProperties = isEditing
+        ? properties.map(function(p) { return p.id === newProperty.id ? newProperty : p; })
+        : properties.concat([newProperty]);
+      setProperties(updatedProperties);
+      alert(getTranslation(isEditing ? 'property_updated' : 'property_added'));
+      resetForm();
+    } catch (error) {
+      console.error('Error saving property:', error);
+      setError('Failed to save property: ' + error.message);
     }
-    localStorage.setItem('properties', JSON.stringify(updatedProperties));
-    setProperties(updatedProperties);
-    resetForm();
   };
 
   const handleEdit = function(property) {
@@ -513,12 +535,24 @@ function AdminPanel() {
     setError('');
   };
 
-  const handleDelete = function(id) {
+  const handleDelete = async function(id) {
     if (window.confirm(getTranslation('confirm_delete'))) {
-      const updatedProperties = properties.filter(function(p) { return p.id !== id; });
-      localStorage.setItem('properties', JSON.stringify(updatedProperties));
-      setProperties(updatedProperties);
-      alert(getTranslation('property_deleted'));
+      try {
+        const response = await fetch('/.netlify/functions/properties', {
+          method: 'DELETE',
+          body: JSON.stringify({ id })
+        });
+        const result = await response.json();
+        if (result.error) {
+          throw new Error(result.error);
+        }
+        const updatedProperties = properties.filter(function(p) { return p.id !== id; });
+        setProperties(updatedProperties);
+        alert(getTranslation('property_deleted'));
+      } catch (error) {
+        console.error('Error deleting property:', error);
+        setError('Failed to delete property: ' + error.message);
+      }
     }
   };
 
@@ -813,7 +847,7 @@ function AdminPanel() {
                 removeImage: removeImage,
                 lang: lang
               });
-            })
+            }).filter(function(item) { return item.props.image; })
           : h('p', { className: 'text-gray-500' }, 'No images uploaded')
         )
       ]),
@@ -848,7 +882,7 @@ function AdminPanel() {
               (property.realtor && property.realtor.phone) && h('p', null, `${getTranslation('realtor_phone')}: ${property.realtor.phone}`),
               property.descriptionEN && h('p', null, `${getTranslation('description_en')}: ${property.descriptionEN}`),
               property.descriptionZH && h('p', null, `${getTranslation('description_zh')}: ${property.descriptionZH}`),
-              property.images.length > 0 && h('div', { className: 'flex flex-wrap gap-2 mt-2' },
+              property.images && property.images.length > 0 && h('div', { className: 'flex flex-wrap gap-2 mt-2' },
                 property.images.map(function(url, index) {
                   return h('img', {
                     key: `prop-image-${index}-${url}`,
