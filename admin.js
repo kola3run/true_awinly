@@ -285,7 +285,6 @@ const translations = {
     Zibo: "淄博"
   }
 };
-
 const adminCities = [
   'Anqing', 'Baoding', 'Beijing', 'Bengbu', 'Binzhou', 'Cangzhou', 'Changchun', 'Changsha',
   'Changzhou', 'Chengde', 'Chengdu', 'Chizhou', 'Chongqing', 'Chuzhou', 'Dalian', 'Dezhou',
@@ -299,14 +298,12 @@ const adminCities = [
   'Xiamen', 'Xingtai', 'Xining', 'Xuancheng', 'Yancheng', 'Yangzhou', 'Yantai', 'Yinchuan',
   'Zaozhuang', 'Zhangjiakou', 'Zhengding', 'Zhengzhou', 'Zhenjiang', 'Zhoushan', 'Zibo'
 ];
-
 const dealTypes = ['buy', 'rent'];
 const propertyTypes = ['Apartment', 'House', 'Land'];
 const languages = [
   { code: 'EN', name: 'English', flag: '🇬🇧' },
   { code: 'zh', name: '中文', flag: '🇨🇳' }
 ];
-
 // Generate Cloudinary signature
 function generateSignature(paramsToSign) {
   const timestamp = Math.floor(Date.now() / 1000);
@@ -315,13 +312,11 @@ function generateSignature(paramsToSign) {
   const stringToSign = sortedKeys.map(key => `${key}=${params[key]}`).join('&') + API_SECRET;
   return { signature: CryptoJS.SHA1(stringToSign).toString(CryptoJS.enc.Hex), timestamp };
 }
-
 // Function to extract public_id from Cloudinary URL
 function getPublicIdFromUrl(url) {
   const match = url.match(/\/upload\/(?:v\d+\/)?(.+)\.\w+$/);
   return match ? match[1] : null;
 }
-
 // Function to delete image from Cloudinary
 async function deleteFromCloudinary(publicId) {
   const timestamp = Math.floor(Date.now() / 1000);
@@ -347,8 +342,7 @@ async function deleteFromCloudinary(publicId) {
     console.error('Error deleting from Cloudinary:', error);
   }
 }
-
-// ImageItem component for drag-and-drop and deletion
+// ImageItem component for drag-and-drop
 const ImageItem = ({ image, index, moveImage, removeImage }) => {
   const ref = useRef(null);
   const [{ isDragging }, drag] = useDrag({
@@ -369,28 +363,21 @@ const ImageItem = ({ image, index, moveImage, removeImage }) => {
   });
   drag(drop(ref));
   const handleRemove = () => {
-    console.log('Removing image at index:', index, 'URL:', image);
     removeImage(index);
   };
   return h('div', {
     ref,
-    className: `flex items-center space-x-2 p-2 bg-gray-100 rounded mb-2 ${isDragging ? 'opacity-50' : 'opacity-100'} cursor-move`
+    className: `flex items-center space-x-2 p-2 bg-gray-100 rounded ${isDragging ? 'opacity-50' : 'opacity-100'} cursor-move`,
   }, [
-    h('img', { 
-      src: image, 
-      alt: `Image ${index + 1}`, 
-      className: 'w-24 h-16 object-cover rounded border',
-      onError: (e) => { e.target.src = 'https://via.placeholder.com/96x64?text=Image+Error'; }
-    }),
+    h('img', { src: image, alt: `Image ${index + 1}`, className: 'w-16 h-12 object-cover rounded border' }),
     h('span', { className: 'text-gray-600 flex-1 truncate' }, image),
     h('button', {
       type: 'button',
       onClick: handleRemove,
-      className: 'bg-red-500 text-white px-3 py-1 rounded hover:bg-red-600'
-    }, translations.EN.remove_image)
+      className: 'bg-red-500 text-white px-2 py-1 rounded hover:bg-red-600'
+    }, translations.EN.remove_image),
   ]);
 };
-
 function AdminPanel() {
   const [lang, setLang] = useState('EN');
   const [formData, setFormData] = useState({
@@ -398,18 +385,17 @@ function AdminPanel() {
     titleEN: '',
     titleZH: '',
     city: '',
-    dealType: 'buy',
-    propertyType: 'Apartment',
     priceCNY: '',
     priceUSD: '',
-    area: '',
-    floor: '',
-    rooms: '',
-    yearBuilt: '',
-    realtor: { name: '', email: 'N/A', phone: '' },
+    propertyType: 'Apartment',
+    dealType: 'buy',
     descriptionEN: '',
     descriptionZH: '',
-    images: []
+    area: '',
+    rooms: '',
+    yearBuilt: '',
+    images: [],
+    realtor: { name: '', email: '', phone: '' },
   });
   const [error, setError] = useState('');
   const [properties, setProperties] = useState([]);
@@ -418,7 +404,6 @@ function AdminPanel() {
   const fileInputRef = useRef(null);
   const languageTimeoutRef = useRef(null);
   const getTranslation = (key) => translations[lang][key] || translations.EN[key] || key;
-
   useEffect(() => {
     const savedProperties = JSON.parse(localStorage.getItem('properties')) || [];
     const normalizedProperties = savedProperties.map(p => ({
@@ -429,11 +414,9 @@ function AdminPanel() {
     setProperties(normalizedProperties);
     console.log('Loaded properties:', normalizedProperties);
   }, []);
-
   useEffect(() => {
     document.documentElement.lang = lang.toLowerCase();
   }, [lang]);
-
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     if (name.startsWith('realtor.')) {
@@ -443,15 +426,13 @@ function AdminPanel() {
         realtor: { ...prev.realtor, [field]: value }
       }));
     } else {
-      setFormData(prev => ({ ...prev, [name]: value }));
+      setFormData(prev => ({ ...prev, [name]: value });
     }
   };
-
   const handleFileChange = (e) => {
     const files = Array.from(e.target.files);
     uploadFiles(files);
   };
-
   const uploadFiles = async (files) => {
     const url = `https://api.cloudinary.com/v1_1/${CLOUD_NAME}/image/upload`;
     for (const file of files) {
@@ -483,11 +464,9 @@ function AdminPanel() {
       }
     }
   };
-
   const handleUploadClick = () => {
     fileInputRef.current.click();
   };
-
   const removeImage = async (index) => {
     const imageUrl = formData.images[index];
     console.log('Before remove, images:', formData.images);
@@ -507,7 +486,6 @@ function AdminPanel() {
       console.log('Non-Cloudinary image, only link removed:', imageUrl);
     }
   };
-
   const moveImage = (fromIndex, toIndex) => {
     setFormData(prev => {
       const newImages = [...prev.images];
@@ -517,7 +495,6 @@ function AdminPanel() {
       return { ...prev, images: newImages };
     });
   };
-
   const handleSubmit = (e) => {
     e.preventDefault();
     if (!formData.titleEN || !formData.titleZH || !formData.city || !formData.priceCNY || !formData.priceUSD) {
@@ -559,7 +536,6 @@ function AdminPanel() {
     setProperties(updatedProperties);
     resetForm();
   };
-
   const handleEdit = (property) => {
     setFormData({
       id: property.id,
@@ -582,7 +558,6 @@ function AdminPanel() {
     setIsEditing(true);
     setError('');
   };
-
   const handleDelete = (id) => {
     if (window.confirm(getTranslation('confirm_delete'))) {
       const updatedProperties = properties.filter(p => p.id !== id);
@@ -591,7 +566,6 @@ function AdminPanel() {
       alert(getTranslation('property_deleted'));
     }
   };
-
   const resetForm = () => {
     setFormData({
       id: null,
@@ -614,26 +588,22 @@ function AdminPanel() {
     setIsEditing(false);
     setError('');
   };
-
   const handleLanguageChange = (langCode) => {
     setLang(langCode);
     setIsLanguageDropdownOpen(false);
   };
-
   const handleLanguageMouseEnter = () => {
     clearTimeout(languageTimeoutRef.current);
     languageTimeoutRef.current = setTimeout(() => {
       setIsLanguageDropdownOpen(true);
     }, 100);
   };
-
   const handleLanguageMouseLeave = () => {
     clearTimeout(languageTimeoutRef.current);
     languageTimeoutRef.current = setTimeout(() => {
       setIsLanguageDropdownOpen(false);
     }, 200);
   };
-
   return h('div', { className: 'container mx-auto p-4 max-w-4xl' }, [
     h('div', { className: 'relative mb-8' }, [
       h('div', {
@@ -939,7 +909,6 @@ function AdminPanel() {
     ])
   ]);
 }
-
 // Password protection
 const ADMIN_PASSWORD = 'Awinly-Awinly228';
 (function() {
