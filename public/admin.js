@@ -2,12 +2,10 @@
 console.log('admin.js starting at', new Date().toISOString());
 
 // Проверка загрузки зависимостей
-if (typeof React === 'undefined' || typeof ReactDOM === 'undefined' || typeof ReactDnD === 'undefined' || typeof ReactDnDHTML5Backend === 'undefined' || typeof CryptoJS === 'undefined') {
+if (typeof React === 'undefined' || typeof ReactDOM === 'undefined' || typeof CryptoJS === 'undefined') {
   console.error('Не загружены необходимые зависимости:', {
     React: !!React,
     ReactDOM: !!ReactDOM,
-    ReactDnD: !!ReactDnD,
-    ReactDnDHTML5Backend: !!ReactDnDHTML5Backend,
     CryptoJS: !!CryptoJS
   });
   alert('Ошибка загрузки зависимостей. Проверьте консоль для деталей.');
@@ -16,15 +14,11 @@ if (typeof React === 'undefined' || typeof ReactDOM === 'undefined' || typeof Re
   console.log('Зависимости загружены:', {
     React: React.version,
     ReactDOM: true,
-    ReactDnD: true,
-    ReactDnDHTML5Backend: true,
     CryptoJS: true
   });
 }
 
 const { useState, useEffect, useRef } = React;
-const { DndProvider, useDrag, useDrop } = ReactDnD;
-const { HTML5Backend } = ReactDnDHTML5Backend;
 const h = React.createElement;
 
 // Конфигурация Cloudinary
@@ -332,33 +326,14 @@ function generateSignature(paramsToSign) {
   return { signature: CryptoJS.SHA1(stringToSign).toString(CryptoJS.enc.Hex), timestamp };
 }
 
-// Компонент ImageItem для drag-and-drop и удаления
-function ImageItem({ image, index, moveImage, removeImage }) {
-  const ref = useRef(null);
-  const [{ isDragging }, drag] = useDrag({
-    type: 'image',
-    item: { index },
-    collect: (monitor) => ({
-      isDragging: monitor.isDragging(),
-    }),
-  });
-  const [, drop] = useDrop({
-    accept: 'image',
-    hover(item) {
-      if (item.index !== index) {
-        moveImage(item.index, index);
-        item.index = index;
-      }
-    },
-  });
-  drag(drop(ref));
+// Компонент ImageItem для отображения и удаления изображений
+function ImageItem({ image, index, removeImage }) {
   const handleRemove = () => {
     console.log('Удаление изображения:', index, 'URL:', image);
     removeImage(index);
   };
   return h('div', {
-    ref,
-    className: `flex items-center space-x-2 p-2 bg-gray-100 rounded mb-2 ${isDragging ? 'opacity-50' : 'opacity-100'} cursor-move`
+    className: 'flex items-center space-x-2 p-2 bg-gray-100 rounded mb-2'
   }, [
     h('img', {
       src: image,
@@ -492,16 +467,6 @@ function AdminPanel() {
     setFormData(prev => {
       const newImages = prev.images.filter((_, i) => i !== index);
       console.log('После удаления, изображения:', newImages);
-      return { ...prev, images: newImages };
-    });
-  };
-
-  const moveImage = (fromIndex, toIndex) => {
-    setFormData(prev => {
-      const newImages = [...prev.images];
-      const [movedImage] = newImages.splice(fromIndex, 1);
-      newImages.splice(toIndex, 0, movedImage);
-      console.log('Перемещено изображение с', fromIndex, 'на', toIndex, 'новый порядок:', newImages);
       return { ...prev, images: newImages };
     });
   };
@@ -874,18 +839,15 @@ function AdminPanel() {
           onClick: handleUploadClick,
           className: 'bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 focus:ring-2 focus:ring-blue-500'
         }, getTranslation('upload_images')),
-        h(DndProvider, { backend: HTML5Backend }, [
-          h('div', { className: 'space-y-2 mt-2' }, formData.images.length > 0
-            ? formData.images.map((url, index) => h(ImageItem, {
-                key: `image-${index}-${url}`,
-                image: url,
-                index,
-                moveImage,
-                removeImage
-              }))
-            : h('p', { className: 'text-gray-500' }, 'Изображения не загружены')
-          )
-        ])
+        h('div', { className: 'space-y-2 mt-2' }, formData.images.length > 0
+          ? formData.images.map((url, index) => h(ImageItem, {
+              key: `image-${index}-${url}`,
+              image: url,
+              index,
+              removeImage
+            }))
+          : h('p', { className: 'text-gray-500' }, 'Изображения не загружены')
+        )
       ]),
       error && h('div', { className: 'error-message' }, error),
       h('div', { className: 'flex gap-2' }, [
