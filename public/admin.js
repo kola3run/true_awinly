@@ -302,7 +302,7 @@ function generateSignature(paramsToSign) {
   const timestamp = Math.floor(Date.now() / 1000);
   const params = Object.assign({}, paramsToSign, { timestamp: timestamp });
   const sortedKeys = Object.keys(params).sort();
-  const stringToSign = sortedKeys.map(key => `${key}=${params[key]}`).join('&') + API_SECRET;
+  const stringToSign = sortedKeys.map(function(key) { return `${key}=${params[key]}`; }).join('&') + API_SECRET;
   return { signature: CryptoJS.SHA1(stringToSign).toString(CryptoJS.enc.Hex), timestamp: timestamp };
 }
 
@@ -572,8 +572,8 @@ function AdminPanel() {
         onMouseLeave: handleLanguageMouseLeave
       }, [
         h('button', { className: 'bg-purple-600 text-white px-4 py-2 rounded hover:bg-purple-700 flex items-center gap-2' }, [
-          languages.find(function(l) { return l.code === lang; })?.flag || '🌐',
-          languages.find(function(l) { return l.code === lang; })?.name || getTranslation('language')
+          languages.find(function(l) { return l.code === lang; }).flag || '🌐',
+          languages.find(function(l) { return l.code === lang; }).name || getTranslation('language')
         ]),
         h('div', { className: `absolute bg-white shadow-lg rounded mt-1 ${isLanguageDropdownOpen ? 'block' : 'hidden'}` },
           languages.map(function(langOption) {
@@ -593,7 +593,7 @@ function AdminPanel() {
     h('form', { onSubmit: handleSubmit, className: 'space-y-4 mb-8' }, [
       h('div', { className: 'grid grid-cols-1 md:grid-cols-2 gap-4' }, [
         h('div', { className: 'form-group' }, [
-          h('label', { htmlFor: 'titleEN', className: 'block font-semibold mb-1' }, getTranslation('title_en') + ' *'),
+          h('label', { htmlFor: 'titleEN', className: 'block font-semibold mb-1' }, `${getTranslation('title_en')} *`),
           h('input', {
             type: 'text',
             id: 'titleEN',
@@ -605,7 +605,7 @@ function AdminPanel() {
           })
         ]),
         h('div', { className: 'form-group' }, [
-          h('label', { htmlFor: 'titleZH', className: 'block font-semibold mb-1' }, getTranslation('title_zh') + ' *'),
+          h('label', { htmlFor: 'titleZH', className: 'block font-semibold mb-1' }, `${getTranslation('title_zh')} *`),
           h('input', {
             type: 'text',
             id: 'titleZH',
@@ -618,7 +618,7 @@ function AdminPanel() {
         ])
       ]),
       h('div', { className: 'form-group' }, [
-        h('label', { htmlFor: 'city', className: 'block font-semibold mb-1' }, getTranslation('city') + ' *'),
+        h('label', { htmlFor: 'city', className: 'block font-semibold mb-1' }, `${getTranslation('city')} *`),
         h('select', {
           id: 'city',
           name: 'city',
@@ -661,7 +661,7 @@ function AdminPanel() {
       ]),
       h('div', { className: 'grid grid-cols-1 md:grid-cols-2 gap-4' }, [
         h('div', { className: 'form-group' }, [
-          h('label', { htmlFor: 'priceCNY', className: 'block font-semibold mb-1' }, getTranslation('price_cny') + ' *'),
+          h('label', { htmlFor: 'priceCNY', className: 'block font-semibold mb-1' }, `${getTranslation('price_cny')} *`),
           h('input', {
             type: 'number',
             id: 'priceCNY',
@@ -673,7 +673,7 @@ function AdminPanel() {
           })
         ]),
         h('div', { className: 'form-group' }, [
-          h('label', { htmlFor: 'priceUSD', className: 'block font-semibold mb-1' }, getTranslation('price_usd') + ' *'),
+          h('label', { htmlFor: 'priceUSD', className: 'block font-semibold mb-1' }, `${getTranslation('price_usd')} *`),
           h('input', {
             type: 'number',
             id: 'priceUSD',
