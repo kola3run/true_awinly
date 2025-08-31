@@ -1,123 +1,22 @@
 'use strict';
+console.log('admin.js starting at', new Date().toISOString());
+
+// Ensure dependencies are loaded
+if (typeof React === 'undefined' || typeof ReactDOM === 'undefined' || typeof ReactDnD === 'undefined' || typeof ReactDnDHTML5Backend === 'undefined') {
+  console.error('Required dependencies missing:', { React: !!React, ReactDOM: !!ReactDOM, ReactDnD: !!ReactDnD, ReactDnDHTML5Backend: !!ReactDnDHTML5Backend });
+} else {
+  console.log('Dependencies loaded:', { React: React.version, ReactDOM: true, ReactDnD: true, ReactDnDHTML5Backend: true });
+}
+
 const { useState, useEffect, useRef } = React;
+const { DndProvider, useDrag, useDrop } = ReactDnD;
+const { HTML5Backend } = ReactDnDHTML5Backend;
 const h = React.createElement;
 
 // Cloudinary configuration
 const CLOUD_NAME = 'dkjakynhh';
 const API_KEY = '724711754654635';
 const API_SECRET = 'v4vizym6WCttYT-13k5XXw7yps8';
-const ADMIN_PASSWORD = 'Awinly-Awinly228';
-
-// Check if current path is /admin
-const isAdminRoute = window.location.pathname === '/admin';
-
-// Password check only for admin route
-if (isAdminRoute) {
-  (function() {
-    try {
-      const storedPassword = localStorage.getItem('adminPassword');
-      if (!storedPassword || storedPassword !== ADMIN_PASSWORD) {
-        const enteredPassword = prompt('Введите пароль админки:');
-        if (enteredPassword !== ADMIN_PASSWORD) {
-          alert('Неверный пароль. Доступ запрещен.');
-          window.location.href = '/';
-          return;
-        }
-        localStorage.setItem('adminPassword', enteredPassword);
-      }
-    } catch (error) {
-      console.error('Ошибка проверки пароля:', error);
-      alert('Ошибка проверки пароля. Попробуйте снова.');
-      window.location.href = '/';
-    }
-  })();
-}
-
-// Generate Cloudinary signature
-function generateSignature(paramsToSign) {
-  try {
-    const timestamp = Math.floor(Date.now() / 1000);
-    const params = { ...paramsToSign, timestamp };
-    const sortedKeys = Object.keys(params).sort();
-    const stringToSign = sortedKeys.map(key => `${key}=${params[key]}`).join('&') + API_SECRET;
-    const signature = CryptoJS.SHA1(stringToSign).toString(CryptoJS.enc.Hex);
-    return { signature, timestamp };
-  } catch (error) {
-    console.error('Ошибка генерации подписи Cloudinary:', error);
-    return { signature: null, timestamp: null };
-  }
-}
-
-// Upload image to Cloudinary
-async function uploadImage(file) {
-  const { signature, timestamp } = generateSignature({});
-  if (!signature || !timestamp) {
-    throw new Error('Не удалось сгенерировать подпись Cloudinary');
-  }
-  const formData = new FormData();
-  formData.append('file', file);
-  formData.append('api_key', API_KEY);
-  formData.append('timestamp', timestamp);
-  formData.append('signature', signature);
-  try {
-    const response = await fetch(`https://api.cloudinary.com/v1_1/${CLOUD_NAME}/image/upload`, {
-      method: 'POST',
-      body: formData
-    });
-    const data = await response.json();
-    if (data.secure_url) {
-      console.log('Изображение загружено в Cloudinary:', data.secure_url);
-      return data.secure_url;
-    } else {
-      throw new Error('Ошибка загрузки изображения: ' + (data.error?.message || 'Неизвестная ошибка'));
-    }
-  } catch (error) {
-    console.error('Ошибка загрузки в Cloudinary:', error);
-    throw error;
-  }
-}
-
-// Function to fetch properties from DB
-const fetchPropertiesFromDB = async () => {
-  try {
-    const response = await fetch('/.netlify/functions/properties', {
-      method: 'GET',
-      headers: { 'Content-Type': 'application/json' }
-    });
-    if (!response.ok) {
-      throw new Error(`Ошибка получения данных: ${response.status} ${response.statusText}`);
-    }
-    const text = await response.text();
-    if (!text) {
-      console.warn('Пустой ответ от сервера');
-      return [];
-    }
-    const data = JSON.parse(text);
-    const processedData = data.map(item => ({
-      id: item.id,
-      city: item.city || null,
-      dealType: item.dealType || null,
-      propertyType: item.propertyType || null,
-      priceCNY: Number(item.priceCNY) || 0,
-      priceUSD: Number(item.priceUSD) || 0,
-      titleEN: item.titleEN || null,
-      titleZH: item.titleZH || null,
-      descriptionEN: item.descriptionEN || null,
-      descriptionZH: item.descriptionZH || null,
-      area: Number(item.area) || null,
-      floor: Number(item.floor) || null,
-      rooms: Number(item.rooms) || null,
-      yearBuilt: Number(item.yearBuilt) || null,
-      realtor: item.realtor || null,
-      images: item.images?.length ? item.images : ['https://picsum.photos/474/316?random=1'],
-      country: item.country || 'China'
-    }));
-    return processedData;
-  } catch (error) {
-    console.error('Ошибка при загрузке свойств:', error);
-    return [];
-  }
-};
 
 // Translations
 const translations = {
@@ -144,11 +43,12 @@ const translations = {
     realtor_name: "Realtor Name",
     realtor_email: "Realtor Email",
     realtor_phone: "Realtor Phone",
-    upload_images: "Upload Images",
     description_en: "Description (English)",
     description_zh: "Description (Chinese)",
+    upload_images: "Upload Images",
+    remove_image: "Remove Image",
     required_fields: "Please fill in all required fields (Title, City, Price CNY, Price USD).",
-    invalid_email: "Please enter a valid realtor email.",
+    invalid_email: "Please enter a valid realtor email or 'N/A'.",
     confirm_delete: "Are you sure you want to delete this property?",
     property_added: "Property added successfully!",
     property_updated: "Property updated successfully!",
@@ -156,7 +56,11 @@ const translations = {
     upload_error: "Image upload failed",
     cloudinary_error: "Cloudinary upload failed. Check console for details.",
     language: "Language",
-    cancel: "Cancel",
+    buy: "Buy",
+    rent: "Rent",
+    Apartment: "Apartment",
+    House: "House",
+    Land: "Land",
     Anqing: "Anqing",
     Baoding: "Baoding",
     Beijing: "Beijing",
@@ -271,19 +175,24 @@ const translations = {
     realtor_name: "经纪人姓名",
     realtor_email: "经纪人邮箱",
     realtor_phone: "经纪人电话",
+    description_en: "描述（英文)",
+    description_zh: "描述（中文)",
     upload_images: "上传图片",
-    description_en: "描述 (英文)",
-    description_zh: "描述 (中文)",
+    remove_image: "删除图片",
     required_fields: "请填写所有必填字段（标题、城市、人民币价格、美元价格）。",
-    invalid_email: "请输入有效的经纪人邮箱。",
+    invalid_email: "请输入有效的经纪人邮箱或 'N/A'。",
     confirm_delete: "您确定要删除此物业吗？",
     property_added: "物业添加成功！",
     property_updated: "物业更新成功！",
     property_deleted: "物业删除成功！",
     upload_error: "图片上传失败",
-    cloudinary_error: "Cloudinary上传失败。请查看控制台详情。",
+    cloudinary_error: "Cloudinary 上传失败。请检查控制台详情。",
     language: "语言",
-    cancel: "取消",
+    buy: "购买",
+    rent: "租赁",
+    Apartment: "公寓",
+    House: "别墅",
+    Land: "土地",
     Anqing: "安庆",
     Baoding: "保定",
     Beijing: "北京",
@@ -376,19 +285,99 @@ const translations = {
     Zibo: "淄博"
   }
 };
-
-// Languages
+const adminCities = [
+  'Anqing', 'Baoding', 'Beijing', 'Bengbu', 'Binzhou', 'Cangzhou', 'Changchun', 'Changsha',
+  'Changzhou', 'Chengde', 'Chengdu', 'Chizhou', 'Chongqing', 'Chuzhou', 'Dalian', 'Dezhou',
+  'Dongying', 'Fuyang', 'Fuzhou', 'Guangzhou', 'Guiyang', 'Haikou', 'Handan', 'Hangzhou',
+  'Harbin', 'Hefei', 'Hengshui', 'Heze', 'Hohhot', 'HuaiAn', 'Huaibei', 'Huainan', 'Huangshan',
+  'Huzhou', 'Jiaxing', 'Jinan', 'Jinhua', 'Kunming', 'Laiwu', 'Langfang', 'Lanzhou', 'Lhasa',
+  'Lianyungang', 'Liaocheng', 'Linyi', 'Lishui', 'LuAn', 'MaAnshan', 'Nanchang', 'Nanjing',
+  'Nanning', 'Ningbo', 'Qingdao', 'Qinhuangdao', 'Quzhou', 'Rizhao', 'Shanghai', 'Shaoxing',
+  'Shenyang', 'Shenzhen', 'Shijiazhuang', 'Suqian', 'Suzhou', 'Taiyuan', 'Taizhou', 'Tangshan',
+  'Tianjin', 'Tongling', 'Urumqi', 'Weifang', 'Weihai', 'Wenzhou', 'Wuhan', 'Wuxi', 'XiAn',
+  'Xiamen', 'Xingtai', 'Xining', 'Xuancheng', 'Yancheng', 'Yangzhou', 'Yantai', 'Yinchuan',
+  'Zaozhuang', 'Zhangjiakou', 'Zhengding', 'Zhengzhou', 'Zhenjiang', 'Zhoushan', 'Zibo'
+];
+const dealTypes = ['buy', 'rent'];
+const propertyTypes = ['Apartment', 'House', 'Land'];
 const languages = [
   { code: 'EN', name: 'English', flag: '🇬🇧' },
   { code: 'zh', name: '中文', flag: '🇨🇳' }
 ];
-
-// Cities, dealTypes, propertyTypes
-const adminCities = ['Anqing', 'Baoding', 'Beijing', 'Bengbu', 'Binzhou', 'Cangzhou', 'Changchun', 'Changsha', 'Changzhou', 'Chengde', 'Chengdu', 'Chizhou', 'Chongqing', 'Chuzhou', 'Dalian', 'Dezhou', 'Dongying', 'Fuyang', 'Fuzhou', 'Guangzhou', 'Guiyang', 'Haikou', 'Handan', 'Hangzhou', 'Harbin', 'Hefei', 'Hengshui', 'Heze', 'Hohhot', 'HuaiAn', 'Huaibei', 'Huainan', 'Huangshan', 'Huzhou', 'Jiaxing', 'Jinan', 'Jinhua', 'Kunming', 'Laiwu', 'Langfang', 'Lanzhou', 'Lhasa', 'Lianyungang', 'Liaocheng', 'Linyi', 'Lishui', 'LuAn', 'MaAnshan', 'Nanchang', 'Nanjing', 'Nanning', 'Ningbo', 'Qingdao', 'Qinhuangdao', 'Quzhou', 'Rizhao', 'Shanghai', 'Shaoxing', 'Shenyang', 'Shenzhen', 'Shijiazhuang', 'Suqian', 'Suzhou', 'Taiyuan', 'Taizhou', 'Tangshan', 'Tianjin', 'Tongling', 'Urumqi', 'Weifang', 'Weihai', 'Wenzhou', 'Wuhan', 'Wuxi', 'XiAn', 'Xiamen', 'Xingtai', 'Xining', 'Xuancheng', 'Yancheng', 'Yangzhou', 'Yantai', 'Yinchuan', 'Zaozhuang', 'Zhangjiakou', 'Zhengding', 'Zhengzhou', 'Zhenjiang', 'Zhoushan', 'Zibo'];
-const dealTypes = ['buy', 'rent'];
-const propertyTypes = ['Apartment', 'House', 'Land'];
-
-// Component for Admin Panel
+// Generate Cloudinary signature
+function generateSignature(paramsToSign) {
+  const timestamp = Math.floor(Date.now() / 1000);
+  const params = { ...paramsToSign, timestamp };
+  const sortedKeys = Object.keys(params).sort();
+  const stringToSign = sortedKeys.map(key => `${key}=${params[key]}`).join('&') + API_SECRET;
+  return { signature: CryptoJS.SHA1(stringToSign).toString(CryptoJS.enc.Hex), timestamp };
+}
+// Function to extract public_id from Cloudinary URL
+function getPublicIdFromUrl(url) {
+  const match = url.match(/\/upload\/(?:v\d+\/)?(.+)\.\w+$/);
+  return match ? match[1] : null;
+}
+// Function to delete image from Cloudinary
+async function deleteFromCloudinary(publicId) {
+  const timestamp = Math.floor(Date.now() / 1000);
+  const stringToSign = `public_id=${publicId}&timestamp=${timestamp}${API_SECRET}`;
+  const signature = CryptoJS.SHA1(stringToSign).toString(CryptoJS.enc.Hex);
+  const formData = new FormData();
+  formData.append('public_id', publicId);
+  formData.append('api_key', API_KEY);
+  formData.append('timestamp', timestamp);
+  formData.append('signature', signature);
+  try {
+    const response = await fetch(`https://api.cloudinary.com/v1_1/${CLOUD_NAME}/image/destroy`, {
+      method: 'POST',
+      body: formData
+    });
+    const result = await response.json();
+    if (result.result === 'ok') {
+      console.log('Deleted from Cloudinary:', publicId);
+    } else {
+      console.error('Delete failed from Cloudinary:', result);
+    }
+  } catch (error) {
+    console.error('Error deleting from Cloudinary:', error);
+  }
+}
+// ImageItem component for drag-and-drop
+const ImageItem = ({ image, index, moveImage, removeImage }) => {
+  const ref = useRef(null);
+  const [{ isDragging }, drag] = useDrag({
+    type: 'image',
+    item: { index },
+    collect: (monitor) => ({
+      isDragging: monitor.isDragging(),
+    }),
+  });
+  const [, drop] = useDrop({
+    accept: 'image',
+    hover(item) {
+      if (item.index !== index) {
+        moveImage(item.index, index);
+        item.index = index;
+      }
+    },
+  });
+  drag(drop(ref));
+  const handleRemove = () => {
+    removeImage(index);
+  };
+  return h('div', {
+    ref,
+    className: `flex items-center space-x-2 p-2 bg-gray-100 rounded ${isDragging ? 'opacity-50' : 'opacity-100'} cursor-move`,
+  }, [
+    h('img', { src: image, alt: `Image ${index + 1}`, className: 'w-16 h-12 object-cover rounded border' }),
+    h('span', { className: 'text-gray-600 flex-1 truncate' }, image),
+    h('button', {
+      type: 'button',
+      onClick: handleRemove,
+      className: 'bg-red-500 text-white px-2 py-1 rounded hover:bg-red-600'
+    }, translations.EN.remove_image),
+  ]);
+};
 function AdminPanel() {
   const [lang, setLang] = useState('EN');
   const [formData, setFormData] = useState({
@@ -396,41 +385,38 @@ function AdminPanel() {
     titleEN: '',
     titleZH: '',
     city: '',
-    dealType: 'buy',
-    propertyType: 'Apartment',
     priceCNY: '',
     priceUSD: '',
-    area: '',
-    floor: '',
-    rooms: '',
-    yearBuilt: '',
-    realtor: { name: '', email: '', phone: '' },
+    propertyType: 'Apartment',
+    dealType: 'buy',
     descriptionEN: '',
     descriptionZH: '',
-    images: []
+    area: '',
+    rooms: '',
+    yearBuilt: '',
+    images: [],
+    realtor: { name: '', email: '', phone: '' },
   });
   const [error, setError] = useState('');
   const [properties, setProperties] = useState([]);
   const [isEditing, setIsEditing] = useState(false);
   const [isLanguageDropdownOpen, setIsLanguageDropdownOpen] = useState(false);
   const fileInputRef = useRef(null);
-
+  const languageTimeoutRef = useRef(null);
   const getTranslation = (key) => translations[lang][key] || translations.EN[key] || key;
-
   useEffect(() => {
-    const fetchProperties = async () => {
-      try {
-        const data = await fetchPropertiesFromDB();
-        setProperties(data);
-        console.log('Загружены свойства:', data);
-      } catch (error) {
-        console.error('Ошибка загрузки свойств:', error);
-        setError(getTranslation('cloudinary_error') + ': ' + error.message);
-      }
-    };
-    fetchProperties();
+    const savedProperties = JSON.parse(localStorage.getItem('properties')) || [];
+    const normalizedProperties = savedProperties.map(p => ({
+      ...p,
+      realtor: p.realtor && typeof p.realtor === 'object' ? p.realtor : { name: '', email: 'N/A', phone: '' },
+      images: Array.isArray(p.images) ? p.images.filter(img => img) : []
+    }));
+    setProperties(normalizedProperties);
+    console.log('Loaded properties:', normalizedProperties);
   }, []);
-
+  useEffect(() => {
+    document.documentElement.lang = lang.toLowerCase();
+  }, [lang]);
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     if (name.startsWith('realtor.')) {
@@ -440,105 +426,119 @@ function AdminPanel() {
         realtor: { ...prev.realtor, [field]: value }
       }));
     } else {
-      setFormData(prev => ({
-        ...prev,
-        [name]: value
-      }));
+      setFormData(prev => ({ ...prev, [name]: value });
     }
   };
-
-  const handleFileChange = async (e) => {
+  const handleFileChange = (e) => {
     const files = Array.from(e.target.files);
-    try {
-      const uploadedUrls = await Promise.all(files.map(file => uploadImage(file)));
-      setFormData(prev => ({
-        ...prev,
-        images: [...prev.images, ...uploadedUrls]
-      }));
-    } catch (error) {
-      console.error('Ошибка загрузки файлов:', error);
-      setError(getTranslation('upload_error') + ': ' + error.message);
+    uploadFiles(files);
+  };
+  const uploadFiles = async (files) => {
+    const url = `https://api.cloudinary.com/v1_1/${CLOUD_NAME}/image/upload`;
+    for (const file of files) {
+      const formDataToSend = new FormData();
+      const paramsToSign = {};
+      const { signature, timestamp } = generateSignature(paramsToSign);
+      formDataToSend.append('file', file);
+      formDataToSend.append('api_key', API_KEY);
+      formDataToSend.append('timestamp', timestamp);
+      formDataToSend.append('signature', signature);
+      try {
+        const response = await fetch(url, {
+          method: 'POST',
+          body: formDataToSend
+        });
+        const result = await response.json();
+        if (result.error) {
+          throw new Error(result.error.message);
+        }
+        setFormData(prev => ({
+          ...prev,
+          images: [...prev.images, result.secure_url]
+        }));
+        setError('');
+        console.log('Upload successful:', result.secure_url);
+      } catch (error) {
+        console.error('Upload error:', error);
+        setError(getTranslation('cloudinary_error') + ': ' + error.message);
+      }
     }
   };
-
   const handleUploadClick = () => {
-    if (fileInputRef.current) {
-      fileInputRef.current.click();
+    fileInputRef.current.click();
+  };
+  const removeImage = async (index) => {
+    const imageUrl = formData.images[index];
+    console.log('Before remove, images:', formData.images);
+    setFormData(prev => {
+      const newImages = prev.images.filter((_, i) => i !== index);
+      console.log('After remove, images:', newImages);
+      return { ...prev, images: newImages };
+    });
+    if (imageUrl.includes('cloudinary.com')) {
+      const publicId = getPublicIdFromUrl(imageUrl);
+      if (publicId) {
+        await deleteFromCloudinary(publicId);
+      } else {
+        console.error('Could not extract public_id from', imageUrl);
+      }
     } else {
-      console.error('fileInputRef не определён');
-      setError('Ошибка загрузки: поле ввода недоступно');
+      console.log('Non-Cloudinary image, only link removed:', imageUrl);
     }
   };
-
-  const handleSubmit = async (e) => {
+  const moveImage = (fromIndex, toIndex) => {
+    setFormData(prev => {
+      const newImages = [...prev.images];
+      const [movedImage] = newImages.splice(fromIndex, 1);
+      newImages.splice(toIndex, 0, movedImage);
+      console.log('Moved image from', fromIndex, 'to', toIndex, 'new order:', newImages);
+      return { ...prev, images: newImages };
+    });
+  };
+  const handleSubmit = (e) => {
     e.preventDefault();
-    try {
-      if (!formData.titleEN || !formData.titleZH || !formData.city || !formData.priceCNY || !formData.priceUSD) {
-        setError(getTranslation('required_fields'));
-        return;
-      }
-      if (!formData.realtor.email.includes('@')) {
-        setError(getTranslation('invalid_email'));
-        return;
-      }
-      const newProperty = {
-        id: formData.id || Date.now().toString(),
-        country: 'China',
-        titleEN: formData.titleEN.trim(),
-        titleZH: formData.titleZH.trim(),
-        city: formData.city,
-        dealType: formData.dealType,
-        propertyType: formData.propertyType,
-        priceCNY: parseFloat(formData.priceCNY) || 0,
-        priceUSD: parseFloat(formData.priceUSD) || 0,
-        area: parseInt(formData.area) || null,
-        floor: parseInt(formData.floor) || null,
-        rooms: parseInt(formData.rooms) || null,
-        yearBuilt: parseInt(formData.yearBuilt) || null,
-        realtor: {
-          name: formData.realtor.name.trim(),
-          email: formData.realtor.email.trim(),
-          phone: formData.realtor.phone.trim()
-        },
-        descriptionEN: formData.descriptionEN.trim(),
-        descriptionZH: formData.descriptionZH.trim(),
-        images: formData.images.length > 0 ? formData.images : ['https://picsum.photos/474/316?random=1']
-      };
-      const method = isEditing && formData.id ? 'PUT' : 'POST';
-      const response = await fetch('/.netlify/functions/properties', {
-        method,
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(newProperty)
-      });
-      if (!response.ok) {
-        throw new Error(`Ошибка сохранения: ${response.statusText}`);
-      }
-      const fetchResponse = await fetch('/.netlify/functions/properties', {
-        method: 'GET',
-        headers: { 'Content-Type': 'application/json' }
-      });
-      if (!fetchResponse.ok) {
-        throw new Error(`Ошибка получения обновлённых свойств: ${fetchResponse.statusText}`);
-      }
-      const text = await fetchResponse.text();
-      const data = text ? JSON.parse(text) : [];
-      setProperties(data);
-      alert(isEditing ? getTranslation('property_updated') : getTranslation('property_added'));
-      resetForm();
-    } catch (error) {
-      console.error(isEditing ? 'Ошибка обновления:' : 'Ошибка добавления:', error);
-      setError(isEditing ? 'Не удалось обновить свойство: ' + error.message : 'Не удалось добавить свойство: ' + error.message);
-    }
-  };
-
-  const handleEdit = (property) => {
-    if (!property) {
-      console.error('Недопустимое свойство для редактирования');
-      setError('Ошибка редактирования: объект не найден');
+    if (!formData.titleEN || !formData.titleZH || !formData.city || !formData.priceCNY || !formData.priceUSD) {
+      setError(getTranslation('required_fields'));
       return;
     }
+    if (!formData.realtor.email.includes('@') && formData.realtor.email !== 'N/A') {
+      setError(getTranslation('invalid_email'));
+      return;
+    }
+    const newProperty = {
+      id: formData.id || `A${Date.now()}`,
+      country: 'China',
+      titleEN: formData.titleEN,
+      titleZH: formData.titleZH,
+      city: formData.city,
+      dealType: formData.dealType,
+      propertyType: formData.propertyType,
+      priceCNY: parseFloat(formData.priceCNY) || 0,
+      priceUSD: parseFloat(formData.priceUSD) || 0,
+      area: parseFloat(formData.area) || null,
+      floor: parseInt(formData.floor) || null,
+      rooms: parseInt(formData.rooms) || null,
+      yearBuilt: parseInt(formData.yearBuilt) || null,
+      realtor: formData.realtor,
+      descriptionEN: formData.descriptionEN,
+      descriptionZH: formData.descriptionZH,
+      images: formData.images.filter(img => img)
+    };
+    let updatedProperties;
+    if (isEditing) {
+      updatedProperties = properties.map(p => p.id === newProperty.id ? newProperty : p);
+      alert(getTranslation('property_updated'));
+    } else {
+      updatedProperties = [...properties, newProperty];
+      alert(getTranslation('property_added'));
+    }
+    localStorage.setItem('properties', JSON.stringify(updatedProperties));
+    setProperties(updatedProperties);
+    resetForm();
+  };
+  const handleEdit = (property) => {
     setFormData({
-      id: property.id || null,
+      id: property.id,
       titleEN: property.titleEN || '',
       titleZH: property.titleZH || '',
       city: property.city || '',
@@ -550,49 +550,22 @@ function AdminPanel() {
       floor: property.floor?.toString() || '',
       rooms: property.rooms?.toString() || '',
       yearBuilt: property.yearBuilt?.toString() || '',
-      realtor: property.realtor || { name: '', email: '', phone: '' },
+      realtor: property.realtor || { name: '', email: 'N/A', phone: '' },
       descriptionEN: property.descriptionEN || '',
       descriptionZH: property.descriptionZH || '',
-      images: Array.isArray(property.images) ? property.images : ['https://picsum.photos/474/316?random=1']
+      images: Array.isArray(property.images) ? property.images.filter(img => img) : []
     });
     setIsEditing(true);
     setError('');
   };
-
-  const handleDelete = async (id) => {
-    if (!id) {
-      setError('Недействительный ID свойства');
-      console.error('Недопустимый ID свойства для удаления:', id);
-      return;
-    }
+  const handleDelete = (id) => {
     if (window.confirm(getTranslation('confirm_delete'))) {
-      try {
-        const response = await fetch('/.netlify/functions/properties', {
-          method: 'DELETE',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ id })
-        });
-        if (!response.ok) {
-          throw new Error(`Ошибка удаления: ${response.statusText}`);
-        }
-        const fetchResponse = await fetch('/.netlify/functions/properties', {
-          method: 'GET',
-          headers: { 'Content-Type': 'application/json' }
-        });
-        if (!fetchResponse.ok) {
-          throw new Error(`Ошибка получения обновлённых свойств: ${fetchResponse.statusText}`);
-        }
-        const text = await fetchResponse.text();
-        const data = text ? JSON.parse(text) : [];
-        setProperties(data);
-        alert(getTranslation('property_deleted'));
-      } catch (error) {
-        console.error('Ошибка удаления свойства:', error);
-        setError('Не удалось удалить свойство: ' + error.message);
-      }
+      const updatedProperties = properties.filter(p => p.id !== id);
+      localStorage.setItem('properties', JSON.stringify(updatedProperties));
+      setProperties(updatedProperties);
+      alert(getTranslation('property_deleted'));
     }
   };
-
   const resetForm = () => {
     setFormData({
       id: null,
@@ -607,7 +580,7 @@ function AdminPanel() {
       floor: '',
       rooms: '',
       yearBuilt: '',
-      realtor: { name: '', email: '', phone: '' },
+      realtor: { name: '', email: 'N/A', phone: '' },
       descriptionEN: '',
       descriptionZH: '',
       images: []
@@ -615,143 +588,352 @@ function AdminPanel() {
     setIsEditing(false);
     setError('');
   };
-
   const handleLanguageChange = (langCode) => {
     setLang(langCode);
     setIsLanguageDropdownOpen(false);
   };
-
-  const handleLanguageClick = () => {
-    setIsLanguageDropdownOpen(prev => !prev);
+  const handleLanguageMouseEnter = () => {
+    clearTimeout(languageTimeoutRef.current);
+    languageTimeoutRef.current = setTimeout(() => {
+      setIsLanguageDropdownOpen(true);
+    }, 100);
   };
-
-  return h('div', { className: 'admin-container' }, [
-    h('div', { className: 'language-selector' }, [
-      h('div', { className: 'listings-dropdown' }, [
-        h('button', { className: 'listings-dropdown-btn', onClick: handleLanguageClick }, [
+  const handleLanguageMouseLeave = () => {
+    clearTimeout(languageTimeoutRef.current);
+    languageTimeoutRef.current = setTimeout(() => {
+      setIsLanguageDropdownOpen(false);
+    }, 200);
+  };
+  return h('div', { className: 'container mx-auto p-4 max-w-4xl' }, [
+    h('div', { className: 'relative mb-8' }, [
+      h('div', {
+        className: 'absolute top-0 right-0',
+        onMouseEnter: handleLanguageMouseEnter,
+        onMouseLeave: handleLanguageMouseLeave
+      }, [
+        h('button', { className: 'bg-purple-600 text-white px-4 py-2 rounded hover:bg-purple-700 flex items-center gap-2' }, [
           languages.find(l => l.code === lang)?.flag || '🌐',
-          ' ',
           languages.find(l => l.code === lang)?.name || getTranslation('language')
         ]),
-        h('div', { className: `listings-dropdown-content ${isLanguageDropdownOpen ? 'open' : ''}` }, languages.map(langOption => h('div', { key: langOption.code, className: 'listings-dropdown-item', onClick: () => handleLanguageChange(langOption.code) }, [langOption.flag, ' ', langOption.name])))
+        h('div', { className: `absolute bg-white shadow-lg rounded mt-1 ${isLanguageDropdownOpen ? 'block' : 'hidden'}` },
+          languages.map(langOption => h('div', {
+            key: langOption.code,
+            className: 'px-4 py-2 hover:bg-gray-100 cursor-pointer flex items-center gap-2',
+            onClick: () => handleLanguageChange(langOption.code)
+          }, [
+            langOption.flag,
+            langOption.name
+          ]))
+        )
       ])
     ]),
-    h('h1', null, getTranslation('admin_title')),
-    error && h('div', { className: 'error' }, error),
-    h('form', { onSubmit: handleSubmit }, [
-      h('div', { className: 'form-group' }, [
-        h('label', { htmlFor: 'titleEN' }, getTranslation('title_en') + ' *'),
-        h('input', { type: 'text', id: 'titleEN', name: 'titleEN', value: formData.titleEN, onChange: handleInputChange, required: true })
+    h('h1', { className: 'text-3xl font-bold mb-6' }, getTranslation('admin_title')),
+    h('form', { onSubmit: handleSubmit, className: 'space-y-4 mb-8' }, [
+      h('div', { className: 'grid grid-cols-1 md:grid-cols-2 gap-4' }, [
+        h('div', { className: 'form-group' }, [
+          h('label', { htmlFor: 'titleEN', className: 'block font-semibold mb-1' }, getTranslation('title_en') + ' *'),
+          h('input', {
+            type: 'text',
+            id: 'titleEN',
+            name: 'titleEN',
+            value: formData.titleEN,
+            onChange: handleInputChange,
+            className: 'w-full p-2 border rounded',
+            required: true
+          })
+        ]),
+        h('div', { className: 'form-group' }, [
+          h('label', { htmlFor: 'titleZH', className: 'block font-semibold mb-1' }, getTranslation('title_zh') + ' *'),
+          h('input', {
+            type: 'text',
+            id: 'titleZH',
+            name: 'titleZH',
+            value: formData.titleZH,
+            onChange: handleInputChange,
+            className: 'w-full p-2 border rounded',
+            required: true
+          })
+        ])
       ]),
       h('div', { className: 'form-group' }, [
-        h('label', { htmlFor: 'titleZH' }, getTranslation('title_zh') + ' *'),
-        h('input', { type: 'text', id: 'titleZH', name: 'titleZH', value: formData.titleZH, onChange: handleInputChange, required: true })
-      ]),
-      h('div', { className: 'form-group' }, [
-        h('label', { htmlFor: 'descriptionEN' }, getTranslation('description_en')),
-        h('textarea', { id: 'descriptionEN', name: 'descriptionEN', value: formData.descriptionEN, onChange: handleInputChange })
-      ]),
-      h('div', { className: 'form-group' }, [
-        h('label', { htmlFor: 'descriptionZH' }, getTranslation('description_zh')),
-        h('textarea', { id: 'descriptionZH', name: 'descriptionZH', value: formData.descriptionZH, onChange: handleInputChange })
-      ]),
-      h('div', { className: 'form-group' }, [
-        h('label', { htmlFor: 'city' }, getTranslation('city') + ' *'),
-        h('select', { id: 'city', name: 'city', value: formData.city, onChange: handleInputChange, required: true }, [
+        h('label', { htmlFor: 'city', className: 'block font-semibold mb-1' }, getTranslation('city') + ' *'),
+        h('select', {
+          id: 'city',
+          name: 'city',
+          value: formData.city,
+          onChange: handleInputChange,
+          className: 'w-full p-2 border rounded',
+          required: true
+        }, [
           h('option', { value: '' }, getTranslation('select_city')),
           ...adminCities.map(city => h('option', { key: city, value: city }, getTranslation(city)))
         ])
       ]),
-      h('div', { className: 'form-group' }, [
-        h('label', { htmlFor: 'dealType' }, getTranslation('deal_type')),
-        h('select', { id: 'dealType', name: 'dealType', value: formData.dealType, onChange: handleInputChange }, dealTypes.map(type => h('option', { key: type, value: type }, getTranslation(type))))
+      h('div', { className: 'grid grid-cols-1 md:grid-cols-2 gap-4' }, [
+        h('div', { className: 'form-group' }, [
+          h('label', { htmlFor: 'dealType', className: 'block font-semibold mb-1' }, getTranslation('deal_type')),
+          h('select', {
+            id: 'dealType',
+            name: 'dealType',
+            value: formData.dealType,
+            onChange: handleInputChange,
+            className: 'w-full p-2 border rounded'
+          }, dealTypes.map(type => h('option', { key: type, value: type }, getTranslation(type)))
+          )
+        ]),
+        h('div', { className: 'form-group' }, [
+          h('label', { htmlFor: 'propertyType', className: 'block font-semibold mb-1' }, getTranslation('property_type')),
+          h('select', {
+            id: 'propertyType',
+            name: 'propertyType',
+            value: formData.propertyType,
+            onChange: handleInputChange,
+            className: 'w-full p-2 border rounded'
+          }, propertyTypes.map(type => h('option', { key: type, value: type }, getTranslation(type)))
+          )
+        ])
+      ]),
+      h('div', { className: 'grid grid-cols-1 md:grid-cols-2 gap-4' }, [
+        h('div', { className: 'form-group' }, [
+          h('label', { htmlFor: 'priceCNY', className: 'block font-semibold mb-1' }, getTranslation('price_cny') + ' *'),
+          h('input', {
+            type: 'number',
+            id: 'priceCNY',
+            name: 'priceCNY',
+            value: formData.priceCNY,
+            onChange: handleInputChange,
+            className: 'w-full p-2 border rounded',
+            required: true
+          })
+        ]),
+        h('div', { className: 'form-group' }, [
+          h('label', { htmlFor: 'priceUSD', className: 'block font-semibold mb-1' }, getTranslation('price_usd') + ' *'),
+          h('input', {
+            type: 'number',
+            id: 'priceUSD',
+            name: 'priceUSD',
+            value: formData.priceUSD,
+            onChange: handleInputChange,
+            className: 'w-full p-2 border rounded',
+            required: true
+          })
+        ])
+      ]),
+      h('div', { className: 'grid grid-cols-1 md:grid-cols-2 gap-4' }, [
+        h('div', { className: 'form-group' }, [
+          h('label', { htmlFor: 'area', className: 'block font-semibold mb-1' }, getTranslation('area')),
+          h('input', {
+            type: 'number',
+            id: 'area',
+            name: 'area',
+            value: formData.area,
+            onChange: handleInputChange,
+            className: 'w-full p-2 border rounded'
+          })
+        ]),
+        h('div', { className: 'form-group' }, [
+          h('label', { htmlFor: 'floor', className: 'block font-semibold mb-1' }, getTranslation('floor')),
+          h('input', {
+            type: 'number',
+            id: 'floor',
+            name: 'floor',
+            value: formData.floor,
+            onChange: handleInputChange,
+            className: 'w-full p-2 border rounded'
+          })
+        ])
+      ]),
+      h('div', { className: 'grid grid-cols-1 md:grid-cols-2 gap-4' }, [
+        h('div', { className: 'form-group' }, [
+          h('label', { htmlFor: 'rooms', className: 'block font-semibold mb-1' }, getTranslation('rooms')),
+          h('input', {
+            type: 'number',
+            id: 'rooms',
+            name: 'rooms',
+            value: formData.rooms,
+            onChange: handleInputChange,
+            className: 'w-full p-2 border rounded'
+          })
+        ]),
+        h('div', { className: 'form-group' }, [
+          h('label', { htmlFor: 'yearBuilt', className: 'block font-semibold mb-1' }, getTranslation('year_built')),
+          h('input', {
+            type: 'number',
+            id: 'yearBuilt',
+            name: 'yearBuilt',
+            value: formData.yearBuilt,
+            onChange: handleInputChange,
+            className: 'w-full p-2 border rounded'
+          })
+        ])
       ]),
       h('div', { className: 'form-group' }, [
-        h('label', { htmlFor: 'propertyType' }, getTranslation('property_type')),
-        h('select', { id: 'propertyType', name: 'propertyType', value: formData.propertyType, onChange: handleInputChange }, propertyTypes.map(type => h('option', { key: type, value: type }, getTranslation(type))))
+        h('label', { htmlFor: 'realtor.name', className: 'block font-semibold mb-1' }, getTranslation('realtor_name')),
+        h('input', {
+          type: 'text',
+          id: 'realtor.name',
+          name: 'realtor.name',
+          value: formData.realtor.name,
+          onChange: handleInputChange,
+          className: 'w-full p-2 border rounded'
+        })
       ]),
       h('div', { className: 'form-group' }, [
-        h('label', { htmlFor: 'priceCNY' }, getTranslation('price_cny') + ' *'),
-        h('input', { type: 'number', id: 'priceCNY', name: 'priceCNY', value: formData.priceCNY, onChange: handleInputChange, required: true })
+        h('label', { htmlFor: 'realtor.email', className: 'block font-semibold mb-1' }, getTranslation('realtor_email')),
+        h('input', {
+          type: 'email',
+          id: 'realtor.email',
+          name: 'realtor.email',
+          value: formData.realtor.email,
+          onChange: handleInputChange,
+          className: 'w-full p-2 border rounded',
+          placeholder: 'N/A or email'
+        })
       ]),
       h('div', { className: 'form-group' }, [
-        h('label', { htmlFor: 'priceUSD' }, getTranslation('price_usd') + ' *'),
-        h('input', { type: 'number', id: 'priceUSD', name: 'priceUSD', value: formData.priceUSD, onChange: handleInputChange, required: true })
+        h('label', { htmlFor: 'realtor.phone', className: 'block font-semibold mb-1' }, getTranslation('realtor_phone')),
+        h('input', {
+          type: 'text',
+          id: 'realtor.phone',
+          name: 'realtor.phone',
+          value: formData.realtor.phone,
+          onChange: handleInputChange,
+          placeholder: 'Phone or URL',
+          className: 'w-full p-2 border rounded'
+        })
       ]),
       h('div', { className: 'form-group' }, [
-        h('label', { htmlFor: 'area' }, getTranslation('area')),
-        h('input', { type: 'number', id: 'area', name: 'area', value: formData.area, onChange: handleInputChange })
+        h('label', { htmlFor: 'descriptionEN', className: 'block font-semibold mb-1' }, getTranslation('description_en')),
+        h('textarea', {
+          id: 'descriptionEN',
+          name: 'descriptionEN',
+          value: formData.descriptionEN,
+          onChange: handleInputChange,
+          className: 'w-full p-2 border rounded h-24'
+        })
       ]),
       h('div', { className: 'form-group' }, [
-        h('label', { htmlFor: 'floor' }, getTranslation('floor')),
-        h('input', { type: 'number', id: 'floor', name: 'floor', value: formData.floor, onChange: handleInputChange })
+        h('label', { htmlFor: 'descriptionZH', className: 'block font-semibold mb-1' }, getTranslation('description_zh')),
+        h('textarea', {
+          id: 'descriptionZH',
+          name: 'descriptionZH',
+          value: formData.descriptionZH,
+          onChange: handleInputChange,
+          className: 'w-full p-2 border rounded h-24'
+        })
       ]),
       h('div', { className: 'form-group' }, [
-        h('label', { htmlFor: 'rooms' }, getTranslation('rooms')),
-        h('input', { type: 'number', id: 'rooms', name: 'rooms', value: formData.rooms, onChange: handleInputChange })
+        h('label', { className: 'block font-semibold mb-1' }, getTranslation('upload_images')),
+        h('input', {
+          type: 'file',
+          id: 'file-input',
+          ref: fileInputRef,
+          multiple: true,
+          accept: 'image/*',
+          style: { display: 'none' },
+          onChange: handleFileChange
+        }),
+        h('button', {
+          type: 'button',
+          onClick: handleUploadClick,
+          className: 'bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 mb-4'
+        }, getTranslation('upload_images')),
+        h('div', { className: 'flex flex-wrap gap-4' }, formData.images.length > 0
+          ? formData.images.map((url, index) => h('div', { key: `image-${index}-${url}`, className: 'relative' }, [
+              h('img', { 
+                src: url, 
+                alt: `Image ${index + 1}`, 
+                className: 'w-32 h-24 object-cover rounded border'
+              }),
+              h('button', {
+                type: 'button',
+                onClick: () => removeImage(index),
+                className: 'absolute top-0 right-0 bg-red-500 text-white p-1 rounded-full hover:bg-red-600'
+              }, 'X')
+            ]))
+          : h('p', { className: 'text-gray-500' }, 'No images uploaded')
+        )
       ]),
-      h('div', { className: 'form-group' }, [
-        h('label', { htmlFor: 'yearBuilt' }, getTranslation('year_built')),
-        h('input', { type: 'number', id: 'yearBuilt', name: 'yearBuilt', value: formData.yearBuilt, onChange: handleInputChange })
-      ]),
-      h('div', { className: 'form-group' }, [
-        h('label', { htmlFor: 'realtor.name' }, getTranslation('realtor_name')),
-        h('input', { type: 'text', id: 'realtor.name', name: 'realtor.name', value: formData.realtor.name, onChange: handleInputChange })
-      ]),
-      h('div', { className: 'form-group' }, [
-        h('label', { htmlFor: 'realtor.email' }, getTranslation('realtor_email')),
-        h('input', { type: 'email', id: 'realtor.email', name: 'realtor.email', value: formData.realtor.email, onChange: handleInputChange })
-      ]),
-      h('div', { className: 'form-group' }, [
-        h('label', { htmlFor: 'realtor.phone' }, getTranslation('realtor_phone')),
-        h('input', { type: 'tel', id: 'realtor.phone', name: 'realtor.phone', value: formData.realtor.phone, onChange: handleInputChange, placeholder: '+86 123 456 7890' })
-      ]),
-      h('div', { className: 'form-group' }, [
-        h('label', null, getTranslation('upload_images')),
-        h('input', { type: 'file', id: 'file-input', ref: fileInputRef, multiple: true, style: { display: 'none' }, onChange: handleFileChange, accept: 'image/*' }),
-        h('button', { type: 'button', onClick: handleUploadClick }, getTranslation('upload_images')),
-        formData.images.length > 0 && h('div', { className: 'image-preview' }, formData.images.map((url, index) => h('img', { key: index, src: url, alt: `Preview ${index + 1}`, loading: 'lazy' })))
-      ]),
-      error && h('div', { className: 'error' }, error),
-      h('div', { className: 'form-group' }, [
-        h('button', { type: 'submit' }, getTranslation(isEditing ? 'update_property' : 'add_property')),
-        isEditing && h('button', { type: 'button', className: 'secondary', onClick: resetForm }, getTranslation('cancel'))
-      ])
+      error && h('div', { className: 'text-red-500 text-sm mt-2' }, error),
+      h('button', {
+        type: 'submit',
+        className: 'bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600'
+      }, getTranslation(isEditing ? 'update_property' : 'add_property'))
     ]),
-    h('h2', null, getTranslation('existing_properties')),
-    properties.length > 0 ? h('div', { className: 'properties-list' }, properties.map(property => h('div', { key: property.id, className: 'property-item' }, [
-      h('p', null, `${getTranslation('title_en')}: ${property.titleEN || ''}`),
-      h('p', null, `${getTranslation('title_zh')}: ${property.titleZH || ''}`),
-      h('p', null, `${getTranslation('city')}: ${getTranslation(property.city) || ''}`),
-      h('p', null, `${getTranslation('deal_type')}: ${getTranslation(property.dealType) || ''}`),
-      h('p', null, `${getTranslation('property_type')}: ${getTranslation(property.propertyType) || ''}`),
-      h('p', null, `${getTranslation('price_cny')}: ¥${(property.priceCNY || 0).toLocaleString()}`),
-      h('p', null, `${getTranslation('price_usd')}: $${(property.priceUSD || 0).toLocaleString()}`),
-      property.area && h('p', null, `${getTranslation('area')}: ${property.area} m²`),
-      property.floor && h('p', null, `${getTranslation('floor')}: ${property.floor}`),
-      property.rooms && h('p', null, `${getTranslation('rooms')}: ${property.rooms}`),
-      property.yearBuilt && h('p', null, `${getTranslation('year_built')}: ${property.yearBuilt}`),
-      property.realtor?.name && h('p', null, `${getTranslation('realtor_name')}: ${property.realtor.name}`),
-      property.realtor?.email && h('p', null, `${getTranslation('realtor_email')}: ${property.realtor.email}`),
-      property.realtor?.phone && h('p', null, `${getTranslation('realtor_phone')}: ${property.realtor.phone}`),
-      property.descriptionEN && h('p', null, `${getTranslation('description_en')}: ${property.descriptionEN}`),
-      property.descriptionZH && h('p', null, `${getTranslation('description_zh')}: ${property.descriptionZH}`),
-      property.images?.length > 0 && h('div', { className: 'property-images' }, property.images.map((url, index) => h('img', { key: index, src: url, alt: `Image ${index + 1}`, loading: 'lazy', onError: (e) => e.target.src = 'https://picsum.photos/474/316?random=1' }))),
-      h('div', { className: 'property-actions' }, [
-        h('button', { onClick: () => handleEdit(property) }, getTranslation('edit')),
-        h('button', { className: 'secondary', onClick: () => handleDelete(property.id) }, getTranslation('delete'))
-      ])
-    ]))) : h('p', null, getTranslation('no_properties'))
+    h('div', { className: 'properties-list mt-8' }, [
+      h('h2', { className: 'text-2xl font-bold mb-4' }, getTranslation('existing_properties')),
+      properties.length === 0
+        ? h('p', { className: 'text-gray-600' }, getTranslation('no_properties'))
+        : properties.map(property => h('div', {
+            key: property.id,
+            className: 'p-4 bg-gray-50 rounded-lg mb-4 border'
+          }, [
+            h('p', { className: 'font-semibold' }, `${getTranslation('title_en')}: ${property.titleEN || ''}`),
+            h('p', null, `${getTranslation('title_zh')}: ${property.titleZH || ''}`),
+            h('p', null, `${getTranslation('city')}: ${getTranslation(property.city) || ''}`),
+            h('p', null, `${getTranslation('deal_type')}: ${getTranslation(property.dealType) || ''}`),
+            h('p', null, `${getTranslation('property_type')}: ${getTranslation(property.propertyType) || ''}`),
+            h('p', null, `${getTranslation('price_cny')}: ¥${(property.priceCNY || 0).toLocaleString()}`),
+            h('p', null, `${getTranslation('price_usd')}: $${(property.priceUSD || 0).toLocaleString()}`),
+            property.area && h('p', null, `${getTranslation('area')}: ${property.area} m²`),
+            property.floor && h('p', null, `${getTranslation('floor')}: ${property.floor}`),
+            property.rooms && h('p', null, `${getTranslation('rooms')}: ${property.rooms}`),
+            property.yearBuilt && h('p', null, `${getTranslation('year_built')}: ${property.yearBuilt}`),
+            (property.realtor && property.realtor.name) && h('p', null, `${getTranslation('realtor_name')}: ${property.realtor.name}`),
+            (property.realtor && property.realtor.email) && h('p', null, `${getTranslation('realtor_email')}: ${property.realtor.email}`),
+            (property.realtor && property.realtor.phone) && h('p', null, `${getTranslation('realtor_phone')}: ${property.realtor.phone}`),
+            property.descriptionEN && h('p', null, `${getTranslation('description_en')}: ${property.descriptionEN}`),
+            property.descriptionZH && h('p', null, `${getTranslation('description_zh')}: ${property.descriptionZH}`),
+            property.images.length > 0 && h('div', { className: 'flex flex-wrap gap-2 mt-2' },
+              property.images.map((url, index) =>
+                h('img', { 
+                  key: `prop-image-${index}-${url}`, 
+                  src: url, 
+                  alt: `Property image ${index + 1}`, 
+                  className: 'w-24 h-16 object-cover rounded border',
+                  onError: (e) => { e.target.src = 'https://via.placeholder.com/96x64?text=Image+Error'; }
+                })
+              )
+            ),
+            h('div', { className: 'flex gap-2 mt-2' }, [
+              h('button', {
+                onClick: () => handleEdit(property),
+                className: 'bg-yellow-500 text-white px-3 py-1 rounded hover:bg-yellow-600'
+              }, getTranslation('edit')),
+              h('button', {
+                onClick: () => handleDelete(property.id),
+                className: 'bg-red-500 text-white px-3 py-1 rounded hover:bg-red-600'
+              }, getTranslation('delete'))
+            ])
+          ]))
+    ])
   ]);
 }
-
-// Render the app
-document.addEventListener('DOMContentLoaded', () => {
-  const root = document.getElementById('root');
-  if (!root) {
-    console.error('Элемент с id "root" не найден. Проверьте admin.html');
-    throw new Error('Нет элемента root');
+// Password protection
+const ADMIN_PASSWORD = 'Awinly-Awinly228';
+(function() {
+  const storedPassword = localStorage.getItem('adminPassword');
+  if (!storedPassword) {
+    const enteredPassword = prompt('Enter admin password:');
+    if (enteredPassword !== ADMIN_PASSWORD) {
+      alert('Incorrect password. Access denied.');
+      window.location.href = '/';
+      return;
+    }
+    localStorage.setItem('adminPassword', enteredPassword);
+  } else if (storedPassword !== ADMIN_PASSWORD) {
+    const enteredPassword = prompt('Enter admin password:');
+    if (enteredPassword !== ADMIN_PASSWORD) {
+      alert('Incorrect password. Access denied.');
+      window.location.href = '/';
+      return;
+    }
+    localStorage.setItem('adminPassword', enteredPassword);
   }
-  ReactDOM.render(h(AdminPanel), root);
-  console.log('AdminPanel успешно отрендерен в', new Date().toISOString());
-});
+  if (document.getElementById('root')) {
+    console.log('Rendering AdminPanel at', new Date().toISOString());
+    ReactDOM.render(h(AdminPanel), document.getElementById('root'));
+  } else {
+    console.error('Root element not found');
+  }
+})();
