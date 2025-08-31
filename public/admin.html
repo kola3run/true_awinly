@@ -8,8 +8,9 @@
   <script src="https://unpkg.com/react@18/umd/react.development.js"></script>
   <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/react-dnd/16.0.1/index.umd.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/react-dnd-html5-backend/16.0.1/index.umd.js"></script>
+  <!-- Updated React DnD and HTML5 Backend -->
+  <script src="https://unpkg.com/react-dnd/dist/cjs/index.js"></script>
+  <script src="https://unpkg.com/react-dnd-html5-backend/dist/cjs/index.js"></script>
   <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
 </head>
 <body>
@@ -18,8 +19,8 @@
     'use strict';
     console.log('admin.js starting at', new Date().toISOString());
     const { useState, useEffect, useRef } = React;
-    const { DndProvider, useDrag, useDrop } = ReactDnD;
-    const { HTML5Backend } = ReactDnDHTML5Backend;
+    const { DndProvider, useDrag, useDrop } = ReactDnd; // Исправлено на ReactDnd
+    const { HTML5Backend } = HTML5BackendModule; // Исправлено на HTML5BackendModule
     const h = React.createElement;
 
     // Cloudinary configuration
@@ -270,7 +271,7 @@
         Tangshan: "唐山",
         Tianjin: "天津",
         Tongling: "铜陵",
-        Urumqi: "乌鲁木齐",
+        Urumqi: "乌鲁木qi",
         Weifang: "潍坊",
         Weihai: "威海",
         Wenzhou: "温州",
@@ -498,7 +499,7 @@
           console.log('After remove, images:', newImages);
           return { ...prev, images: newImages };
         });
-        if (imageUrl.includes('cloudinary.com')) {
+        if (imageUrl && imageUrl.includes('cloudinary.com')) {
           const publicId = getPublicIdFromUrl(imageUrl);
           if (publicId) {
             await deleteFromCloudinary(publicId);
@@ -506,7 +507,7 @@
             console.error('Could not extract public_id from', imageUrl);
           }
         } else {
-          console.log('Non-Cloudinary image, only link removed:', imageUrl);
+          console.log('Non-Cloudinary image or invalid URL, only link removed:', imageUrl);
         }
       };
 
